@@ -1,0 +1,35 @@
+<template name="wxSearch">
+    <view class="wxSearch" style="display:{{wxSearchData.view.isShow?'block':'none'}};height:{{wxSearchData.view.seachHeight}}px;top:{{wxSearchData.view.barHeight}}px;">
+        <view class="wxSearchInner">
+            <view class="wxSearchMindKey">
+                <view class="wxSearchMindKeyList">
+                    <view bindtap="wxSearchKeyTap" class="wxSearchMindKeyItem" data-key="{{item}}" wx:for="{{wxSearchData.mindKeys}}">{{item}}</view>
+                </view>
+            </view>
+            <view class="wxSearchHistory" style="display:block}}">
+                <view class="wxSearchHistoryDelete">
+                    <text class="wxSearchHistoryTitle">搜索历史</text>
+                    <image bindtap="wxSearchDeleteAll" class="wxSearchDelete" src="../../../../image/Emptied.png"></image>
+                </view>
+                <view class="wxSearchHistoryList" wx:if="{{wxSearchData.his[0]}}">
+                    <view class="wxSearchHistoryItem" wx:for="{{wxSearchData.his}}">
+                        <text bindtap="wxGoNextPage" class="wxSearchHistoryItemText" data-key="{{item}}">{{item}}</text>
+                    </view>
+                </view>
+                <view wx:else>
+                    <view class="wxSearchHistoryEmpty">搜索历史为空</view>
+                </view>
+            </view>
+        </view>
+    </view>
+    <view class="wxSearchResult" style="display:{{wxSearchData.view.isSearchResultShow?'block':'none'}};height:{{wxSearchData.view.seachHeight}}px;top:{{wxSearchData.view.barHeight}}px;">
+        <view class="wxSearchReultList" wx:if="{{wxSearchData.results[0]}}">
+            <view class="wxSearchResultItem" wx:for="{{wxSearchData.results}}">
+                <text bindtap="wxGoNextPage" class="wxSearchResultItemText" data-key="{{item}}" style="background-color:{{data.txtBackground}}">{{item}}</text>
+            </view>
+        </view>
+        <view wx:else>
+            <view class="wxSearchResultEmpty">No data</view>
+        </view>
+    </view>
+</template>

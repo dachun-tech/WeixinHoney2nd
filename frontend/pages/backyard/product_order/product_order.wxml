@@ -1,0 +1,36 @@
+<view class="container">
+    <view bindtap="on_click_address" class="postman-data-view">
+        <image class="postman-pos-image" src="../../../image/garden_dw@2x.png"></image>
+        <view class="postman-address-view" wx:if="{{show}}">
+            <text class="postman-name-text" style="font-weight: bold;">收货人：{{address.name}}</text>
+            <text class="postman-number-text">{{address.phone}}</text>
+            <view class="postman-address-text" style="font-weight: bold;">
+                <text selectable="true">{{address.province}}{{address.city}}{{address.area}}{{address.detail_address}}</text>
+            </view>
+        </view>
+        <view class="not-address" wx:if="{{!show}}">请填写收货地址!</view>
+        <image class="postman-all-image" src="../../../image/next@2x.png"></image>
+    </view>
+    <view class="product-statemen-view" wx:if="{{show}}">
+        <view class="product-statement-text">
+            <text style="font-weight: bold;">商品清单</text>
+        </view>
+        <view class="product-statement-detail">
+            <image class="product-data-image" src="{{upload_url+good.avatar}}"></image>
+            <view class="product-data-detail">
+                <text class="product-data-name" style="font-weight: bold;">{{good.name}}</text>
+                <text class="product-data-beecost">{{good.cost}}ml蜂蜜</text>
+            </view>
+            <text class="product-order-count">x1</text>
+        </view>
+        <view class="product-total-cost">共计1件商品，需
+      <text class="product-real-cost">{{good.cost}}</text>ml蜂蜜</view>
+    </view>
+    <view class="product-comment-view" wx:if="{{show}}">
+        <text class="product-comment-text">留言：</text>
+        <textarea bindinput="onBlurtextarea" class="product-comment-textarea" maxlength="100" placeholder="请输入留言，不超过100字"></textarea>
+        <image class="product-alert-image" src="../../../image/garden_zy@2x.png"></image>
+        <text class="product-alert-text">商品兑换后，不接受退换货。</text>
+    </view>
+    <button bindtap="onBtnsubmit" class="btn_submit" id="{{good.id}}" wx:if="{{show}}">确认兑换</button>
+</view>

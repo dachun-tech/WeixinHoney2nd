@@ -1,0 +1,26 @@
+<import src="../template/act_template.wxml"></import>
+<view class="container">
+    <view class="tab">
+        <view class="tab-bar">
+            <view bindtap="selectTab" class="tab-item tab-item1 {{active1}}" id="btn1">
+        进行中
+      </view>
+            <view bindtap="selectTab" class="tab-item tab-item2 {{active2}}" id="btn2">
+        已完成
+      </view>
+            <view bindtap="selectTab" class="tab-item tab-item3 {{active3}}" id="btn3">
+        已取消
+      </view>
+        </view>
+    </view>
+    <scroll-view class="activities">
+        <view wx:for="{{events}}" wx:key="index">
+            <view wx:if="{{item.state==selected_state}}">
+                <template is="act-template" data="{{item:item,userRole:userRole,eventType:eventType,eventState:eventState}}"></template>
+                <view class="btn-view" wx:if="{{item.state==0&&item.isbtn}}">
+                    <button bindtap="btn_remove_booking" class="activity-button" id="{{index}}">取消活动</button>
+                </view>
+            </view>
+        </view>
+    </scroll-view>
+</view>

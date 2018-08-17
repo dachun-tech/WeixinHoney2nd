@@ -1,0 +1,21 @@
+<view>
+    <block wx:for="{{favourite}}" wx:key="index">
+        <view class="reg_cls_user_comment_info">
+            <image bindtap="btn_Clicked_Focus" class="reg_cls_user_photo" id="{{index}}" mode="aspectFill" src="{{item.avatar}}"></image>
+            <view bindtap="btn_Clicked_Focus" id="{{index}}">
+                <text class="reg_cls_city_name" style="font-weight: bold;">{{item.site_name}}</text>
+            </view>
+            <view bindtap="btn_Clicked_Focus" class="reg_member_place" id="{{index}}">
+                <view class="reg-member-txt">地址｜</view>
+                <view class="reg-member-add">{{item.province+item.city+item.area+item.detail_address}}</view>
+            </view>
+            <view class="reg_cls_comment_number">电话｜<text bindtap="phone_call" id="{{index}}" style="text-decoration: underline; color:blue;">{{item.phone}}</text>
+            </view>
+        </view>
+        <button bindtap="on_cancel" class="reg_cls_clear_btn" id="{{index}}">取消关注</button>
+    </block>
+    <view wx:if="{{favourite.length==0}}">
+        <image class="no-focus-image" src="../../../image/success_n@2x.png"></image>
+        <view class="no-focus-text" style="font-weight: bold;">您还未关注场馆！</view>
+    </view>
+</view>

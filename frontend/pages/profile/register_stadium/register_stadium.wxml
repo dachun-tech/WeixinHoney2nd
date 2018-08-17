@@ -1,0 +1,37 @@
+<view class="container">
+    <view bindtap="on_click_selectavatar" class="stadium-avatar-view">
+        <view class="stadium-avatar-text">*场馆类型：</view>
+        <input disabled class="event-input" placeholder="请选择" value="{{eventType[eventid]}}" wx:if="{{eventid!=18}}"></input>
+        <input disabled class="event-input" placeholder="请选择" wx:else></input>
+    </view>
+    <view class="stadium-input-view">
+        <view class="stadium-input-text">*场馆介绍：</view>
+        <textarea bindblur="blur_on_introduction" class="stadium-input-textarea" maxlength="500" placeholder="请输入场馆简介，不超过500字" value="{{introduction}}" wx:if="{{!showModal2}}"></textarea>
+    </view>
+    <view class="stadium-input-view">
+        <view class="stadium-input-text">*服务介绍：</view>
+        <textarea bindblur="blur_on_service" class="stadium-input-textarea" maxlength="500" placeholder="请输入场馆简介，不超过500字" value="{{service}}" wx:if="{{!showModal2}}"></textarea>
+    </view>
+    <view class="stadium-images-view">
+        <view class="stadium-images-text">*场馆图片(最多上传5张)：</view>
+        <image bindtap="on_click_image" class="stadium-images-image" id="0" mode="aspectFill" src="{{image_path[0]==''?'../../../image/shop_license.png':image_path[0]}}"></image>
+        <image bindtap="on_click_delete" class="stadium-images-delete" id="0" mode="aspectFill" src="../../../image/del02@2x.png" style="{{display[ select[1] ]}}"></image>
+        <image bindtap="on_click_image" class="stadium-images-image" id="1" mode="aspectFill" src="{{image_path[1]==''?'../../../image/shop_license.png':image_path[1]}}" style="{{display[ select[1] ]}}"></image>
+        <image bindtap="on_click_delete" class="stadium-images-delete" id="1" mode="aspectFill" src="../../../image/del02@2x.png" style="{{display[ select[2] ]}}"></image>
+        <image bindtap="on_click_image" class="stadium-images-image" id="2" mode="aspectFill" src="{{image_path[2]==''?'../../../image/shop_license.png':image_path[2]}}" style="{{display[ select[2] ]}}" wx:if="{{!showModal2}}"></image>
+        <image bindtap="on_click_delete" class="stadium-images-delete" id="2" mode="aspectFill" src="../../../image/del02@2x.png" style="{{display[ select[3] ]}}" wx:if="{{!showModal2}}"></image>
+        <image bindtap="on_click_image" class="stadium-images-image" id="3" mode="aspectFill" src="{{image_path[3]==''?'../../../image/shop_license.png':image_path[3]}}" style="{{display[ select[3] ]}}" wx:if="{{!showModal2}}"></image>
+        <image bindtap="on_click_delete" class="stadium-images-delete" id="3" mode="aspectFill" src="../../../image/del02@2x.png" style="{{display[ select[4] ]}}" wx:if="{{!showModal2}}"></image>
+        <image bindtap="on_click_image" class="stadium-images-image" id="4" mode="aspectFill" src="{{image_path[4]==''?'../../../image/shop_license.png':image_path[4]}}" style="{{display[ select[4] ]}}" wx:if="{{!showModal2}}"></image>
+        <image bindtap="on_click_delete" class="stadium-images-delete1" id="4" mode="aspectFill" src="../../../image/del02@2x.png" wx:if="{{selected==5}}"></image>
+    </view>
+    <button bindtap="on_click_save" class="btn-submit" wx:if="{{!showModal2}}">完成</button>
+</view>
+<view bindtap="preventTouchMove" catchtouchmove="preventTouchMove" class="modal-mask1" wx:if="{{showModal2}}"></view>
+<view catchtouchmove="preventTouchMove" class="modal-dialog1" wx:if="{{showModal2}}">
+    <scroll-view scrollY class="main-text1">
+        <view wx:for="{{eventType}}" wx:key="index">
+            <view bindtap="on_click_type" class="display_show" id="{{item}}">{{item}}</view>
+        </view>
+    </scroll-view>
+</view>
