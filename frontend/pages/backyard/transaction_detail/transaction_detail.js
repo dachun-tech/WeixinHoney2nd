@@ -1,116 +1,204 @@
-var a = getApp();
-
+// pages/backyard/transaction_detail/transaction_detail.js
+var app = getApp()
 Page({
-    data: {
-        goodnumber: "",
-        sendtime: "",
-        interval: "",
-        left_day: "",
-        seventime: "00:00:00"
-    },
-    onLoad: function(t) {
-        var e = this;
-        console.log(t.id), wx.request({
-            url: a.globalData.mainURL + "api/getExchangeDetail",
-            data: {
-                user_id: a.globalData.userInfo.user_id,
-                exchange_id: t.id
-            },
-            method: "POST",
-            header: {
-                "content-type": "application/json"
-            },
-            success: function(t) {
-                if (console.log(t), 0 != t.data.status) {
-                    "1" == t.data.result[0].state && (e.data.sendtime = t.data.result[0].send_time, 
-                    e.data.interval = setInterval(e.time_set, 1e3)), e.data.goodnumber = t.data.result[0].no;
-                    var n = "0000000000";
-                    n = n.slice(0, 10 - e.data.goodnumber.length) + e.data.goodnumber, e.setData({
-                        goodnumber: n
-                    }), e.setData({
-                        array: t.data.result[0],
-                        upload_url: a.globalData.uploadURL,
-                        productState: a.globalData.productState
-                    });
-                }
-            },
-            fail: function() {}
-        });
-    },
-    time_set: function() {
-        var t = 6048e5 - (Date.now() - Date.parse(this.data.sendtime.replace(/-/g, "/")));
-        if (t <= 0) {
-            var e = this;
-            wx.request({
-                url: a.globalData.mainURL + "api/endExchange",
-                data: {
-                    no: e.data.goodnumber
-                },
-                method: "POST",
-                header: {
-                    "content-type": "application/json"
-                },
-                success: function(a) {
-                    clearInterval(e.data.interval);
-                },
-                fail: function() {}
-            }), clearInterval(e.data.interval), wx.navigateTo({
-                url: "../transaction/transaction"
-            });
-        } else {
-            var n = "", o = Math.floor(t / 864e5);
-            o = 0 != o ? o : "0", this.setData({
-                left_day: o
-            });
-            var i = Math.floor((t - 864e5 * o) / 36e5);
-            n += i < 10 ? "0" + i : i, n += ":";
-            var r = t - 864e5 * o - 36e5 * i;
-            n += (r = Math.floor(r / 6e4)) < 10 ? "0" + r : r, n += ":";
-            var s = (t - 864e5 * o - 36e5 * i - 6e4 * r) / 1e3;
-            n += (s = Math.floor(s)) < 10 ? "0" + s : s, this.setData({
-                seventime: n
-            });
+
+  /**
+   * 页面的初始数据
+   */
+  data: {
+    goodnumber: '',
+    sendtime:'',
+    interval: '',
+    left_day:'',
+    seventime: '00:00:00'
+  },
+
+  /**
+   * 生命周期函数--监听页面加载
+   */
+  onLoad: function (options) {
+    var that = this
+    console.log(options.id)
+    wx.request({
+      url: app.globalData.mainURL + 'api/getExchangeDetail',
+      data: {
+        user_id: app.globalData.userInfo.user_id,
+        exchange_id: options.id
+      },
+      method: 'POST',
+      header: {
+        'content-type': 'application/json'
+      },
+      success: function (res) {
+        console.log(res)
+        if (res.data.status == false) return;
+        if (res.data.result[0].state == '1') {
+          that.data.sendtime = res.data.result[0].send_time
+          that.data.interval = setInterval(that.time_set, 1000)
         }
-    },
-    onCancel1: function() {
-        this.setData({
-            showModal1: !1
-        });
-    },
-    onConfirm1: function() {
-        var t = this;
-        this.setData({
-            showModal1: !1
-        }), wx.request({
-            url: a.globalData.mainURL + "api/endExchange",
-            data: {
-                no: t.data.goodnumber
-            },
-            method: "POST",
-            header: {
-                "content-type": "application/json"
-            },
-            success: function(a) {},
-            fail: function() {}
-        }), wx.navigateTo({
-            url: "../transaction/transaction"
-        });
-    },
-    btn_submit: function() {
-        this.setData({
-            showModal1: !0
-        });
-    },
-    onReady: function() {},
-    onShow: function() {},
-    onHide: function() {},
-    onUnload: function() {},
-    onPullDownRefresh: function() {},
-    onReachBottom: function() {},
-    onShareAppMessage: function() {},
-    on_click_product: function(a) {
-        wx.navigateTo({
-            url: "../product_detail/product_detail?id=" + a.currentTarget.id
-        });
+        that.data.goodnumber = res.data.result[0].no
+        var idshow = '0000000000'
+        idshow = idshow.slice(0, 10 - that.data.goodnumber.length) + that.data.goodnumber
+        that.setData({ goodnumber: idshow })
+        that.setData({ array: res.data.result[0], upload_url: app.globalData.uploadURL, productState: app.globalData.productState })
+      },
+      fail: function () {
+      }
+    })
+  },
+  time_set: function () {
+    var timenow = Date.now()
+    var sendnow = Date.parse(this.data.sendtime.replace(/-/g, '/'))
+    var subtime = 604800000 - (timenow - sendnow)
+    if (subtime <= 0)
+    {
+      var that = this
+      wx.request({
+        url: app.globalData.mainURL + 'api/endExchange',
+        data: {
+          no: that.data.goodnumber
+        },
+        method: 'POST',
+        header: {
+          'content-type': 'application/json'
+        },
+        success: function (res) {
+          clearInterval(that.data.interval)
+        },
+        fail: function () {
+        }
+      })
+      clearInterval(that.data.interval)
+      wx.navigateTo({
+        url: '../transaction/transaction',
+      })
     }
-});
+    else{
+      var str=""
+      var day = Math.floor(subtime / 86400000)
+      if(day != 0)
+      {
+        day = day
+      }
+      else{
+        day = '0'
+      }
+      this.setData({ left_day: day })
+      var hour = Math.floor((subtime - 86400000* day) / 3600000)
+      if(hour < 10)
+      {
+        str += '0' + hour
+      }
+      else{
+        str += hour
+      }
+      str += ":"
+      var minute = subtime - day * 86400000 - hour * 3600000
+      minute = Math.floor(minute / 60000)
+      if (minute < 10)
+      {
+        str += '0' + minute
+      }
+      else{
+        str +=  minute
+      }
+      str += ":"
+      var second = (subtime - day * 86400000 - hour * 3600000 - minute * 60000)/1000
+      second = Math.floor(second)
+      if( second < 10){
+        str += '0' + second
+      }
+      else{
+        str += second
+      }
+      this.setData({ seventime: str})
+    }
+    
+  },
+  onCancel1: function () {
+    this.setData({
+      showModal1: false
+    });
+  },
+  onConfirm1: function () {
+    var that = this
+    this.setData({
+      showModal1: false
+    });
+    wx.request({
+      url: app.globalData.mainURL + 'api/endExchange',
+      data: {
+        no: that.data.goodnumber
+      },
+      method: 'POST',
+      header: {
+        'content-type': 'application/json'
+      },
+      success: function (res) {
+      },
+      fail: function () {
+      }
+    })
+    wx.navigateTo({
+      url: '../transaction/transaction',
+    })
+  },
+  btn_submit: function () {
+    this.setData({
+      showModal1: true
+    })
+  },
+  /**
+   * 生命周期函数--监听页面初次渲染完成
+   */
+  onReady: function () {
+
+  },
+
+  /**
+   * 生命周期函数--监听页面显示
+   */
+  onShow: function () {
+
+  },
+
+  /**
+   * 生命周期函数--监听页面隐藏
+   */
+  onHide: function () {
+
+  },
+
+  /**
+   * 生命周期函数--监听页面卸载
+   */
+  onUnload: function () {
+
+  },
+
+  /**
+   * 页面相关事件处理函数--监听用户下拉动作
+   */
+  onPullDownRefresh: function () {
+
+  },
+
+  /**
+   * 页面上拉触底事件的处理函数
+   */
+  onReachBottom: function () {
+
+  },
+
+  /**
+   * 用户点击右上角分享
+   */
+  onShareAppMessage: function () {
+
+  },
+  on_click_product: function (query) {
+    wx.navigateTo({
+      url: '../product_detail/product_detail?id=' + query.currentTarget.id,
+    })
+  }
+})

@@ -1,21 +1,66 @@
-<view class="tcontainer">
-    <view class="input-view">
-        <input bindinput="on_input_text" class="input-box" placeholder="输入地址" value="{{inputtext}}"></input>
-        <image class="input-icon" src="../../../image/search@2x.png"></image>
-        <view bindtap="on_click_cancel" class="search-btn">取消</view>
+<import src="../template/activity_cell/template_act.wxml" />
+<import src="../template/place_cell/template_place.wxml" />
+<view class='tcontainer'>
+  <view class='input-view'>
+    <input class='input-box' bindinput="on_input_text" placeholder='输入场馆名或运动类型' value='{{inputtext}}'></input>
+    <image class='input-icon' bindtap='on_click_search' src='../../../image/search_custom.png'></image>    
+  </view>
+  <!-- tab bar -->
+  <view class="tab">
+    <view class="tab-bar">
+      <view class="tab-item tab-item1 {{active1}}" bindtap='selectTab1'>
+        场馆
+      </view>
+      <view class="tab-item tab-item2 {{active2}}" bindtap='selectTab2'>
+        活动
+      </view>
     </view>
-    <scroll-view class="input-tip">
-        <view bindtap="on_bindSearch" class="input-tip-view" data-keywords="{{i.name}}" id="{{i.id}}" wx:for="{{tips}}" wx:for-item="i" wx:key="{{i.name}}">
-      {{i.name}}
+  </view>  
+
+  <!-- special search view -->
+  <scroll-view scroll-x="{{false}}" scroll-y="{{true}}" class="search_view" wx:if="{{!show_content_state}}">
+    <!-- sport type search -->
+    
+    <view class='main-type-content'>    
+      <view class="type_title">大家都在搜</view>
+      <view class='type_contain_each' wx:for="{{sport_type_array}}" wx:key="index">
+        <view class='display_type' bindtap="clicked_sport_type" id="{{index}}" >{{item}}</view>
+      </view>      
     </view>
-    </scroll-view>
-    <view wx:if="{{isshow}}">
-        <view class="delete-view">
-            <view class="delete-text" style="font-weight: bold;">搜索历史</view>
-            <image bindtap="on_click_delete" class="delete-icon" src="../../../image/Emptied.png"></image>
-        </view>
-        <scroll-view bindtap="on_click_favor_item" class="favor-text" id="{{index}}" wx:for="{{favorinput}}" wx:key="{{item.name}}">
-      {{item.name}}
-    </scroll-view>
+    <view style="width:100%;height:20rpx;background:#eeeeee"></view>
+    <view class="empty_view"  wx:if="{{favorinput.length == 0}}">
+      <view class="empty_view-text">暂无搜索记录</view>
     </view>
+    <!-- history search -->
+    <view class = "history_view" wx:if="{{favorinput.length > 0}}">
+      <view class='delete-view'>
+        <view class='delete-text' style="font-weight: bold;">搜索记录</view>
+        <image class='delete-icon' bindtap="on_click_all_delete"  src='../../../image/Emptied.png'></image>
+      </view> 
+
+      <!-- show each history item -->
+      <view class='delete-each-view' wx:for="{{favorinput}}" wx:key="{{index}}">
+        <view style="width: 600rpx;height: 90rpx;position: fixed;" bindtap="on_click_favor_item" id="{{index}}"></view>
+        <view class='delete-text' style="font-weight: bold;">{{item}}</view>
+        <image class='delete-each-icon' bindtap="on_click_delete" id="{{index}}" src='../../../image/close_btn@2x.png'></image>
+      </view> 
+    </view>    
+    
+  </scroll-view>
+
+<!-- place array -->
+  <scroll-view scroll-x="{{false}}" scroll-y="{{true}}" class="place_content" wx:if="{{show_place_state}}">    
+    <view  wx:for="{{filter_site_array}}" wx:key="index">
+      <template is="template_place" data="{{item, uploadUrl, favorite_pictures, event_type, starparam,rooturl}}" />
+    </view>
+    
+  </scroll-view>
+  <!-- activity array -->
+  <scroll-view scroll-x="{{false}}" scroll-y="{{true}}" class="active_content" wx:if="{{show_activity_state}}">
+    <view  wx:for="{{filter_events}}" wx:item="item" wx:key="index">
+      <template is="act-template" data="{{item, userRole, eventType, eventState,rooturl}}" />
+    </view>    
+  </scroll-view>
+    
+  
 </view>

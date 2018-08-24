@@ -1,10 +1,19 @@
-var t = function(t) {
-    return (t = t.toString())[1] ? t : "0" + t;
-};
+const formatTime = date => {
+  const year = date.getFullYear()
+  const month = date.getMonth() + 1
+  const day = date.getDate()
+  const hour = date.getHours()
+  const minute = date.getMinutes()
+  const second = date.getSeconds()
+
+  return [year, month, day].map(formatNumber).join('/') + ' ' + [hour, minute, second].map(formatNumber).join(':')
+}
+
+const formatNumber = n => {
+  n = n.toString()
+  return n[1] ? n : '0' + n
+}
 
 module.exports = {
-    formatTime: function(e) {
-        var n = e.getFullYear(), r = e.getMonth() + 1, o = e.getDate(), u = e.getHours(), i = e.getMinutes(), a = e.getSeconds();
-        return [ n, r, o ].map(t).join("/") + " " + [ u, i, a ].map(t).join(":");
-    }
-};
+  formatTime: formatTime
+}

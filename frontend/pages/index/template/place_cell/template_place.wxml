@@ -1,0 +1,30 @@
+<template name="template_place">
+    <view class="place">
+        <view bindtap="click_detail_place" id="{{item.boss_id}}">
+            <view class="place-detail">
+                <image class="place-picture" src="{{uploadUrl + item.site_icon}}"></image>
+                <view class="place-role">
+                    <text class="place-name" style="font-weight: bold;">{{item.site_name}}</text>
+                    <image class="place-status" src="{{favorite_pictures[item.isfavourite]}}"></image>
+                </view>
+                <view class="place-content">
+                    <image class="place-type" src="{{rooturl}}image/my_bee_category@2x.png"></image>
+                    <text class="place-type-text">{{event_type[item.site_type]}}</text>
+                    <view class='place-rating'>
+                        <view style="display: inline;" wx:for="{{starparam.stars}}" wx:key="star" wx:for-item="star_place">
+                            <image class="star-image" src="{{star_place-item.point+1<=0?starparam.srcImage_4:star_place-item.point+1>=1?starparam.srcImage_0:star_place-item.point+1<0.5?starparam.srcImage_3:star_place-item.point+1==0.5?starparam.srcImage_2:starparam.srcImage_1}}"></image>
+                        </view>
+                        <text class='rating-star-text'>{{item.point}}分</text>
+                    </view>
+                    <text class="place-fav_count">{{item.favourite_count}}人已关注</text>
+                </view>
+                <view class="place-state">
+                    <image src="{{rooturl}}image/booking_text.png"></image>
+                    <image src="{{rooturl}}image/bee_text.png" wx:if="{{item.event_state}}"></image>
+                    <text class="place-distance">{{item.show_distance_str}}</text>
+                    <image class="place-distance-img" src="{{rooturl}}image/location1@2x.png"></image>
+                </view>
+            </view>
+        </view>
+    </view>
+</template>

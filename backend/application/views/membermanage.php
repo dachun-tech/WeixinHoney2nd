@@ -28,7 +28,7 @@
                         <div class="col-xs-12 col-sm-2 form-inline">
                             <div class="form-group">
                                 <select class="form-control" id="searchState" name="searchState">
-                                    <option value="10"<?php if ($searchState == 10) echo ' selected'; ?>>认证状态</option>
+                                    <option value="10"<?php if ($searchState == 10) echo ' selected'; ?>>会员状态</option>
                                     <option value="1"<?php if ($searchState == 1) echo ' selected'; ?>>使用中</option>
                                     <option value="2"<?php if ($searchState == 2) echo ' selected'; ?>>已过期</option>
                                 </select>
@@ -37,7 +37,7 @@
                         <div class="col-xs-12 col-sm-1 form-inline">
                             <div class="form-group area-search-control-view">
                                 <input type="button" class="btn btn-primary searchList"
-                                        onclick="exportTable()" value="导出">
+                                       onclick="exportTable()" value="导出">
                                 </input>
                             </div>
                         </div>
@@ -59,20 +59,20 @@
                             <th>姓名</th>
                             <th>手机号码</th>
                             <th>金额</th>
-                            <th>订单状态</th>
-                            <th width="">到期时间</th>
+                            <th>会员状态</th>
+                            <th>到期时间</th>
                             <th>提交时间</th>
                         </tr>
                         </thead>
                         <tbody id="content_tbl">
-                       <?php
+                        <?php
                         if (!empty($memberList)) {
                             $i = 0;
                             foreach ($memberList as $record) {
                                 $no = "";
-                                for($index = 0; $index < (10 - strlen($record->no."")); $index++)
-                                    $no = $no."0";
-                                $no = $no.$record->no;
+                                for ($index = 0; $index < (10 - strlen($record->no . "")); $index++)
+                                    $no = $no . "0";
+                                $no = $no . $record->no;
 
 
                                 ?>
@@ -81,11 +81,11 @@
                                     <td><?php echo $record->name; ?></td>
                                     <td><?php echo $record->phone; ?></td>
                                     <td><?php echo $record->cost; ?></td>
-                                    <td><?php echo ($record->state==1)?"使用中":"已过期"; ?></td>
+                                    <td><?php echo ($record->state == 1) ? "使用中" : "已过期"; ?></td>
                                     <td><?php echo $record->expire_time; ?></td>
                                     <td><?php echo $record->submit_time; ?></td>
                                 </tr>
-                               <?php
+                                <?php
                             }
                         }
                         ?>

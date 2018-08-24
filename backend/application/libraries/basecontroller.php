@@ -14,6 +14,13 @@ class basecontroller extends CI_Controller
     protected $name = '';
     protected $roleText = '';
     protected $global = array();
+
+    public function __construct()
+    {
+        parent::__construct();
+        $this->load->model('event_model');
+        $this->isLoggedIn();
+    }
     /**
      * Takes mixed data and optionally a status code, then creates the response
      *
@@ -51,7 +58,7 @@ class basecontroller extends CI_Controller
             $this->global['role_text'] = $this->roleText;
             $this->global['menu_access'] = $this->permission;
             $this->global['news'] = $result;
-            $this->global['eventType'] = array('足球', '篮球', '排球', '羽毛球', '乒乓球', '台球', '网球', '保龄球', '健身馆', '瑜伽', '游泳', '射击射箭', '跆拳道', '休闭桌游', '滑冰', '滑雪', '运动装备', '其他');
+            $this->global['eventType'] = $this->event_model->getEventType();
         }
     }
 

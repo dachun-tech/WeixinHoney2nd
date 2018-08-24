@@ -1,4 +1,4 @@
-var app = getApp()
+const app = getApp()
 
 Page({
   data: {
@@ -152,8 +152,7 @@ Page({
       this.data.isfirstbtn = 1
     }
     if (x == 0 && this.data.event.role != 2) {
-      var that = this;
-
+      var that = this
       if (that.data.pay_type == 1 && that.data.event.cost != 0) {
         console.log(that.data.event.cost)
         var ordercode = that.data.event.cost * 1 * that.data.memcount;
@@ -162,12 +161,6 @@ Page({
         wx.login({
           success: function (res) {
             if (res.code) {
-
-              // wx.showToast({
-              //   title: app.globalData.userInfo.user_id + ',' + wx.getStorageSync('openid'),
-              //   icon: 'none'
-              // });
-
               wx.request({
                 url: app.globalData.mainURL + 'api/pay',
                 data: {
@@ -182,8 +175,6 @@ Page({
                   'content-type': 'application/json'
                 },
                 success: function (res) {
-
-
                   wx.requestPayment({
                     timeStamp: res.data.timeStamp,
                     nonceStr: res.data.nonceStr,

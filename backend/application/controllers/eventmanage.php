@@ -17,14 +17,12 @@ class eventmanage extends basecontroller
     public function __construct()
     {
         parent::__construct();
-        $this->load->model('event_model');
-        $this->isLoggedIn();
     }
 
     /**
      * This function used to load the first screen of the event
      */
-    public function index()
+    public function index($type = 1)
     {
         $sData = $this->session->userdata('event_infos');
         $searchType = 100;
@@ -32,6 +30,8 @@ class eventmanage extends basecontroller
         $searchRole = 10;
         $searchState = 10;
         $searchStatus = null;
+        $searchStart = '';
+        $searchEnd = '';
         $fromTime = '';
         $toTime = '';
         if ($sData) {
@@ -40,25 +40,36 @@ class eventmanage extends basecontroller
             $searchRole = $sData['searchRole'];
             $searchState = $sData['searchState'];
             $searchStatus = $sData['searchStatus'];
+            $searchStart = $sData['searchStart'];
+            $searchEnd = $sData['searchEnd'];
         }
-        $this->eventCollectListing($searchStatus, $searchName, $searchType, $searchRole, $searchState);
+        $this->eventCollectListing($searchStatus, $searchName, $searchType,
+            $searchRole, $searchState, $searchStart, $searchEnd, $type);
     }
 
     /**
      * This function is used to load the event list
      */
-    function eventCollectListing($searchStatus = null, $searchName = '', $searchType = 100, $searchRole = 10, $searchState = 10)
+    function eventCollectListing($searchStatus = null, $searchName = '', $searchType = 100,
+                                 $searchRole = 10, $searchState = 10, $searchStart='', $searchEnd='', $type = 1)
     {
         $this->global['pageTitle'] = "活动管理";
+        if(intval($type)==0){
+            $this->global['pageTitle'] = "赛事管理";
+        }
         if ($searchName == 'ALL') $searchName = '';
-        $count = $this->event_model->eventListingCount($searchStatus, $searchName, $searchType, $searchRole, $searchState);
+        $count = $this->event_model->eventListingCount($searchStatus, $searchName, $searchType,
+            $searchRole, $searchState, $searchStart, $searchEnd, $type);
         $returns = $this->paginationCompress("eventmanage/", $count, 10);
-        $data['eventList'] = $this->event_model->eventListing($searchStatus, $searchName, $searchType, $searchRole, $searchState, $returns['page'], $returns['segment']);
+        $data['eventList'] = $this->event_model->eventListing($searchStatus, $searchName, $searchType,
+            $searchRole, $searchState, $searchStart, $searchEnd, $returns['page'], $returns['segment'], $type);
         $this->global['searchStatus'] = $searchStatus;
         $this->global['searchText'] = $searchName;
         $this->global['searchRole'] = $searchRole;
         $this->global['searchState'] = $searchState;
         $this->global['searchType'] = $searchType;
+        $this->global['searchStart'] = $searchStart;
+        $this->global['searchEnd'] = $searchEnd;
         $this->global['pageType'] = 'event';
         $this->loadViews("eventmanage", $this->global, $data, NULL);
     }
@@ -66,21 +77,25 @@ class eventmanage extends basecontroller
     /**
      * This function is used to load the event list by search
      */
-    function eventListingByFilter()
+    function eventListingByFilter($type=1)
     {
         $searchStatus = $this->input->post('searchStatus');
         $searchName = $this->input->post('searchName');
         $searchRole = $this->input->post('searchRole');
         $searchState = $this->input->post('searchState');
         $searchType = $this->input->post('searchType');
+        $searchStart = $this->input->post('searchStart');
+        $searchEnd = $this->input->post('searchEnd');
         $this->session->set_userdata('event_infos', array(
-        'searchType'=>$searchType,
-        'searchName'=>$searchName,
-        'searchRole'=>$searchRole,
-        'searchState'=>$searchState,
-        'searchStatus'=>$searchStatus,
+            'searchType' => $searchType,
+            'searchName' => $searchName,
+            'searchRole' => $searchRole,
+            'searchState' => $searchState,
+            'searchStatus' => $searchStatus,
+            'searchStart' => $searchStart,
+            'searchEnd' => $searchEnd,
         ));
-        $this->eventCollectListing($searchStatus, $searchName, $searchType, $searchRole, $searchState);
+        $this->eventCollectListing($searchStatus, $searchName, $searchType, $searchRole, $searchState, $searchStart, $searchEnd, $type);
     }
 
     /**
@@ -98,7 +113,8 @@ class eventmanage extends basecontroller
             echo(json_encode(array('status' => FALSE)));
         }
     }
-/**
+
+    /**
      * This function is used to show the detail of event with eventId
      */
     function showEventDetail($eventId)
@@ -109,18 +125,18 @@ class eventmanage extends basecontroller
         $userId = $this->event_model->getOrganizerId($eventId);
         $this->load->model('user_model');
         $userRole = $this->user_model->getRoleById($userId[0]->organizer_id);
-        if($userRole->role == 2){
+        if ($userRole->role == 2) {
             $this->load->model('member_state_model');
             $data['member_state'] = $this->member_state_model->getStateById($userId[0]->organizer_id);
         }
         $this->load->model('booking_model');
         $data['booking'] = $this->booking_model->getBookingDetailByEvent($eventId);
-        $favourite = $this->db->query("select count(no) as favourite_amount from favourite_event where event_id=".$eventId)->result();
-        $data['favourite_amount'] =  $favourite[0]->favourite_amount;
+        $favourite = $this->db->query("select count(no) as favourite_amount from favourite_event where event_id=" . $eventId)->result();
+        $data['favourite_amount'] = $favourite[0]->favourite_amount;
         $this->global['pageTitle'] = '活动详情';
         $this->loadViews("eventdetail", $this->global, $data, NULL);
     }
-    
+
     function pageNotFound()
     {
         $this->global['pageTitle'] = '蜂体 : 404 - Page Not Found';

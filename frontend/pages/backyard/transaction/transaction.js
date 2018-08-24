@@ -1,44 +1,92 @@
-var a = getApp();
-
+// pages/backyard/transaction/transaction.js
+var app = getApp()
 Page({
-    data: {
-        array: []
-    },
-    onLoad: function(t) {
-        var n = this;
-        wx.request({
-            url: a.globalData.mainURL + "api/getExchange",
-            data: {
-                user_id: a.globalData.userInfo.user_id
-            },
-            method: "POST",
-            header: {
-                "content-type": "application/json"
-            },
-            success: function(t) {
-                if (t.data.status) {
-                    for (var o = t.data.result, e = 0; e < o.length; e++) o[e].idshow = "0000000000", 
-                    o[e].idshow = o[e].idshow.slice(0, 10 - o[e].no.length) + o[e].no;
-                    n.setData({
-                        array: o,
-                        upload_url: a.globalData.uploadURL,
-                        productState: a.globalData.productState
-                    });
-                }
-            },
-            fail: function() {}
-        });
-    },
-    onDetailState: function(a) {
-        wx.navigateTo({
-            url: "../transaction_detail/transaction_detail?id=" + a.currentTarget.id
-        });
-    },
-    onReady: function() {},
-    onShow: function() {},
-    onHide: function() {},
-    onUnload: function() {},
-    onPullDownRefresh: function() {},
-    onReachBottom: function() {},
-    onShareAppMessage: function() {}
-});
+
+  /**
+   * 页面的初始数据
+   */
+  data: {
+    array: []
+  },
+
+  /**
+   * 生命周期函数--监听页面加载
+   */
+  onLoad: function (options) {
+    var that = this
+    wx.request({
+      url: app.globalData.mainURL + 'api/getExchange',
+      data: {
+        user_id: app.globalData.userInfo.user_id
+      },
+      method: 'POST',
+      header: {
+        'content-type': 'application/json'
+      },
+      success: function (res) {
+        if (!res.data.status) return;
+        var shoparray = res.data.result
+        for (var index = 0; index < shoparray.length; index++) {
+          shoparray[index].idshow = '0000000000'
+          shoparray[index].idshow = shoparray[index].idshow.slice(0, 10 - shoparray[index].no.length) + shoparray[index].no
+        }
+        that.setData({ array: shoparray, upload_url: app.globalData.uploadURL, productState: app.globalData.productState})
+      },
+      fail: function () {
+      }
+    })
+  },
+  onDetailState:function(query)
+  {
+    wx.navigateTo({
+      url: '../transaction_detail/transaction_detail?id=' + query.currentTarget.id,
+    })
+  },
+  /**
+   * 生命周期函数--监听页面初次渲染完成
+   */
+  onReady: function () {
+  
+  },
+
+  /**
+   * 生命周期函数--监听页面显示
+   */
+  onShow: function () {
+  },
+
+  /**
+   * 生命周期函数--监听页面隐藏
+   */
+  onHide: function () {
+  
+  },
+
+  /**
+   * 生命周期函数--监听页面卸载
+   */
+  onUnload: function () {
+  
+  },
+
+  /**
+   * 页面相关事件处理函数--监听用户下拉动作
+   */
+  onPullDownRefresh: function () {
+  
+  },
+
+  /**
+   * 页面上拉触底事件的处理函数
+   */
+  onReachBottom: function () {
+  
+  },
+
+  /**
+   * 用户点击右上角分享
+   */
+  onShareAppMessage: function () {
+  
+  }
+})

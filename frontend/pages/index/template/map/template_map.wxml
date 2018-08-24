@@ -1,6 +1,6 @@
  <template name="map-template">
   <view class="map_container">
-        <map bindmarkertap="on_Click_maker" class="bee-map" id="mymap" latitude="{{current_latitude}}" longitude="{{current_longitude}}" markers="{{markers}}" scale="13" showLocation="false">
+        <map bindmarkertap="on_Click_maker" class="bee-map" id="mymap" latitude="{{current_latitude}}" longitude="{{current_longitude}}" markers="{{markers}}" circles="{{circles}}" scale="13" showLocation="false">
             
             <cover-image bindtap="on_click_select_menu" class="cur-sel-kind" src="{{currentkind}}" wx:if="{{!select_kind}}"></cover-image>
         </map>

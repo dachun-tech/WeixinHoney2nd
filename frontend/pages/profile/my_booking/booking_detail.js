@@ -1,129 +1,175 @@
-var a = getApp();
+// pages/booking/bookingCancel.js
+const app = getApp();
 
 Page({
-    data: {
-        img_black_start_src: "../../../image/star_n@2x.png",
-        img_yellow_start_src: "../../../image/star_s@2x.png",
-        count_yellowStar: 3,
-        booking: [],
-        eventType: [],
-        userRole: [],
-        bookingState: [],
-        register_num: 0,
-        bookingcanceltime: 1
-    },
-    onLoad: function(e) {
-        this.setData({
-            eventType: a.globalData.eventType,
-            userRole: a.globalData.userRole,
-            bookingState: a.globalData.eventState
-        });
-        var t = this, o = e.id;
-        wx.request({
-            url: a.globalData.mainURL + "api/getBookingDetail",
-            method: "POST",
-            header: {
-                "content-type": "application/json"
-            },
-            data: {
-                booking_id: o,
-                user_id: a.globalData.userInfo.user_id
-            },
-            success: function(a) {
-                console.log(a);
-                var e = a.data.result[0];
-                if (null != e) {
-                    e.idshow = "0000000000", e.idshow = e.idshow.slice(0, 10 - e.id.length) + e.id;
-                    var o = e.start_time.split(":"), n = a.data.register_num[0].register_num;
-                    null == n && (n = 0), e.start_time = o[0] + ":" + o[1], o = e.end_time.split(":"), 
-                    e.end_time = o[0] + ":" + o[1];
-                    var i = Date.now(), s = e.start_time;
-                    if (Date.parse(s.replace(/-/g, "/")) - i < 216e5 && t.setData({
-                        bookingcanceltime: 0
-                    }), e.name.length > 12) {
-                        var l = e.name;
-                        l = l.slice(0, 12) + "..", e.name = l;
-                    }
-                    t.setData({
-                        booking: e,
-                        rating: a.data.rating,
-                        register_num: n
-                    }), console.log(e.cost * e.reg_num);
-                }
-            }
-        });
-    },
-    phone_call: function() {
-        var a = this;
-        wx.makePhoneCall({
-            phoneNumber: a.data.booking.agent_phone,
-            complete: function() {}
-        });
-    },
-    final_cancel: function() {
-        var e = this;
-        wx.showModal({
-            content: "是否取消蜂约？",
-            success: function(t) {
-                if (t.confirm) if ("1" == e.data.booking.pay_type) {
-                    var o = e.data.booking.cost * e.data.booking.reg_num, n = a.globalData.mch_id + Date.now();
-                    wx.login({
-                        success: function(t) {
-                            t.code && wx.request({
-                                url: a.globalData.mainURL + "api/refund",
-                                data: {
-                                    id: wx.getStorageSync("openid"),
-                                    fee: o,
-                                    user_id: a.globalData.userInfo.user_id,
-                                    out_trade_no: e.data.booking.out_trade_no,
-                                    out_refund_no: n
-                                },
-                                method: "POST",
-                                header: {
-                                    "content-type": "application/json"
-                                },
-                                success: function(t) {
-                                    wx.request({
-                                        url: a.globalData.mainURL + "api/cancelBooking",
-                                        method: "POST",
-                                        header: {
-                                            "content-type": "application/json"
-                                        },
-                                        data: {
-                                            booking_id: e.data.booking.id,
-                                            out_refund_no: n
-                                        },
-                                        success: function(a) {
-                                            1 == a.data.status && wx.navigateTo({
-                                                url: "./booking"
-                                            });
-                                        }
-                                    });
-                                }
-                            });
-                        }
-                    });
-                } else wx.request({
-                    url: a.globalData.mainURL + "api/cancelBooking",
-                    method: "POST",
-                    header: {
-                        "content-type": "application/json"
-                    },
+
+  /**
+   * 页面的初始数据
+   */
+  data: {
+    img_black_start_src: '../../../image/star_n@2x.png',
+    img_yellow_start_src: '../../../image/star_s@2x.png',
+    count_yellowStar: 3,
+    booking: [],
+    eventType: [],
+    userRole: [],
+    bookingState: [],
+    register_num: 0,
+    bookingcanceltime: 1,
+  },
+
+  /**
+   * 生命周期函数--监听页面加载
+   */
+  onLoad: function (query) {
+    this.setData({
+      eventType: app.globalData.eventType,
+      userRole: app.globalData.userRole,
+      bookingState: app.globalData.eventState
+    });
+    var that = this;
+    var id = query.id;
+
+    wx.request({
+      url: app.globalData.mainURL + 'api/getBookingDetail',
+      method: 'POST',
+      header: {
+        'content-type': 'application/json'
+      },
+      data: {
+        'booking_id': id,
+        'user_id': app.globalData.userInfo.user_id
+      },
+      success: function (res) {
+        console.log(res)
+        var book = res.data.result[0];
+        if (book != null) {
+          book.idshow = '0000000000'
+          book.idshow = book.idshow.slice(0, 10 - book.id.length) + book.id
+          var time = book.start_time.split(':');
+          var register = res.data.register_num[0].register_num
+          if (register == null) register = 0;
+          book.start_time = time[0] + ':' + time[1];
+          time = book.end_time.split(':')
+          book.end_time = time[0] + ':'+ time[1]
+          
+          var now = Date.now()
+          var replacetdate = book.start_time
+          var tempdatenow
+          tempdatenow = Date.parse(replacetdate.replace(/-/g, '/'))
+          if ((tempdatenow - now) < 21600000) {
+            that.setData({ bookingcanceltime : 0})
+          }
+          
+          if (book.name.length > 12) {
+            var name = book.name
+            name = name.slice(0, 12) + '..'
+            book.name = name
+          }
+          that.setData({
+            booking: book,
+            rating: res.data.rating,
+            register_num: register
+          })
+          console.log(book.cost * book.reg_num)
+        }
+      }
+    })
+  },
+
+  phone_call: function () {
+    var that = this
+    wx.makePhoneCall({
+      phoneNumber: that.data.booking.agent_phone,
+      complete: function () {
+        return
+      }
+    })
+  },
+  final_cancel: function () {
+    var that = this
+    wx.showModal({
+      content: '是否取消蜂约？',
+      success: function (res) {
+        if (res.confirm) {
+          if (that.data.booking.pay_type == "1") {
+            var ordercode = that.data.booking.cost * that.data.booking.reg_num;
+            var out_refund_no = app.globalData.mch_id + Date.now()
+            wx.login({
+              success: function (res) {
+                if (res.code) {
+                  wx.request({
+                    url: app.globalData.mainURL + 'api/refund',
                     data: {
-                        booking_id: e.data.booking.id
+                      id: wx.getStorageSync('openid'),//要去换取openid的登录凭证
+                      fee: ordercode,
+                      user_id: app.globalData.userInfo.user_id,
+                      out_trade_no: that.data.booking.out_trade_no,
+                      out_refund_no: out_refund_no
                     },
-                    success: function(a) {
-                        wx.navigateTo({
-                            url: "./booking"
-                        });
+                    method: 'POST',
+                    header:
+                    {
+                      'content-type': 'application/json'
+                    },
+                    success: function (res) {
+
+                      wx.request({
+                        url: app.globalData.mainURL + 'api/cancelBooking',
+                        method: 'POST',
+                        header:
+                        {
+                          'content-type': 'application/json'
+                        },
+                        data: {
+                          booking_id: that.data.booking.id,
+                          out_refund_no: out_refund_no
+                        },
+                        success: function (res) {
+
+                          if (res.data.status == true) {
+                            wx.navigateTo({
+                              url: './booking',
+                            })
+                          }
+                        }
+                      })
                     }
-                }); else t.cancel;
-            }
-        });
-    },
-    btn_write_comment: function(a) {
-        wx.navigateTo({
-            url: "../../other/evaluation/evaluation?id=" + a.currentTarget.id
-        });
-    }
-});
+                  })
+                } else {
+
+                }
+              }
+            });
+          }
+          else {
+            wx.request({
+              url: app.globalData.mainURL + 'api/cancelBooking',
+              method: 'POST',
+              header:
+              {
+                'content-type': 'application/json'
+              },
+              data: {
+                booking_id: that.data.booking.id,
+              },
+              success: function (res) {
+
+                wx.navigateTo({
+                  url: './booking',
+                })
+              }
+            })
+          }
+        } else if (res.cancel) {
+        }
+      }
+    })
+  },
+  //called when user wants to write comment
+  btn_write_comment: function (event) {
+    wx.navigateTo({
+      url: '../../other/evaluation/evaluation?id=' + event.currentTarget.id,
+    })
+  }
+})

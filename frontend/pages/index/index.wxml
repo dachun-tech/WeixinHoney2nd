@@ -1,7 +1,7 @@
 <import src="template/map/template_map.wxml"></import>
 <import src="template/table_view/template_table.wxml"></import>
 <view class="container">
-  <view class='top_view'>
+  <view class='index_top_view'>
     <cover-image bindtap="on_click_news" class="news-image" src="../../image/inf@2x.png"></cover-image>
     <cover-view class="news-new-count" wx:if="{{newscount!=0}}">{{newscount}}</cover-view>
     <cover-view bindtap="on_click_search" class="search-box">
@@ -10,7 +10,7 @@
     <cover-image class="search-icon" src="../../image/search@2x.png"></cover-image>
     <cover-image bindtap="on_click_viewstyle" class="style_image" src="{{select_able_type}}"></cover-image>
   </view>
-  <template is="table-template" data="{{item:item,show_array:show_array,current_latitude:current_latitude,current_longitude:current_longitude,markers:markers,newscount:newscount,currentkind:currentkind,select_kind:select_kind,currentid:currentid}}" wx:if="{{!view_type}}"></template>
-  <template is="map-template" data="{{item:item,show_array:show_array,current_latitude:current_latitude,current_longitude:current_longitude,markers:markers,newscount:newscount,currentkind:currentkind,select_kind:select_kind,currentid:currentid}}" wx:if="{{view_type}}"></template>
+  <template is="table-template" data="{{filter_places,uploadUrl,event_type,favorite_pictures,starparam,select_menu_state,select_order_menu_state,select_filter_menu_state,select_style_menu_state,color_array,menu_btn_array,menu_order_array,menu_filter_array,menu_order_index,menu_filter_index,menu_style_index,rooturl}}" wx:if="{{!view_type}}"></template>
+  <template is="map-template" data="{{show_array:show_array,circles:circles,current_latitude:current_latitude,current_longitude:current_longitude,markers:markers,newscount:newscount,currentkind:currentkind,select_kind:select_kind,currentid:currentid}}" wx:if="{{view_type}}"></template>
 <!--<button class="btn-user-info" open-type="getUserInfo" lang="zh_CN" bindgetuserinfo="getUserinfo">获取用户信息</button>-->
 </view>

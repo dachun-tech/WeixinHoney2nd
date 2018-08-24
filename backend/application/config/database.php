@@ -48,10 +48,10 @@
 $active_group = 'default';
 $active_record = TRUE;
 
-$db['default']['hostname'] = 'localhost';
-$db['default']['username'] = 'root';
-$db['default']['password'] = 'android';
-$db['default']['database'] = 'fengti';
+$db['default']['hostname'] = 'www.fengteam.cn';
+$db['default']['username'] = 'admin';
+$db['default']['password'] = 'password';
+$db['default']['database'] = 'fengti_test';
 $db['default']['dbdriver'] = 'mysqli';
 $db['default']['dbprefix'] = '';
 $db['default']['pconnect'] = TRUE;

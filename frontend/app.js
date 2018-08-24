@@ -1,272 +1,458 @@
-var a = require("./utils/RdWXBizDataCrypt.js");
+//app.js
+var WXBizDataCrypt = require('./utils/RdWXBizDataCrypt.js');
 
 App({
-    globalData: {
-        appid: "wxea381fb0ca7c2a24",
-        secret: "fengtiWeixin17642518820android12",
-        mch_id: "1500220062",
-        userInfo: {
-            nickname: "WeiXin",
-            avatar: "",
-            user_id: 0,
-            name: "",
-            phone: "",
-            honey: 0,
-            state: 0,
-            forbidden: 0,
-            isVIP: 0,
-            eventData: {
-                ground_image: "",
-                act_type: "",
-                act_status: "",
-                favourite: 0,
-                act_name: "",
-                member_count: 0,
-                cost: 0,
-                act_date: " ",
-                address: "",
-                ground_name: "",
-                ground_owner: "",
-                max_member: 0,
-                act_intro: ""
-            }
-        },
-        address: [],
-        productState: [ "待发货", "待收货", "交易成功" ],
-        eventState: [ "进行中", "已完成", "已取消" ],
-        userRole: [ "无", "场馆主", "个人" ],
-        eventType: [ "足球", "篮球", "排球", "羽毛球", "乒乓球", "台球", "网球", "保龄球", "健身馆", "瑜伽", "游泳", "射击射箭", "跆拳道", "休闲桌游", "滑冰", "滑雪", "运动装备", "其他" ],
-        memberState: [ "使用中", "已过期" ],
-        exchangeState: [ "待发货", "待收货", "交易成功" ],
-        bindingState: [ "提现中", "提现成功", "提现失败" ],
-        //mainURL: "http://192.168.2.6/backend/",
-        //smsURL: "http://192.168.2.6/sms/SendTemplateSMS.php",
-        uploadURL: "https://www.fengteam.cn/backend_test/uploads/",
-        mainURL: "https://www.fengteam.cn/backend_test/",
-        smsURL: "https://www.fengteam.cn/sms/SendTemplateSMS.php",
-        // uploadURL: "https://www.fengteam.cn/backend/uploads/",
-        honey_info: {
-            total_honey: 0,
-            honeybox_array: []
-        },
-        daily_honey: [ 0, 0 ],
-        todayfirst: 0,
-        openid: "",
-        session_key: "",
-        user_step: 0,
-        last_step: 0,
-        isactivetime: 1,
-        rule: "",
-        step: 0,
-        laststep: 0,
-        see_news: 0,
-        have_stadium: 0,
-        issearch: 0,
-        searchlat: 0,
-        searchlong: 0,
-        ischooseimage: 0,
-        iscreatepage: 0,
-        nickname_buf: "",
-        map_idx: 0,
-        file_paths: []
+  globalData: {
+    appid: 'wxea381fb0ca7c2a24', //appid needs to provide it yourself, here appid I randomly  
+    secret: 'fengtiWeixin17642518820android12', //secret is required to provide, where the secret I wrote 
+    mch_id: '1500220062',
+    userInfo: {
+      'nickname': 'WeiXin',
+      'avatar': '',
+      'user_id': 0,
+      'name': '',
+      'phone': '',
+      'honey': 0,
+      'state': 0,
+      'forbidden': 0,
+      'isVIP': 0,
+      eventData: { "ground_image": "", "act_type": "", "act_status": "", "favourite": 0, "act_name": "", "member_count": 0, "cost": 0, "act_date": " ", "address": "", "ground_name": "", "ground_owner": "", "max_member": 0, "act_intro": "" },
     },
-    onLaunch: function() {
-        wx.setTabBarStyle({
-            color: "#888888",
-            selectedColor: "#472E00",
-            backgroundColor: "#ffffff"
-        }), wx.setNavigationBarColor({
-            frontColor: "#000000",
-            backgroundColor: "#ffffff"
-        }), wx.showLoading({
-            title: "加载中"
-        }), setTimeout(function() {
-            wx.hideLoading();
-        }, 3e3);
-        var e = this;
-        e.globalData.todayfirst = new Date().getDate(), wx.request({
-            url: e.globalData.mainURL + "api/getRules",
-            method: "POST",
-            header: {
-                "content-type": "application/json"
-            },
-            success: function(a) {
-                e.globalData.rule = a.data.rule;
-            }
-        }), wx.login({
-            success: function(t) {
-                e.globalData.user_code = t.code, wx.request({
-                    url: e.globalData.mainURL + "api/getopenid",
-                    data: {
-                        code: e.globalData.user_code
-                    },
-                    method: "POST",
-                    header: {
-                        "content-type": "application/json"
-                    },
-                    success: function(t) {
-                        var o = {};
-                        wx.setStorageSync('openid', t.data.openid);
-                        o.openid = t.data.openid, console.log(o.openid), o.expires_in = Date.now() + t.data.expires_in, 
-                        e.globalData.openid = t.data.openid, e.globalData.session_key = t.data.session_key, 
-                        wx.getSetting({
-                            success: function(t) {
-                                1 != t.authSetting["scope.werun"] && wx.authorize({
-                                    scope: "scope.werun"
-                                }), wx.getWeRunData({
-                                    success: function(t) {
-                                        var o = t.encryptedData, n = t.iv, s = new a(e.globalData.appid, e.globalData.session_key).decryptData(o, n);
-                                        e.globalData.user_step = 1 * s.stepInfoList.pop().step, e.globalData.last_step = 1 * s.stepInfoList.pop().step;
-                                    }
-                                });
-                            }
-                        }), wx.getUserInfo({
-                            success: function(a) {
-                                var t = e.globalData.userInfo;
-                                t.nickname = a.userInfo.nickName, e.globalData.nickname = t.nickname, t.avatar = a.userInfo.avatarUrl, 
-                                wx.request({
-                                    url: e.globalData.mainURL + "api/getUserStateByOpenId",
-                                    data: {
-                                        open_id: o.openid
-                                    },
-                                    method: "POST",
-                                    header: {
-                                        "content-type": "application/json"
-                                    },
-                                    success: function(a) {
-                                        if (0 == a.data.status) {
-                                            var t = new Date();
-                                            e.globalData.todayfirst = t.getDate(), e.globalData.todayselected = [], e.globalData.honey_info = {
-                                                total_honey: 0,
-                                                honeybox_array: []
-                                            }, e.globalData.daily_honey = [ 0, 0 ], e.globalData.favorinputtext = [], wx.setStorageSync("have_stadium", 0), 
-                                            wx.setStorageSync("isfirstcreate", 1), setTimeout(function() {
-                                                e.onLaunch();
-                                            }, 2e3), wx.request({
-                                                method: "POST",
-                                                header: {
-                                                    "content-type": "application/json"
-                                                },
-                                                url: e.globalData.mainURL + "api/addNewUser",
-                                                data: {
-                                                    nickname: e.globalData.userInfo.nickname,
-                                                    avatar: e.globalData.userInfo.avatar,
-                                                    open_id: o.openid
-                                                },
-                                                success: function(a) {}
-                                            });
-                                        } else {
-                                            console.log(a.data.result[0].daily_honey), "" != a.data.result[0].daily_honey ? e.globalData.daily_honey = JSON.parse(a.data.result[0].daily_honey) : e.globalData.daily_honey = [ 0, 0 ], 
-                                            e.globalData.todayfirst = a.data.result[0].todayfirst, e.globalData.have_stadium = wx.getStorageSync("have_stadium"), 
-                                            void 0 == e.globalData.honey_info.honeybox_array && (e.globalData.honey_info = {
-                                                total_honey: 0,
-                                                honeybox_array: []
-                                            });
-                                            var n = new Date();
-                                            a.data.result[0].todayfirst, n.getDate(), e.globalData.honey_info.total_honey = 1 * a.data.result[0].honey;
-                                            var s = e.globalData.userInfo;
-                                            1 == a.data.result[0].forbidden && wx.showModal({
-                                                title: "您的账号已被禁用",
-                                                showCancel: !1,
-                                                complete: function() {
-                                                    wx.navigateBackMiniProgram({});
-                                                }
-                                            }), s.user_id = a.data.result[0].no, s.phone = a.data.result[0].phone, s.state = a.data.result[0].state, 
-                                            s.forbidden = a.data.result[0].forbidden, s.honey = a.data.result[0].honey, s.role = a.data.result[0].role, 
-                                            1 == s.role && wx.request({
-                                                url: e.globalData.mainURL + "api/haveStadium",
-                                                method: "POST",
-                                                header: {
-                                                    "content-type": "application/json"
-                                                },
-                                                data: {
-                                                    user_id: s.user_id
-                                                },
-                                                success: function(a) {
-                                                    "" != a.data.result[0].site_introduction && wx.setStorageSync("have_stadium", 1);
-                                                }
-                                            }), 1 * s.state != 2 && (s.name = e.globalData.userInfo.nickname), "" == s.avatar && (s.avatar = "/image/user-unlogin.png"), 
-                                            null == a.data.member[0].state && (s.isVIP = 0), 1 == a.data.member[0].state && (s.isVIP = 1), 
-                                            e.globalData.userInfo = s;
-                                            var i = new Date();
-                                            i.getHours() >= 0 && i.getHours() < 7 ? e.globalData.isactivetime = 0 : e.globalData.isactivetime = 1;
-                                        }
-                                        setInterval(e.checkDate, 1e3);
-                                    },
-                                    fail: function() {}
-                                });
-                            }
-                        });
-                    }
-                });
-            }
-        }), this.globalData.userInfo.nickname = this.globalData.nickname;
+    address: [],
+    productState: ["待发货", "待收货", "交易成功"],
+    eventState: ["进行中", "已完成", "已取消"],
+    userRole: ['无', '场馆主', '个人'],
+    eventType: ['足球', 
+    '篮球', 
+    '台球', 
+    '排球', 
+    '网球', 
+    '壁球', 
+    '瑜伽', 
+    '舞蹈', 
+    '电竞', 
+    '爬山', 
+    '轮滑', 
+    '武术', 
+    '旅游', 
+    '滑冰', 
+    '滑雪', 
+    '拳击', 
+    '跑步', 
+    '棋牌', 
+    '户外', 
+    '健身', 
+    '游泳', 
+    '桌游', 
+    '骑行', 
+    '羽毛球', 
+    '乒乓球', 
+    '保龄球', 
+    '跆拳道', 
+    '高尔夫', 
+    '运动装备', 
+    '射击射箭', 
+    '轰趴聚会', 
+    '综合场馆', 
+    '其他'],
+    memberState: ['使用中', '已过期'],
+    exchangeState: ['待发货', '待收货', '交易成功'],
+    bindingState: ['提现中', '提现成功', '提现失败'],
+    mainURL: 'https://www.fengteam.cn/backend_test/',
+    smsURL: 'https://www.fengteam.cn/sms/SendTemplateSMS.php',
+    uploadURL: 'https://www.fengteam.cn/backend_test/uploads/',
+    // mainURL: 'https://127.0.0.1/honey/',
+    // smsURL: 'https://www.fengteam.cn/sms/SendTemplateSMS.php',
+    // uploadURL: 'https://127.0.0.1/honey/uploads/',
+    honey_info: {
+      total_honey: 0,
+      honeybox_array: [],
     },
-    showHint: function() {
-        wx.showModal({
-            title: "提示",
-            content: "开启微信计步权限，有机会获取蜂蜜哦",
-            success: function(a) {
-                a.confirm && wx.openSetting({});
-            }
-        });
-    },
-    checkDate: function() {
-        var e = this, t = new Date(), o = e.globalData.todayfirst;
-        if (t.getHours() < 7 && (this.globalData.isactivetime = 0), t.getHours() >= 7) {
-            this.globalData.isactivetime = 1, o != t.getDate() && "" != o && (console.log(o), 
-            e.globalData.todayfirst = t.getDate(), e.globalData.todayselected = [], wx.login({
-                success: function(t) {
-                    wx.request({
-                        url: e.globalData.mainURL + "api/getopenid",
-                        data: {
-                            code: t.code
-                        },
-                        method: "POST",
-                        header: {
-                            "content-type": "application/json"
-                        },
-                        success: function(t) {
-                            var o = {};
-                            o.openid = t.data.openid, o.expires_in = Date.now() + t.data.expires_in, e.globalData.session_key = t.data.session_key, 
-                            wx.getSetting({
-                                success: function(t) {
-                                    1 != t.authSetting["scope.werun"] && wx.authorize({
-                                        scope: "scope.werun"
-                                    }), wx.getWeRunData({
-                                        success: function(t) {
-                                            var o = t.encryptedData, n = t.iv, s = new a(e.globalData.appid, e.globalData.session_key).decryptData(o, n);
-                                            e.globalData.step = 1 * s.stepInfoList.pop().step, e.globalData.laststep = 1 * s.stepInfoList.pop().step, 
-                                            console.log(e.globalData.laststep);
-                                            new Date();
-                                            var i = new Date();
-                                            e.globalData.daily_honey = [ 0, 0 ];
-                                            var l = 1 * e.globalData.laststep * (1 * e.globalData.rule[3].value);
-                                            l = 1 * Math.floor(l), wx.request({
-                                                url: e.globalData.mainURL + "api/setTodayFirst",
-                                                method: "POST",
-                                                header: {
-                                                    "content-type": "application/json"
-                                                },
-                                                data: {
-                                                    todayfirst: i.getDate(),
-                                                    user_id: e.globalData.userInfo.user_id,
-                                                    honey: l
-                                                },
-                                                success: function() {
-                                                    console.log("success");
-                                                }
-                                            });
-                                        },
-                                        fail: function(a) {}
-                                    });
-                                }
-                            });
-                        }
-                    });
+    template: [],
+    daily_honey: [0, 0],
+    isactivetime: 1,
+    rule: '',
+    step: 0,
+    laststep: 0,
+    see_news: 0,
+    have_stadium: 0,
+    issearch: 0,
+    searchlat: 0,
+    searchlong: 0,
+    ischooseimage: 0,
+    iscreatepage: 0,
+    nickname_buf: ''
+  },
+  onLaunch: function () {
+    wx.setTabBarStyle({
+      color: '#888888',
+      selectedColor: '#472E00',
+      backgroundColor: '#ffffff'
+    })
+    wx.setNavigationBarColor({
+      frontColor: '#000000',
+      backgroundColor: '#ffffff',
+    })
+    wx.showLoading({
+      title: '加载中',
+    })
+    setTimeout(function () {
+      wx.hideLoading()
+    }, 3000)
+    var _this = this
+    wx.request({
+      url: _this.globalData.mainURL + 'api/getRules',
+      method: 'POST',
+      header: {
+        'content-type': 'application/json'
+      },
+      success: function (res) {
+        _this.globalData.rule = res.data.rule
+      },
+    })
+    wx.login({
+      success: function (res) {
+        _this.globalData.user_code = res.code;
+        wx.request({
+          url: _this.globalData.mainURL + "api/getopenid",
+          data: { code: _this.globalData.user_code },
+          method: 'POST', // OPTIONS, GET, HEAD, POST, PUT, DELETE, TRACE, CONNECT    
+          header: { 'content-type': 'application/json' }, // 设置请求的 header    
+          success: function (res) {
+            var obj = {};
+            obj.openid = res.data.openid;
+            obj.expires_in = Date.now() + res.data.expires_in;
+            wx.setStorageSync('openid', res.data.openid);//存储openid 
+            wx.setStorageSync('session_key', res.data.session_key)
+            wx.getSetting({
+              success: function (res) {
+                if (res.authSetting['scope.werun'] != true) {
+                  wx.authorize({
+                    scope: 'scope.werun',
+                  })
                 }
-            }));
+                wx.getWeRunData({
+                  success: function (res) {
+                    var encryptedData = res.encryptedData;
+                    console.log("getWerunData", encryptedData);
+                    var iv = res.iv;
+                    var pc = new WXBizDataCrypt(_this.globalData.appid, wx.getStorageSync('session_key'));
+                    var data = pc.decryptData(encryptedData, iv)
+                    wx.setStorageSync('user_step', data.stepInfoList.pop().step * 1)
+                    wx.setStorageSync('last_step', _this.globalData.laststep = data.stepInfoList.pop().step * 1)
+                    console.log('User step is ', wx.getStorageSync('user_step'));
+                  }
+                })
+              }
+            })
+            console.log("getUserInfo Started")
+            wx.getUserInfo({
+              success: function (res) {
+                var info = _this.globalData.userInfo;
+                info.nickname = res.userInfo.nickName;
+                console.log(info.nickname)
+                _this.globalData.nickname = info.nickname
+                info.avatar = res.userInfo.avatarUrl;
+                console.log("GetUserStateByOpenId started")
+                wx.request({
+                  url: _this.globalData.mainURL + 'api/getUserStateByOpenId',
+                  data: {
+                    open_id: obj.openid
+                  },
+                  method: 'POST',
+                  header: {
+                    'content-type': 'application/json'
+                  },
+                  success: function (res) {                    
+                    if (res.data.status == false) {
+                      wx.setStorageSync("todayfirst", 0)
+                      wx.setStorageSync("todayselected", [])
+                      wx.setStorageSync("honey_info", {
+                        total_honey: 0,
+                        honeybox_array: []
+                      })
+                      wx.setStorageSync("daily_honey", [0, 0])
+                      wx.setStorageSync("favorinputtext", [])
+                      wx.setStorageSync("have_stadium", 0)
+                      wx.setStorageSync("isfirstcreate", 1)
+                      setTimeout(function () {
+                        _this.onLaunch();
+                      }, 2000);
+                      wx.request({
+                        method: 'POST',
+                        header: {
+                          'content-type': 'application/json'
+                        },
+                        url: _this.globalData.mainURL + 'api/addNewUser',
+                        data: {
+                          nickname: _this.globalData.userInfo.nickname,
+                          avatar: _this.globalData.userInfo.avatar,
+                          open_id: obj.openid
+                          // 'user_code': _this.globalData.user_code
+                          // 'session_key': _this.globalData.session_key
+                        },
+                        success: function (ret) {
+                          // if (ret.data.status) {
+                          //   // var info = ret.data.result;
+                          //   // //_this.globalData.userInfo;
+
+                          //   // _this.globalData.userInfo.name = _this.globalData.userInfo.nickname
+                          //   // _this.globalData.userInfo.user_id = info.user_id;
+                          // }
+                          console.log(ret)
+                        }
+                      })
+                    }
+                    else {
+                      _this.globalData.honey_info = wx.getStorageSync('honey_info')
+                      wx.setStorageSync("daily_honey", JSON.parse(res.data.result[0].daily_honey))
+                      if(!wx.getStorageSync('todayfirst')){
+                        wx.setStorageSync("todayfirst", res.data.result[0].todayfirst)
+                      }
+                      _this.globalData.daily_honey = wx.getStorageSync("daily_honey")
+                      _this.globalData.have_stadium = wx.getStorageSync("have_stadium")
+                      if (_this.globalData.honey_info.honeybox_array == undefined) {
+                        _this.globalData.honey_info = {
+                          total_honey: 0,
+                          honeybox_array: [],
+                        }
+                        wx.setStorageSync("honey_info", _this.globalData.honey_info)
+                      }
+                      _this.globalData.honey_info.total_honey = 1 * res.data.result[0].honey
+                      var info = _this.globalData.userInfo;
+                      if (res.data.result[0].forbidden == 1) {
+                        wx.showModal({
+                          title: '您的账号已被禁用',
+                          showCancel: false,
+                          complete: function () {
+                            wx.navigateBackMiniProgram({
+                            })
+
+                          }
+                        })
+                      }
+                      info.user_id = res.data.result[0].no;
+                      info.phone = res.data.result[0].phone;
+                      info.state = res.data.result[0].state;
+                      info.forbidden = res.data.result[0].forbidden;
+                      info.honey = res.data.result[0].honey;
+                      _this.globalData.honey_info.total_honey = info.honey
+                      wx.setStorageSync('honey_info', _this.globalData.honey_info)
+                      info.role = res.data.result[0].role;
+                      if (info.state * 1 != 2) {
+                        info.name = _this.globalData.userInfo.nickname
+                      }
+                      if (info.avatar == '') {
+                        info.avatar = "/image/user-unlogin.png"
+                      }
+                      if (res.data.member[0].state == null) {
+                        info.isVIP = 0
+                      }
+                      if (res.data.member[0].state == 1) {
+                        info.isVIP = 1;
+                      }
+                      _this.globalData.userInfo = info
+                      console.log(info);
+                      var tempdate1 = new Date()
+                      if (tempdate1.getHours() >= 0 && tempdate1.getHours() < 7) {
+                        _this.globalData.isactivetime = 0
+                      }
+                      else {
+                        _this.globalData.isactivetime = 1
+                      }
+                      setInterval(_this.checkDate, 1000)
+                    }
+                  },
+                  fail: function () {
+                  }
+                })
+              }
+            });
+          }
+        });
+
+      }
+    })
+    this.globalData.userInfo.nickname = this.globalData.nickname
+  },
+  onHide: function () {
+    wx.setStorageSync('honey_info', this.globalData.honey_info)
+  },
+  showHint: function () {
+    wx.showModal({
+      title: '提示',
+      content: '开启微信计步权限，有机会获取蜂蜜哦',
+      success: function (res) {
+        if (res.confirm) {
+          wx.openSetting({
+
+          })
+          //跳转去设置
         }
-        for (var n = 0; n < this.globalData.honey_info.honeybox_array.length; n++) Date.now() - this.globalData.honey_info.honeybox_array[n].start_time > 1728e5 && this.globalData.honey_info.honeybox_array.splice(n, 1);
+      }
+    })
+  },
+  resethoney: function () {
+
+  },
+  checkDate: function () {
+    var _this = this
+    var tempdate = new Date()
+    if (tempdate.getHours() < 7) {
+      this.globalData.isactivetime = 0
+      var todaytime = new Date().getDate()
+
+      wx.setStorageSync("todayselected", [])
+      _this.globalData.daily_honey = [0, 0]
+      wx.setStorageSync("daily_honey", [0, 0])
     }
-});
+    if (tempdate.getHours() >= 7) {
+      this.globalData.isactivetime = 1
+      var that = this
+    }
+
+    var that = this
+    wx.request({
+      url: that.globalData.mainURL + 'api/getNewBookingAlarm',
+      method: 'POST',
+      header: {
+        'content-type': 'application/json'
+      },
+      data: {
+        user_id: that.globalData.userInfo.user_id
+      },
+      success: function (res) {
+        if (res.data.bookingNewsAmount.length > 0) {
+          for (var iter = 0; iter < res.data.bookingNewsAmount.length; iter++) {
+            var booking_data = res.data.bookingNewsAmount[iter]
+            that.gainNewHoney(booking_data)
+          }
+        }
+      },
+    })
+    for (var iter = 0; iter < this.globalData.honey_info.honeybox_array.length; iter++) {
+      if (Date.now() - this.globalData.honey_info.honeybox_array[iter].start_time > 172800000) {
+        this.globalData.honey_info.honeybox_array.splice(iter, 1)
+      }
+    }
+  },
+
+  gainNewHoney: function (booking_data) {
+    var _this = this
+    console.log(_this.globalData.honey_info.honeybox_array)
+    var iter;
+    var tempx, tempy
+    var honeytype = 1
+    var vip = _this.globalData.userInfo.isVIP + 1
+    console.log(vip)
+    var daily_honey = wx.getStorageSync("daily_honey")
+    if (daily_honey == '') daily_honey = [0, 0];
+    _this.globalData.daily_honey = daily_honey
+    console.log(daily_honey[1])
+    if (true || _this.globalData.daily_honey[1] <= _this.globalData.rule[6].value) {
+      if (booking_data.role == 1) {
+        var unit = _this.globalData.rule[0].value * 1;
+        var portion = _this.globalData.rule[4].value * 1;
+        var honey = unit / (portion + 1) * booking_data.amount;
+        honey = Math.floor(honey)
+        console.log(honey)
+        if (honey >= (_this.globalData.rule[6].value * vip)) {
+          honey = (_this.globalData.rule[5 + honeytype].value * 1)
+          _this.globalData.honey_info.honeybox_array = []
+        }
+        else {
+          var temparray = _this.globalData.honey_info.honeybox_array
+          var sum = honey
+          for (iter = temparray.length - 1; iter >= 0; iter--) {
+            if (sum + temparray[iter] < (_this.globalData.rule[6].value * vip)) {
+              sum = sum + temparray[iter]
+            }
+            else {
+              break;
+            }
+          }
+          if (temparray.length > 0 && iter >= 0) {
+            var last = temparray.splice(iter, iter + 1)
+            last[0].honey = _this.globalData.rule[6].value * vip - sum
+            temparray.splice(0, iter)
+            if (last[0].honey > 0) {
+              temparray.unshift(last[0])
+            }
+          }
+          _this.globalData.honey_info.honeybox_array = temparray
+        }
+        while (1) {
+          tempx = Math.floor((Math.random() * 100) % 9)
+          tempy = Math.floor((Math.random() * 100) % 3)
+          for (iter = 0; iter < _this.globalData.honey_info.honeybox_array.length; iter++) {
+            if (tempx == _this.globalData.honey_info.honeybox_array[iter].x && tempy == _this.globalData.honey_info.honeybox_array[iter].y) {
+              break;
+            }
+          }
+          if (iter == _this.globalData.honey_info.honeybox_array.length) {
+            break;
+          }
+        }
+        var tempdate
+        tempdate = Date.parse(booking_data.end_time.replace(/-/g, '/'))
+        _this.globalData.honey_info.honeybox_array.push({ x: tempx, y: tempy, honey: honey, start_time: tempdate })
+        wx.setStorageSync("honey_info", _this.globalData.honey_info)
+      }
+      if (booking_data.role == 2) {
+        if (booking_data.additional == 1) {
+          //} && _this.globalData.daily_honey[1] < _this.globalData.rule[6].value) {
+          var unit = _this.globalData.rule[1].value * 1;
+          var portion = _this.globalData.rule[4].value * 1;
+          var honey = unit * booking_data.amount / (portion + 1);
+          honey = Math.floor(honey)
+          console.log(_this.globalData.honey_info.honeybox_array)
+          if (honey >= _this.globalData.rule[6].value * vip) {
+            honey = _this.globalData.rule[6].value * vip
+            _this.globalData.honey_info.honeybox_array = []
+          }
+          else {
+            var temparray = _this.globalData.honey_info.honeybox_array
+            var sum = honey
+            for (iter = temparray.length - 1; iter >= 0; iter--) {
+              if (sum + temparray[iter].honey <= (_this.globalData.rule[6].value * vip)) {
+                sum = sum + temparray[iter].honey
+              }
+              else {
+                break;
+              }
+            }
+            console.log(sum)
+            if (temparray.length > 0 && iter >= 0) {
+              var last = temparray.splice(iter, 1)
+              last[0].honey = _this.globalData.rule[6].value * vip - sum
+              console.log('here')
+              console.log(iter)
+              temparray.splice(0, iter)
+              if (last[0].honey > 0) {
+                temparray.unshift(last[0])
+              }
+            }
+            _this.globalData.honey_info.honeybox_array = temparray
+          }
+          while (1) {
+            tempx = Math.floor((Math.random() * 100) % 9)
+            tempy = Math.floor((Math.random() * 100) % 3)
+            for (iter = 0; iter < _this.globalData.honey_info.honeybox_array.length; iter++) {
+              if (tempx == _this.globalData.honey_info.honeybox_array[iter].x && tempy == _this.globalData.honey_info.honeybox_array[iter].y) {
+                break;
+              }
+            }
+            if (iter == _this.globalData.honey_info.honeybox_array.length) {
+              break;
+            }
+          }
+          var tempdate
+          tempdate = Date.parse(booking_data.end_time.replace(/-/g, '/'))
+          _this.globalData.honey_info.honeybox_array.push({ x: tempx, y: tempy, honey: honey, start_time: tempdate })
+          wx.setStorageSync("honey_info", _this.globalData.honey_info)
+        }
+      }
+    }
+    wx.setStorageSync("honey_info", _this.globalData.honey_info)
+  }
+})

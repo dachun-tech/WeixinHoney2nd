@@ -8,108 +8,88 @@
     <section class="content">
         <div class="container">
             <div class="row custom-info-row">
-                <img class="col-sm-4" id="avatar" src="<?php echo base_url()."uploads/".$eventDetail[0]->pic;?>"/>
+                <img class="col-sm-4" id="avatar" src="<?php echo base_url() . "uploads/" . $eventDetail[0]->pic; ?>"/>
             </div>
+            <?php
+            if ($eventDetail[0]->role == 1) {
+                ?>
+                <div class="row custom-info-row">
+                    <label class="col-sm-2">发起场馆:</label>
+                    <label class="col-sm-4" id="phone"><?php echo $eventDetail[0]->site_name; ?></label>
+                </div>
+                <div class="row custom-info-row">
+                    <label class="col-sm-2">馆主昵称:</label>
+                    <label class="col-sm-4" id="site_address"><?php echo $eventDetail[0]->name; ?></label>
+                </div>
+                <div class="row custom-info-row">
+                    <label class="col-sm-2">联系方式:</label>
+                    <label class="col-sm-4" id="allow_pic"><?php echo $eventDetail[0]->agent_phone; ?></label>
+                </div>
+                <?php
+            } else {
+                ?>
+                <div id="tip" class="row custom-info-row">
+                    <label class="col-sm-2"> 发起人:</label>
+                    <label class="col-sm-4" id="forbidden"><?php echo $eventDetail[0]->name; ?></label>
+                </div>
+                <div class="row custom-info-row">
+                    <label class="col-sm-2">联系方式:</label>
+                    <label class="col-sm-4" id="allow_pic"><?php echo $eventDetail[0]->phone; ?></label>
+                </div>
+            <?php }
+            ?>
+            <div class="row custom-info-row" style="border-top:1px solid #d0d0d0;"></div>
             <div class="row custom-info-row">
                 <label class="col-sm-2">活动名称:</label>
                 <label class="col-sm-4" id="nickname"><?php echo $eventDetail[0]->eventName; ?></label>
             </div>
+
             <div class="row custom-info-row">
                 <label class="col-sm-2">活动类型:</label>
-                <label class="col-sm-4" id="nickname"><?php echo $eventType[$eventDetail[0]->type]; ?></label>
+                <label class="col-sm-6" id="nickname"><?php echo $eventType[$eventDetail[0]->type]; ?></label>
+                <label class="col-sm-1">阅读量:</label>
+                <label class="col-sm-2" id="nickname"><?php echo $favourite_amount; ?></label>
+            </div>
+            <div class="row custom-info-row">
+                <label class="col-sm-2">活动时间:</label>
+                <label class="col-sm-6"
+                       id="nickname"><?php echo $eventDetail[0]->start_time . "-" . $eventDetail[0]->end_time; ?></label>
+                <label class="col-sm-1">点赞数:</label>
+                <label class="col-sm-2" id="nickname"><?php echo $favourite_amount; ?></label>
+            </div>
+            <div class="row custom-info-row">
+                <label class="col-sm-2">活动地点:</label>
+                <label class="col-sm-6"
+                       id="site_name"><?php echo $eventDetail[0]->province . $eventDetail[0]->city . $eventDetail[0]->area . $eventDetail[0]->detail_address; ?></label>
+                <label class="col-sm-1">转发量:</label>
+                <label class="col-sm-2" id="nickname"><?php echo $favourite_amount; ?></label>
             </div>
             <div class="row custom-info-row">
                 <label class="col-sm-2">人数上限:</label>
-                <label class="col-sm-4" id="nickname">不超过<?php echo $eventDetail[0]->limit; ?>人</label>
-            </div>
-           <?php
-                if($eventDetail[0]->role == 1){
-            ?>
-            <div class="row custom-info-row">
-                <label class="col-sm-2">活动费用:</label>
-                <label class="col-sm-4" id="nickname"><?php echo $eventDetail[0]->cost; ?>元/人</label>
-            </div>
-           <?php
-                }
-            ?>
-            <div class="row custom-info-row">
-                <label class="col-sm-2">活动时间:</label>
-                <label class="col-sm-4" id="nickname"><?php echo $eventDetail[0]->start_time."-".$eventDetail[0]->end_time; ?></label>
+                <label class="col-sm-4" id="nickname"><?php echo $eventDetail[0]->limit; ?>人</label>
             </div>
             <div class="row custom-info-row">
-                <label class="col-sm-2">活动地址:</label>
-                <label class="col-sm-4" id="site_name"><?php echo $eventDetail[0]->province.$eventDetail[0]->city.$eventDetail[0]->area.$eventDetail[0]->detail_address; ?></label>
+                <label class="col-sm-2">每个用户最多报名人数:</label>
+                <label class="col-sm-4" id="nickname"><?php echo $eventDetail[0]->limit; ?>人</label>
             </div>
-           <?php
-                if($eventDetail[0]->role == 2){
-            ?>
-            <div id="tip" class="row custom-info-row">
-                <label class="col-sm-2"> 发起人:</label>
-                <label class="col-sm-4" id="forbidden"><?php echo $eventDetail[0]->name; ?></label>
-            </div>
-            <div class="row custom-info-row">
-                <label class="col-sm-2">联系方式:</label>
-                <label class="col-sm-4" id="allow_pic"><?php echo $eventDetail[0]->phone; ?></label>
-            </div>
-            <div class="row custom-info-row">
-                <label class="col-sm-2"> 附加条件:</label>
-                <label class="col-sm-4" id="honey">
-                    活动结束后是否在地图上生成能量？</br>
-                   <?php 
-                    if($eventDetail[0]->additional==1)
-                    {
-                        echo "是 ";
-                        if(count($member_state) > 0){
-                            if($member_state[0]->state == 1)
-                            {
-                                echo "(会员不需要花费蜂蜜)";
-                            }
-                        }
-                        else
-                        {
-                            echo "(需花费500ml蜂蜜)";
-                        }
-                    }
-                    else
-                    {
-                        echo "否";
-                    }
-                    ?>
-                </label>
-            </div>
-           <?php
-                }else{
-            ?>
-            <div class="row custom-info-row">
-                <label class="col-sm-2">场馆名称:</label>
-                <label class="col-sm-4" id="phone"><?php echo $eventDetail[0]->site_name; ?></label>
-            </div>
-            <div class="row custom-info-row">
-                <label class="col-sm-2">馆主名称:</label>
-                <label class="col-sm-4" id="site_address"><?php echo $eventDetail[0]->name; ?></label>
-            </div>
-            <div class="row custom-info-row">
-                <label class="col-sm-2">联系方式:</label>
-                <label class="col-sm-4" id="allow_pic"><?php echo $eventDetail[0]->agent_phone; ?></label>
-            </div>
-           <?php
-                }
+            <?php
+            if ($eventDetail[0]->role == 1) {
+                ?>
+                <div class="row custom-info-row">
+                    <label class="col-sm-2">活动费用:</label>
+                    <label class="col-sm-4" id="nickname"><?php echo $eventDetail[0]->cost; ?>元/人</label>
+                </div>
+                <?php
+            }
             ?>
             <div class="row custom-info-row">
                 <label class="col-sm-2">活动简介:</label>
-            </div>
-
-            <div class="row custom-info-row">
                 <label class="col-sm-4" id="nickname"><?php echo $eventDetail[0]->comment; ?></label>
-            </div>
-
-            <div class="row custom-info-row">
-                <label class="col-sm-2">点赞数:</label>
-                <label class="col-sm-4" id="nickname"><?php echo $favourite_amount; ?></label>
             </div>
             <div class="row custom-info-row">
                 <label class="col-sm-2">报名人数:</label>
-                <label class="col-sm-4" id="nickname"> <?php echo (count($booking)>0)?$eventDetail[0]->current_member."人":"无"; ?></label>
+                <label class="col-sm-4"
+                       id="nickname"> <?php echo (count($booking) > 0) ? $eventDetail[0]->current_member . "人" : "无"; ?></label>
             </div>
             <div class="row custom-info-row">
                 <div class="col-sm-6">
@@ -124,20 +104,19 @@
                         </tr>
                         </thead>
                         <tbody id="content_tbl">
-                       <?php 
-                            $pay_type= array("线下支付", "线上支付");
-                            if(count($booking) > 0){
-                                foreach($booking as $booking_element)
-                                {
-                                    echo "<tr>";
-                                    echo "<td><image src='".$booking_element->avatar."' style='width:50px;height:50px;border-radius:50%;'/></td>";
-                                    echo "<td>".$booking_element->name."</td>";
-                                    echo "<td>".$booking_element->phone."</td>";
-                                    echo "<td>".$booking_element->reg_num."</td>";
-                                    echo "<td>".$pay_type[$booking_element->pay_type]."</td>";
-                                    echo "</tr>";
-                                }
+                        <?php
+                        $pay_type = array("线下支付", "线上支付");
+                        if (count($booking) > 0) {
+                            foreach ($booking as $booking_element) {
+                                echo "<tr>";
+                                echo "<td><image src='" . $booking_element->avatar . "' style='width:50px;height:50px;border-radius:50%;'/></td>";
+                                echo "<td>" . $booking_element->name . "</td>";
+                                echo "<td>" . $booking_element->phone . "</td>";
+                                echo "<td>" . $booking_element->reg_num . "</td>";
+                                echo "<td>" . $pay_type[$booking_element->pay_type] . "</td>";
+                                echo "</tr>";
                             }
+                        }
                         ?>
                         </tbody>
                     </table>

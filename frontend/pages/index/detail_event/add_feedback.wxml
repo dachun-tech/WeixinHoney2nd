@@ -1,5 +1,0 @@
-<view>
-    <textarea bindinput="bindInputText" class="cls_score_text_area" maxlength="200" placeholder="请输入你的留言…"></textarea>
-    <text class="cls_text_count">{{text_count}}/200</text>
-    <button bindtap="btn_submit" class="btn_add_comment">完成</button>
-</view>

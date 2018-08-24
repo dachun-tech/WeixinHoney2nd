@@ -5,6 +5,13 @@
             规则管理
         </h1>
     </section>
+    <style>
+        input{
+            width:50px;
+            text-align: right;
+            padding:
+        }
+    </style>
     <section class="content" style="min-height: 800px;">
         <div class="container">
             <div class="container">
@@ -20,18 +27,17 @@
                         </thead>
                             <tr>
                                 <td>1</td>
-                                <td>场馆主创建一次活动，每一个用户报名，可产生蜂蜜数</td>
+                                <td>场馆主创建一次活动，每有一个用户报名，可产生蜂蜜数</td>
                                 <td><input type="text" name="rule0" value="<?php echo $rule[0]->value;?>"/>&nbsp;&nbsp;ml</td>
                             </tr>
                             <tr>
                                 <td>2</td>
-                                <td>个人发起活动，如果活动显示在地图上，每一个用户报名，可产生蜂蜜数</td>
+                                <td>个人发起活动，如果活动结束后地图上产生蜂蜜，每有一个用户报名，可产生蜂蜜数</td>
                                 <td><input type="text" name="rule1" value="<?php echo $rule[1]->value;?>"/>&nbsp;&nbsp;ml</td>
                             </tr>
                             <tr>
                                 <td>3</td>
-                                <td>地图上，每一罐蜂蜜可采集的次数，单次采蜜量随机
-</td>
+                                <td>地图上，每一罐蜂蜜可采集的次数，单次采蜜量随机</td>
                                 <td><input type="text" name="rule2" value="<?php echo $rule[2]->value;?>"/>&nbsp;&nbsp;次</td>
                             </tr>
                             <tr>
@@ -41,17 +47,17 @@
                             </tr>
                             <tr>
                                 <td>5</td>
-                                <td>每参加一次活动，地图上和后花园产蜜的比例</td>
+                                <td>每一次活动，地图上和后花园产蜜的比例</td>
                                 <td><input type="text" name="rule4" value="<?php echo $rule[4]->value;?>"/>&nbsp;&nbsp;:&nbsp;&nbsp;<input type="text" name="rule" value="1"/></td>
                             </tr>
                             <tr>
                                 <td>6</td>
-                                <td>用户在地图采集蜂蜜的上限</td>
+                                <td>用户每日在地图采集蜂蜜的上限</td>
                                 <td><input type="text" name="rule5" value="<?php echo $rule[5]->value;?>"/>&nbsp;&nbsp;ml</td>
                             </tr>
                             <tr>
                                 <td>7</td>
-                                <td>用户在后花园采集蜂蜜的上限</td>
+                                <td>用户每日在后花园采集蜂蜜的上限</td>
                                 <td><input type="text" name="rule6" value="<?php echo $rule[6]->value;?>"/>&nbsp;&nbsp;ml</td>
                             </tr>
                             <tr>
@@ -61,8 +67,30 @@
                             </tr>
                             <tr>
                                 <td>9</td>
-                                <td>个人创建活动需要显示在地图上，花费蜂蜜数</td>
-                                <td><input type="text" name="rule8" value="<?php echo $rule[8]->value;?>"/>&nbsp;&nbsp;ml</td>
+                                <td>报名赛事和预定场地时，可使用蜂蜜进行优惠支付，最多可以使用的蜂蜜量以及对应钱数</td>
+                                <td>
+                                    <input type="text" name="rule8" value="<?php echo $rule[8]->value;?>"/>&nbsp;&nbsp;ml可抵
+                                    <input type="text" name="rule9" value="<?php echo $rule[9]->value;?>"/>&nbsp;&nbsp;元
+
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>10</td>
+                                <td>报名赛事和预订场地时，可使用蜂蜜进行优惠支付，会员最多可以使用的蜂蜜量以及对应钱数</td>
+                                <td>
+                                    <input type="text" name="rule10" value="<?php echo $rule[10]->value;?>"/>&nbsp;&nbsp;ml可抵
+                                    <input type="text" name="rule11" value="<?php echo $rule[11]->value;?>"/>&nbsp;&nbsp;元
+
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>11</td>
+                                <td>报名蜂约时，会员可以使用蜂蜜进行优惠支付，每周一次，每次可使用的蜂蜜量以及对应钱数</td>
+                                <td>
+                                    <input type="text" name="rule12" value="<?php echo $rule[12]->value;?>"/>&nbsp;&nbsp;ml可抵
+                                    <input type="text" name="rule13" value="<?php echo $rule[13]->value;?>"/>&nbsp;&nbsp;元
+
+                                </td>
                             </tr>
                     </table>
                 </div>

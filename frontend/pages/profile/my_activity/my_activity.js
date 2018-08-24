@@ -1,149 +1,207 @@
-var t = getApp();
+// pages/booking/booking.js
+const app = getApp();
 
 Page({
-    data: {
-        active1: "active",
-        active2: "",
-        active3: "",
-        bookingArray: new Array(),
-        selectedtab: "booked",
-        events: [],
-        selected_state: 0,
-        userInfo: [],
-        eventType: [],
-        userRole: [],
-        eventState: []
-    },
-    onLoad: function(e) {
-        this.setData({
-            userInfo: t.globalData.userInfo,
-            eventType: t.globalData.eventType,
-            userRole: t.globalData.userRole,
-            eventState: t.globalData.eventState
-        });
-        var a = this;
-        wx.request({
-            url: t.globalData.mainURL + "api/getAllEvents",
-            method: "POST",
+
+  /**
+   * 页面的初始数据
+   */
+  data: {
+    active1: "active",
+    active2: "",
+    active3: "",
+    bookingArray: new Array(),
+    selectedtab: "booked",
+    events: [],
+    selected_state: 0,
+    userInfo: [],
+    eventType: [],
+    userRole: [],
+    eventState: []
+  },
+
+  /**
+   * 生命周期函数--监听页面加载
+   */
+  onLoad: function (query) {
+    this.setData({
+      userInfo: app.globalData.userInfo,
+      eventType: app.globalData.eventType,
+      userRole: app.globalData.userRole,
+      eventState: app.globalData.eventState
+    });
+    var that = this;
+    wx.request({
+      url: app.globalData.mainURL + 'api/getAllEvents',
+      method: 'POST',
+      header: {
+        'content-type': 'application/json'
+      },
+      data: {
+        'user_id': app.globalData.userInfo.user_id
+      },
+      success: function (res) {
+
+        var event_buf = res.data.result;
+        console.log(res)
+        if (event_buf != null) {
+          for (var index = 0; index < event_buf.length; index++) {
+            var tempdate
+            tempdate = Date.parse(event_buf[index].start_time.replace(/-/g, '/'))
+            if (tempdate - Date.now() < 21600000) {
+              event_buf[index].isbtn = 0
+            }
+            else {
+              event_buf[index].isbtn = 1
+            }
+            event_buf[index].avatar = app.globalData.uploadURL + event_buf[index].pic;
+
+            var time = event_buf[index].start_time.split(':');
+            event_buf[index].start_time = time[0] + ':' + time[1];
+            
+            var time1 = event_buf[index].end_time.split(':');
+            event_buf[index].end_time = time1[0] + ':' + time1[1];
+
+            if (event_buf[index].register_num == null) {
+              event_buf[index].register_num = 0;
+            }
+            if(event_buf[index].name.length>10)
+            {
+              var name =  event_buf[index].name
+              name = name.slice(0,10) + '..'
+              event_buf[index].name = name
+            }
+            that.data.events = event_buf
+          }
+          that.showarray(0)
+        }
+      }
+    })
+  },
+  showarray(tabtype = 0)
+  {
+    var event_buf = this.data.events
+    if (event_buf == null) return
+    if (event_buf.length < 2) {
+      this.setData({
+        events: event_buf,
+      })
+      return
+    }
+    var temp
+    if (tabtype == 0) {
+      for (var i = 0; i < event_buf.length - 1; i++) {
+        for (var j = i + 1; j < event_buf.length; j++) {
+          if (event_buf[i].start_time < event_buf[j].start_time) {
+            temp = event_buf[i]
+            event_buf[i] = event_buf[j]
+            event_buf[j] = temp
+          }
+        }
+      }
+    }
+    if (tabtype == 1) {
+      for (var i = 0; i < event_buf.length - 1; i++) {
+        for (var j = i + 1; j > event_buf.length; j++) {
+          if (event_buf[i].end_time < event_buf[j].end_time) {
+            temp = event_buf[i]
+            event_buf[i] = event_buf[j]
+            event_buf[j] = temp
+          }
+        }
+      }
+    }
+    this.setData({
+      events: event_buf,
+    })
+  },
+  /**
+ * This function is called after user select one of the tabs
+ */
+
+  selectTab: function (event) {
+    this.setData({ active1: " " });
+    this.setData({ active2: " " });
+    this.setData({ active3: " " });
+    switch (event.currentTarget.id) {
+      case "btn1":
+        this.setData({ active1: "active" });
+        this.setData({ selected_state: 0 });
+        this.showarray(0)
+        break;
+      case "btn2":
+        this.setData({ active2: "active" });
+        this.setData({ selected_state: 1 });
+        this.showarray(1)
+        break;
+      case "btn3":
+        this.setData({ active3: "active" });
+        this.setData({ selected_state: 2 });
+        this.showarray(2)
+        break;
+    }
+  },
+  //called when user clicked cancel event button.
+  btn_remove_booking: function (event) {
+    var index = event.target.id;
+    var that = this;
+    wx.showModal({
+      content: '是否取消活动？',
+      success: function (res) {
+        if (res.confirm) {
+          var now = Date.now()
+          var tempdate
+          tempdate = Date.parse(that.data.events[index].start_time.replace(/-/g, '/'))
+          if ((tempdate - now) < 86400) {
+            wx.showToast({
+              title: '现在距离活动开始时间已不到24小时，无法取消活动',
+              icon: 'none',
+              time: 3000
+            })
+            return;
+          }
+          wx.request({
+            url: app.globalData.mainURL + 'api/cancelEvent',
+            method: 'POST',
             header: {
-                "content-type": "application/json"
+              'content-type': 'application/json'
             },
             data: {
-                user_id: t.globalData.userInfo.user_id
+              event_id: that.data.events[index].id
             },
-            success: function(e) {
-                var n = e.data.result;
-                if (console.log(e), null != n) {
-                    for (var s = 0; s < n.length; s++) {
-                        Date.parse(n[s].start_time.replace(/-/g, "/")) - Date.now() < 216e5 ? n[s].isbtn = 0 : n[s].isbtn = 1, 
-                        n[s].avatar = t.globalData.uploadURL + n[s].pic;
-                        var i = n[s].start_time.split(":");
-                        n[s].start_time = i[0] + ":" + i[1];
-                        var r = n[s].end_time.split(":");
-                        if (n[s].end_time = r[0] + ":" + r[1], null == n[s].register_num && (n[s].register_num = 0), 
-                        n[s].name.length > 10) {
-                            var o = n[s].name;
-                            o = o.slice(0, 10) + "..", n[s].name = o;
-                        }
-                        a.data.events = n;
-                    }
-                    a.showarray(0);
-                }
-            }
-        });
-    },
-    showarray: function() {
-        var t = arguments.length > 0 && void 0 !== arguments[0] ? arguments[0] : 0, e = this.data.events;
-        if (null != e) if (e.length < 2) this.setData({
-            events: e
-        }); else {
-            var a;
-            if (0 == t) for (n = 0; n < e.length - 1; n++) for (s = n + 1; s < e.length; s++) e[n].start_time < e[s].start_time && (a = e[n], 
-            e[n] = e[s], e[s] = a);
-            if (1 == t) for (var n = 0; n < e.length - 1; n++) for (var s = n + 1; s > e.length; s++) e[n].end_time < e[s].end_time && (a = e[n], 
-            e[n] = e[s], e[s] = a);
-            this.setData({
-                events: e
-            });
-        }
-    },
-    selectTab: function(t) {
-        switch (this.setData({
-            active1: " "
-        }), this.setData({
-            active2: " "
-        }), this.setData({
-            active3: " "
-        }), t.currentTarget.id) {
-          case "btn1":
-            this.setData({
-                active1: "active"
-            }), this.setData({
-                selected_state: 0
-            }), this.showarray(0);
-            break;
+            success: function (res) {
+              var event = that.data.events
+              event[index].state = 2
+              that.setData({
+                events: event
+              })
 
-          case "btn2":
-            this.setData({
-                active2: "active"
-            }), this.setData({
-                selected_state: 1
-            }), this.showarray(1);
-            break;
-
-          case "btn3":
-            this.setData({
-                active3: "active"
-            }), this.setData({
-                selected_state: 2
-            }), this.showarray(2);
-        }
-    },
-    btn_remove_booking: function(e) {
-        var a = e.target.id, n = this;
-        wx.showModal({
-            content: "是否取消活动？",
-            success: function(e) {
-                if (e.confirm) {
-                    var s = Date.now();
-                    if (Date.parse(n.data.events[a].start_time.replace(/-/g, "/")) - s < 86400) return void wx.showToast({
-                        title: "现在距离活动开始时间已不到24小时，无法取消活动",
-                        icon: "none",
-                        time: 3e3
-                    });
-                    wx.request({
-                        url: t.globalData.mainURL + "api/cancelEvent",
-                        method: "POST",
-                        header: {
-                            "content-type": "application/json"
-                        },
-                        data: {
-                            event_id: n.data.events[a].id
-                        },
-                        success: function(t) {
-                            var e = n.data.events;
-                            e[a].state = 2, n.setData({
-                                events: e
-                            }), wx.redirectTo({
-                                url: "../final_cancel/final_cancel?type=1",
-                                success: function(t) {},
-                                fail: function(t) {},
-                                complete: function(t) {}
-                            });
-                        }
-                    });
-                } else e.cancel;
+              wx.redirectTo({
+                url: '../final_cancel/final_cancel?type=1',
+                success: function (res) { 
+                  var ret = res;
+                },
+                fail: function (res) { },
+                complete: function (res) { },
+              })
             }
-        });
-    },
-    click_detail_event: function(t) {
-        wx.navigateTo({
-            url: "eventdetail?id=" + t.currentTarget.id
-        });
-    },
-    btn_write_comment: function(t) {
-        wx.navigateTo({
-            url: "../../evaluation/evaluation"
-        });
-    }
-});
+          })
+
+        } else if (res.cancel) {
+        }
+      }
+    })
+  },
+  //called when user wants to see detail
+  click_detail_event: function (event) {
+    wx.navigateTo({
+      url: 'eventdetail?id=' + event.currentTarget.id,
+    })
+  },
+  //called when user wants to write comment
+  btn_write_comment: function (event) {
+    wx.navigateTo({
+      url: '../../evaluation/evaluation',
+    })
+  }
+})

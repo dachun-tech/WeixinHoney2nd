@@ -1,131 +1,243 @@
-function a(a) {
-    var e = a.data.wxSearchData;
-    e.view.isShow = !1, a.setData({
-        wxSearchData: e
+var __keysColor = [];
+
+var __mindKeys = [];
+
+function initColors(colors){
+    __keysColor = colors;
+}
+
+function initMindKeys(that){
+  var temData = that.data.wxSearchData;
+  __mindKeys = temData.keys;
+}
+
+function init(that, barHeight, keys, isShowKey, isShowHis, callBack, isSearchResultShow) {
+    var temData = {};
+    var view = {
+        barHeight: barHeight,
+        isShow: false,
+        isSearchResultShow:true
+    }
+
+    if(typeof(isShowKey) == 'undefined'){
+        view.isShowSearchKey = true;
+    }else{
+        view.isShowSearchKey = isShowKey;
+    }
+
+    if(typeof(isShowHis) == 'undefined'){
+        view.isShowSearchHistory = true;
+    }else{
+        view.isShowSearchHistory = isShowHis;
+    }
+ 
+    wx.getSystemInfo({
+        success: function(res) {
+            var wHeight = res.windowHeight;
+            view.seachHeight = wHeight-barHeight;
+            temData.view = view;
+            that.setData({
+                wxSearchData: temData
+            });
+        }
+    })
+    
+    if (typeof (callBack) == "function") {
+        callBack();
+    }
+    
+    getHisKeys(that);
+    
+}
+
+function wxSearchInput(e, that, callBack){
+    var temData = that.data.wxSearchData;
+    var text = e.detail.value;
+    var mindKeys = [];
+    if(typeof(text) == "undefined" || text.length == 0){
+        
+    }else{
+        for(var i = 0; i < __mindKeys.length; i++){
+            var mindKey = __mindKeys[i];
+            if(mindKey.indexOf(text) > -1){
+                mindKeys.push(mindKey);
+            }
+        }
+    }
+    temData.value = text;
+    temData.mindKeys = mindKeys;
+    that.setData({
+        wxSearchData: temData
     });
 }
 
-function e(a) {
-    var e = [];
+function wxSearchFocus(e, that, callBack) {
+
+    var temData = that.data.wxSearchData;
+
+    temData.view.isSearchResultShow = false
+    temData.view.isShow = true;
+
+    that.setData({
+        wxSearchData: temData
+    });
+
+    //回调
+    if (typeof (callBack) == "function") {
+        callBack();
+    }
+}
+
+function wxSearchBlur(e, that, callBack) {
+    var temData = that.data.wxSearchData;
+    temData.value = e.detail.value;
+    that.setData({
+        wxSearchData: temData
+    });
+    if (typeof (callBack) == "function") {
+        callBack();
+    }
+}
+
+function wxSearchHiddenPancel(that){
+    var temData = that.data.wxSearchData;
+    temData.view.isShow = false;
+    that.setData({
+        wxSearchData: temData
+    });
+}
+
+function wxSearchKeyTap(e, that, callBack) {
+    //回调
+    var temData = that.data.wxSearchData;
+    temData.value = e.target.dataset.key;
+    that.setData({
+        wxSearchData: temData
+    });
+
+    wxSearchAddHisKey(that)
+
+    if (typeof (callBack) == "function") {
+        callBack();
+    }
+}
+function getHisKeys(that) {
+    var value = [];
     try {
-        if (e = wx.getStorageSync("wxSearchHisKeys")) {
-            var t = a.data.wxSearchData;
-            t.his = e, t.keys = e, t.results = e, r = e, a.setData({
-                wxSearchData: t
+        value = wx.getStorageSync('wxSearchHisKeys')
+        if (value) {
+            // Do something with return value
+            var temData = that.data.wxSearchData;
+            temData.his = value;
+            temData.keys = value;
+            // 시험용
+            temData.results = value;
+            ///
+            __mindKeys = value;
+            that.setData({
+                wxSearchData: temData
             });
         }
-    } catch (a) {}
-}
-
-function t(t) {
-    a(t);
-    var c = t.data.wxSearchData.value;
-    if (void 0 !== c && 0 != c.length) {
-        var r = wx.getStorageSync("wxSearchHisKeys");
-        r ? (r.indexOf(c) < 0 && r.unshift(c), wx.setStorage({
-            key: "wxSearchHisKeys",
-            data: r,
-            success: function() {
-                e(t);
-            }
-        })) : ((r = []).push(c), wx.setStorage({
-            key: "wxSearchHisKeys",
-            data: r,
-            success: function() {
-                e(t);
-            }
-        }));
+    } catch (e) {
+        // Do something when catch error
     }
+    
+}
+function wxSearchAddHisKey(that) {
+    wxSearchHiddenPancel(that);
+    var text = that.data.wxSearchData.value;
+    if(typeof(text) == "undefined" || text.length == 0){return;}
+    var value = wx.getStorageSync('wxSearchHisKeys');
+    // 여기에 통신부분 삽입할것
+    // 검색성공이면 아래부분 통과하고 그렇지 않은 경우 패스
+
+
+
+    if(value){
+        if(value.indexOf(text) < 0){
+            value.unshift(text);
+        }
+        wx.setStorage({
+            key:"wxSearchHisKeys",
+            data:value,
+            success: function(){
+                getHisKeys(that);
+            }
+        })
+    }else{
+        value = [];
+        value.push(text);
+        wx.setStorage({
+            key:"wxSearchHisKeys",
+            data:value,
+            success: function(){
+                getHisKeys(that);
+            }
+        })
+    }
+    
+
+}
+function wxSearchDeleteKey(e,that) {
+    var text = e.target.dataset.key;
+    var value = wx.getStorageSync('wxSearchHisKeys');
+    value.splice(value.indexOf(text),1);
+    wx.setStorage({
+        key:"wxSearchHisKeys",
+        data:value,
+        success: function(){
+            getHisKeys(that);
+        }
+    })
+}
+function wxSearchDeleteAll(that){
+    wx.removeStorage({
+        key: 'wxSearchHisKeys',
+        success: function(res) {
+            var value = [];
+            var temData = that.data.wxSearchData;
+            temData.his = value;
+            that.setData({
+                wxSearchData: temData
+            });
+        } 
+    })
 }
 
-var c = [], r = [];
+function wxSearchCancel(that) {
+  //回调
+  wxSearchHiddenPancel(that)
+  var temData = that.data.wxSearchData;
+  temData.value = "";
+  that.setData({
+    wxSearchData: temData
+  });
+
+}
+
+function wxGoNextPage(e, that) {
+  
+  var bgColor = that.data.txtBackground == '#fff' ? '#eee' : '#fff';
+
+  that.setData({
+
+    txtBackground: bgColor
+
+  });
+}
 
 module.exports = {
-    init: function(a, t, c, r, s, i, n) {
-        var h = {}, o = {
-            barHeight: t,
-            isShow: !1,
-            isSearchResultShow: !0
-        };
-        o.isShowSearchKey = void 0 === r || r, o.isShowSearchHistory = void 0 === s || s, 
-        wx.getSystemInfo({
-            success: function(e) {
-                var c = e.windowHeight;
-                o.seachHeight = c - t, h.view = o, a.setData({
-                    wxSearchData: h
-                });
-            }
-        }), "function" == typeof i && i(), e(a);
-    },
-    initColor: function(a) {
-        c = a;
-    },
-    initMindKeys: function(a) {
-        var e = a.data.wxSearchData;
-        r = e.keys;
-    },
-    wxSearchInput: function(a, e, t) {
-        var c = e.data.wxSearchData, s = a.detail.value, i = [];
-        if (void 0 === s || 0 == s.length) ; else for (var n = 0; n < r.length; n++) {
-            var h = r[n];
-            h.indexOf(s) > -1 && i.push(h);
-        }
-        c.value = s, c.mindKeys = i, e.setData({
-            wxSearchData: c
-        });
-    },
-    wxSearchFocus: function(a, e, t) {
-        var c = e.data.wxSearchData;
-        c.view.isSearchResultShow = !1, c.view.isShow = !0, e.setData({
-            wxSearchData: c
-        }), "function" == typeof t && t();
-    },
-    wxSearchBlur: function(a, e, t) {
-        var c = e.data.wxSearchData;
-        c.value = a.detail.value, e.setData({
-            wxSearchData: c
-        }), "function" == typeof t && t();
-    },
-    wxSearchCancel: function(e) {
-        a(e);
-        var t = e.data.wxSearchData;
-        t.value = "", e.setData({
-            wxSearchData: t
-        });
-    },
-    wxSearchKeyTap: function(a, e, c) {
-        var r = e.data.wxSearchData;
-        r.value = a.target.dataset.key, e.setData({
-            wxSearchData: r
-        }), t(e), "function" == typeof c && c();
-    },
-    wxSearchAddHisKey: t,
-    wxSearchDeleteKey: function(a, t) {
-        var c = a.target.dataset.key, r = wx.getStorageSync("wxSearchHisKeys");
-        r.splice(r.indexOf(c), 1), wx.setStorage({
-            key: "wxSearchHisKeys",
-            data: r,
-            success: function() {
-                e(t);
-            }
-        });
-    },
-    wxSearchDeleteAll: function(a) {
-        wx.removeStorage({
-            key: "wxSearchHisKeys",
-            success: function(e) {
-                var t = [], c = a.data.wxSearchData;
-                c.his = t, a.setData({
-                    wxSearchData: c
-                });
-            }
-        });
-    },
-    wxSearchHiddenPancel: a,
-    wxGoNextPage: function(a, e) {
-        var t = "#fff" == e.data.txtBackground ? "#eee" : "#fff";
-        e.setData({
-            txtBackground: t
-        });
-    }
-};
+    init: init,
+    initColor: initColors,
+    initMindKeys: initMindKeys,
+    wxSearchInput: wxSearchInput,
+    wxSearchFocus: wxSearchFocus,
+    wxSearchBlur: wxSearchBlur,
+    wxSearchCancel: wxSearchCancel,
+    wxSearchKeyTap: wxSearchKeyTap,
+    wxSearchAddHisKey:wxSearchAddHisKey,
+    wxSearchDeleteKey:wxSearchDeleteKey,
+    wxSearchDeleteAll:wxSearchDeleteAll,
+    wxSearchHiddenPancel:wxSearchHiddenPancel,
+    wxGoNextPage: wxGoNextPage
+}

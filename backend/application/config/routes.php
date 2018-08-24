@@ -71,6 +71,12 @@ $route['eventListingByFilter'] = 'eventmanage/eventListingByFilter';
 $route['eventListingByFilter/(:num)'] = 'eventmanage/eventListingByFilter';
 $route['eventDetail/(:num)'] = 'eventmanage/showEventDetail/$1';
 
+$route['newsevent'] = 'newseventmanage';
+$route['newseventmanage/(:num)'] = 'newseventmanage';
+$route['newseventListingByFilter'] = 'newseventmanage/eventListingByFilter';
+$route['newseventListingByFilter/(:num)'] = 'newseventmanage/eventListingByFilter';
+$route['newseventDetail/(:num)'] = 'newseventmanage/showEventDetail/$1';
+
 $route['booking'] = 'bookingmange';
 $route['bookingmanage/(:num)'] = 'bookingmanage';
 $route['bookingListingByFilter'] = 'bookingmanage/bookingListingByFilter';
@@ -105,6 +111,8 @@ $route['rating/(:num)'] = 'rating';
 $route['ratingListingByFilter'] = 'rating/ratingListingByFilter';
 $route['rulemanage'] = "rule";
 $route['saveRule'] = "rule/saveRule";
+$route['template/(:num)'] = "template/index/$1";
+$route['saveTemplate'] = "template/saveItem";
 
 $route['alarm'] = "alarm";
 $route['alarm/(:num)'] = "alarm";

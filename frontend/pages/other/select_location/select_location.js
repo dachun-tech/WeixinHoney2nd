@@ -1,59 +1,71 @@
-function t(t, e, a) {
-    return e in t ? Object.defineProperty(t, e, {
-        value: a,
-        enumerable: !0,
-        configurable: !0,
-        writable: !0
-    }) : t[e] = a, t;
-}
-
-var e, a = getApp();
+// pages/other/select_location/select_location.js
+var app = getApp();
 
 Page({
-    data: (e = {
+    /**
+     * 页面的初始数据
+     */
+    data: {
         method: "auth",
         longitude: 0,
         latitude: 0,
         marker: [],
-        showModal: !1
-    }, t(e, "longitude", 0), t(e, "latitude", 0), e),
-    onLoad: function(t) {
-        this.setData({
-            method: t.method,
-            longitude: t.longitude,
-            latitude: t.latitude
-        }), this.mapCtx = wx.createMapContext("myMap");
+        showModal: false,
+        longitude: 0,
+        latitude: 0
     },
-    on_click_map: function(t) {
-        var e = this, o = t.touches[0].pageX, i = t.touches[0].pageY;
+
+    /**
+     * 生命周期函数--监听页面加载
+     */
+    onLoad: function(options) {
+        this.setData({
+            method: options.method,
+            longitude: options.longitude,
+            latitude: options.latitude
+        });
+        this.mapCtx = wx.createMapContext("myMap");
+    },
+    on_click_map: function(e) {
+        var that = this;
+        var x = e.touches[0].pageX;
+        var y = e.touches[0].pageY;
         this.mapCtx.getRegion({
-            success: function(t) {
-                var n = t.southwest.longitude - (t.southwest.longitude - t.northeast.longitude) / (750 / o), u = t.northeast.latitude + (t.southwest.latitude - t.northeast.latitude) / (1268 / i);
-                e.setData({
-                    marker: [ {
+            success: function(res) {
+                var longitude =
+                    res.southwest.longitude -
+                    (res.southwest.longitude - res.northeast.longitude) / (750.0 / x);
+                var latitude =
+                    res.northeast.latitude +
+                    (res.southwest.latitude - res.northeast.latitude) / (1268.0 / y);
+                that.setData({
+                    marker: [{
                         iconPath: "../../../../image/me@2x.png",
                         id: 0,
-                        latitude: u,
-                        longitude: n,
+                        latitude: latitude,
+                        longitude: longitude,
                         width: 50,
                         height: 50
-                    } ],
-                    showModal: !0,
-                    longitude: n,
-                    latitude: u
-                }), a.globalData.longitude = n, a.globalData.latitude = u;
+                    }],
+                    showModal: true,
+                    longitude: longitude,
+                    latitude: latitude
+                });
+                app.globalData.longitude = longitude;
+                app.globalData.latitude = latitude;
             }
         });
     },
     onCancel1: function() {
         this.setData({
-            showModal: !1
+            showModal: false
         });
     },
     onConfirm1: function() {
         this.setData({
-            showModal0: !1
-        }), wx.navigateBack({
+            showModal0: false
+        });
+        wx.navigateBack({
             delta: 1
         });
     }

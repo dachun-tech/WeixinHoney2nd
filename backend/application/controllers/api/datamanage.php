@@ -28,6 +28,8 @@ $this->load->model('binding_model');
 $this->load->model('alarm_user_model');
 $this->load->model('alarm_admin_model');
 $this->load->model('feedback_model');
+$this->load->model('template_model');
+
 $this->checkEventState();
 }
 
@@ -864,6 +866,43 @@ echo json_encode(array('status' => false), 200);
 }
 }
 
+// get templates
+public function getTemplates()
+{
+    $template = $this->template_model->getTemplate();
+    if(count($template)> 0){
+        echo json_encode(array('status' => true,'template' => $template), 200);
+    } else {
+        echo json_encode(array('status' => false), 200);
+    }
+}
+
+//upload image
+public function imageUpload(){
+    $imageUrl = "";
+    $response_array = array();
+    if(isset($_FILES['file']['name']))
+    {
+        $config['upload_path'] = './uploads/';
+        $config['allowed_types'] = '*';
+        $config['remove_spaces'] = true;
+        $config['max_size']             = 10000;
+        $config['encrypt_name'] =true;
+        $this->load->library('upload', $config);
+        if(!$this->upload->do_upload('file'))
+        {
+            $response_array = array('status' => false, 'error' => $this->upload->display_errors());
+            echo json_encode($response_array, 200);
+        }
+        else
+        {
+            $book = $this->upload->data();
+            $response_array = array('status' => true, 'image_url' => $book["file_name"]);
+            echo json_encode($response_array, 200);
+        }
+    }
+}
+
 /*
 * this function is used to add the information of site which tells other users introduction and the service of the site
 */
@@ -918,36 +957,41 @@ echo json_encode(array('status' => false), 200);
 */
 public function addEvent()
 {
-$event['organizer_id'] = $this->input->post('user_id');
-$user_role = $this->input->post('role');
-$event['name'] = $this->input->post('event_name');
-$event['type'] = $this->input->post('event_type');
-$event['start_time'] = $this->input->post('start_time');
-$event['end_time'] = $this->input->post('end_time');
-$event['province'] = $this->input->post('province');
-$event['area'] = $this->input->post('area');
-$event['city'] = $this->input->post('city');
-$event['detail_address'] = $this->input->post('detail_address');
-$event['longitude'] = $this->input->post('longitude');
-$event['latitude'] = $this->input->post('latitude');
-$event['limit'] = $this->input->post('limit');
-$event['cost'] = $this->input->post('cost');
-$event['comment'] = $this->input->post('comment');
-$event['publicity'] = $this->input->post('publicity');
+$input = json_decode(file_get_contents("php://input"));
+$event['organizer_id'] = $input->{'user_id'};
+$user_role = $input->{'role'};
+$event['name'] = $input->{'event_name'};
+$event['type'] = $input->{'event_type'};
+$event['start_time'] = $input->{'start_time'};
+$event['end_time'] = $input->{'end_time'};
+$event['province'] = $input->{'province'};
+$event['area'] = $input->{'area'};
+$event['city'] = $input->{'city'};
+$event['detail_address'] = $input->{'detail_address'};
+$event['longitude'] = $input->{'longitude'};
+$event['latitude'] = $input->{'latitude'};
+$event['limit'] = $input->{'limit'};
+$event['person_limit'] = $input->{'person_limit'};
+$event['pay_type'] = $input->{'pay_type'};
+$event['cost'] = $input->{'cost'};
+$event['comment'] = $input->{'comment'};
+$event['publicity'] = $input->{'publicity'};
 $event['reg_time'] = date("Y-m-d H:i:s");
-$event['agent_name'] = $this->input->post('agent_name');
-$event['agent_phone'] = $this->input->post('agent_phone');
-$member_state = $this->input->post('member_state');
-$event['pic'] =$this->image_upload();
+$event['agent_name'] = $input->{'agent_name'};
+$event['agent_phone'] = $input->{'agent_phone'};
+$member_state = $input->{'member_state'};
+$event['pic'] = $input->{'image_str'};
+
 if($user_role==2 && $event['publicity']==1)
 {
-$event['additional'] = $this->input->post('additional');
+$event['additional'] = $input->{'additional'};
 }
 if($user_role==1){
 $position = $this->db->query("select longitude, latitude from boss where boss_id=".$event['organizer_id'])->result();
 $event['longitude'] = $position[0]->longitude;
 $event['latitude'] = $position[0]->latitude;
 }
+
 $result = $this->event_model->addEvent($user_role, $event, $member_state);
 if($result){
 echo json_encode(array('status' => true), 200);
@@ -1190,7 +1234,8 @@ public function getItemsOnMap()
 $book = json_decode(file_get_contents("php://input"));
 $longitude = $book->{'longitude'};
 $latitude = $book->{'latitude'};
-$site = $this->boss_model->getSiteByDistance($longitude, $latitude);
+$userId = $book->{'user_id'};
+$site = $this->boss_model->getSiteByDistanceApi($longitude, $latitude, $userId);
 $event = $this->event_model->getEventByDistance($longitude, $latitude);
 $honey = $this->honey_model->getHoneyByDistance($longitude, $latitude);
 if(count($site)>0 || count($event)>0 || count($honey)>0){
@@ -1500,6 +1545,7 @@ $return = '';
 return $return;
 
 }
+
 
 /*
 * this function is used to upload image

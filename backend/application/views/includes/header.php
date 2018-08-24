@@ -115,10 +115,31 @@
                     </a>
                 </li>
                 <li class="treeview"
+                    style="<?php echo(($menu_acc != '') ? ($menu_acc->p_20 == '1' ? '' : 'display:none;') : 'display:none'); ?>">
+                    <a href="<?php echo base_url(); ?>eventmanage">
+                        <i class="fa fa-dashboard"></i>
+                        <span>预订列表</span>
+                    </a>
+                </li>
+                <li class="treeview"
+                    style="<?php echo(($menu_acc != '') ? ($menu_acc->p_20 == '1' ? '' : 'display:none;') : 'display:none'); ?>">
+                    <a href="<?php echo base_url(); ?>newseventmanage">
+                        <i class="fa fa-dashboard"></i>
+                        <span>赛事管理</span>
+                    </a>
+                </li>
+                <li class="treeview"
                     style="<?php echo(($menu_acc != '') ? ($menu_acc->p_30 == '1' ? '' : 'display:none;') : 'display:none'); ?>">
                     <a href="<?php echo base_url(); ?>bookingmanage">
                         <i class="fa fa-book"></i>
                         <span>蜂约管理</span>
+                    </a>
+                </li>
+                <li class="treeview"
+                    style="<?php echo(($menu_acc != '') ? ($menu_acc->p_30 == '1' ? '' : 'display:none;') : 'display:none'); ?>">
+                    <a href="<?php echo base_url(); ?>bookingmanage">
+                        <i class="fa fa-book"></i>
+                        <span>留言管理</span>
                     </a>
                 </li>
                 <li class="treeview"
@@ -162,6 +183,35 @@
                         <i class="fa fa-pie-chart"></i>
                         <span>规则管理</span>
                     </a>
+                </li>
+
+                <li class="treeview">
+                    <a href="<?php echo base_url(); ?>userListing">
+                        <i class="fa fa-laptop"></i>
+                        <span class="pull-left-container">模板管理
+                                <i class="fa fa-angle-left pull-right"></i>
+                            </span>
+                    </a>
+                    <ul class="treeview-menu" style="display: none;">
+                        <li>
+                            <a href="<?php echo base_url(); ?>template/0">
+                                <i class="fa fa-users"></i>
+                                场馆介绍模板
+                            </a>
+                        </li>
+                        <li>
+                            <a href="<?php echo base_url(); ?>template/1">
+                                <i class="fa fa-users"></i>
+                                服务介绍模板
+                            </a>
+                        </li>
+                        <li>
+                            <a href="<?php echo base_url(); ?>template/2">
+                                <i class="fa fa-users"></i>
+                                发布活动模板
+                            </a>
+                        </li>
+                    </ul>
                 </li>
                <?php
                 if ($role == ROLE_ADMIN) {

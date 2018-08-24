@@ -1,21 +1,43 @@
-function e(e, t) {
-    this.appId = e, this.sessionKey = t;
+/**
+ * Created by rd on 2017/5/4.
+ */
+// 引入CryptoJS
+var Crypto = require('cryptojs.js').Crypto;
+var app = getApp();
+
+function RdWXBizDataCrypt(appId, sessionKey) {
+  this.appId = appId
+  this.sessionKey = sessionKey
 }
 
-var t = require("cryptojs.js").Crypto;
+RdWXBizDataCrypt.prototype.decryptData = function (encryptedData, iv) {
+  // base64 decode ：使用 CryptoJS 中 Crypto.util.base64ToBytes()进行 base64解码
+  var encryptedData = Crypto.util.base64ToBytes(encryptedData)
+  var key = Crypto.util.base64ToBytes(this.sessionKey);
+  var iv = Crypto.util.base64ToBytes(iv);
 
-getApp();
+  // 对称解密使用的算法为 AES-128-CBC，数据采用PKCS#7填充
+  var mode = new Crypto.mode.CBC(Crypto.pad.pkcs7);
 
-e.prototype.decryptData = function(e, s) {
-    var e = t.util.base64ToBytes(e), o = t.util.base64ToBytes(this.sessionKey), s = t.util.base64ToBytes(s), r = new t.mode.CBC(t.pad.pkcs7);
-    try {
-        var p = t.AES.decrypt(e, o, {
-            asBpytes: !0,
-            iv: s,
-            mode: r
-        }), a = JSON.parse(p);
-    } catch (e) {
-        console.log(e);
-    }
-    return a.watermark.appid !== this.appId && console.log(err), a;
-}, module.exports = e;
+  try {
+    // 解密
+    var bytes = Crypto.AES.decrypt(encryptedData, key, {
+      asBpytes: true,
+      iv: iv,
+      mode: mode
+    });
+
+    var decryptResult = JSON.parse(bytes);
+
+  } catch (err) {
+    console.log(err)
+  }
+
+  if (decryptResult.watermark.appid !== this.appId) {
+    console.log(err)
+  }
+
+  return decryptResult
+}
+
+module.exports = RdWXBizDataCrypt

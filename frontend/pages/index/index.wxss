@@ -1,6 +1,6 @@
 @import "template/map/template_map.wxss";
 @import "template/table_view/template_table.wxss";
-.top_view {
+.index_top_view {
     position: absolute;
     top: 0;
     left: 0;    
