@@ -1,0 +1,27 @@
+<view class="container">
+    <view style="background: #e6b53c;padding: 40rpx;">
+        <view class="user_info">
+            
+            <view class="user_info_basic">
+                <image class="img_profile" src="{{userInfo.avatar}}" />
+                <view class="user_name">{{userInfo.name}}</view>
+                <view class="user_age" wx:if="{{userInfo.age!=0}}">
+                    <image class="img_sex" src="{{sex_images[1]}}" />
+                    <view class="age_text">{{userInfo.age}}岁</view>
+                </view>
+                <view class="user_phone">{{userInfo.phone}}</view>            
+            </view>
+            <view class="user_detail">{{userInfo.person_sign}}</view>
+            <scroll-view scroll-x class="type_content">                
+                <view class="type_detail" >
+                    <view class="type" >运动项目</view>
+                    <view class="counts">运动次数</view>
+                </view>
+                <view class="type_detail" wx:for="{{type_array}}" wx:key="{{index}}" >
+                    <view class="type" >{{event_types[item.type]}}</view>
+                    <view class="counts">{{item.count}}次</view>
+                </view>                
+            </scroll-view>
+        </view>
+    </view>    
+</view>

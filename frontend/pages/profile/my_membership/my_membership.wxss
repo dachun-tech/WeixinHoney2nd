@@ -20,19 +20,17 @@
   position: absolute;
   top: 69rpx;
   left: 50rpx;
-  width: 70rpx;
-  height: 70rpx;
+  width: 120rpx;
+  height: 120rpx;
   border-radius: 50%;
 }
 
-.user-info-place {
+.touxiang-image {
   position: absolute;
-  top: 80rpx;
-  left: 130rpx;
-  font-family: PingFangSC-Semibold;
-  font-size: 32rpx;
-  color: #333;
-  letter-spacing: 0.67rpx;
+  top: 61rpx;
+  left: 41rpx;
+  width: 40rpx;
+  height: 40rpx;  
 }
 
 .user-is-vip {

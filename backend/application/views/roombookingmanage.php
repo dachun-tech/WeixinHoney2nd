@@ -15,9 +15,9 @@
                             <div class="form-group">
                                 <select class="form-control" id="searchStatus" name="searchStatus">
                                     <option value="0"<?php if ($searchStatus == 0) echo ' selected'; ?>>订单编号</option>
-                                    <option value="1"<?php if ($searchStatus == 1) echo ' selected'; ?>>姓名</option>
-                                    <option value="2"<?php if ($searchStatus == 2) echo ' selected'; ?>>手机号</option>
-                                    <option value="3"<?php if ($searchStatus == 3) echo ' selected'; ?>>活动名称</option>
+                                    <option value="1"<?php if ($searchStatus == 1) echo ' selected'; ?>>订场人姓名</option>
+                                    <option value="2"<?php if ($searchStatus == 2) echo ' selected'; ?>>订场人电话</option>
+                                    <option value="3"<?php if ($searchStatus == 3) echo ' selected'; ?>>场馆名称</option>
                                 </select>
                             </div>
                             <div class="input-group">
@@ -50,25 +50,30 @@
                                 </select>
                             </div>
                         </div>
-                        <div class="col-xs-2 col-sm-1 form-inline">
+                        <div class="col-xs-12 col-sm-6 form-inline" style="margin-top: 10px;">
                             <div class="form-group">
-                                <select class="form-control" id="searchPay" name="searchPay">
-                                    <option value="10"<?php if ($searchPay == 10) echo ' selected'; ?>>支付方式</option>
-                                    <option value="0"<?php if ($searchPay == 0) echo ' selected'; ?>>线下支付</option>
-                                    <option value="1"<?php if ($searchPay == 1) echo ' selected'; ?>>线上支付</option>
-                                </select>
-                            </div>
-                        </div>
-                        <div class="col-xs-12 col-sm-1 form-inline">
-                            <div class="form-group area-search-control-view">
+                                <span> 预订时间 </span>
+                                <input id="fromTime" name="searchStart" class="datepicker-inline form-control" size="16"
+                                       type="text" value="<?php echo $searchStart; ?>" readonly="">
+
+                                <span> 至 </span>
+                                <input id="toTime" name="searchEnd" class="datepicker-inline form-control" size="16"
+                                       type="text" value="<?php echo $searchEnd; ?>" readonly="">
                                 <input type="button" class="btn btn-primary searchList"
-                                       onclick="exportTable()" value="导出">
+                                       onclick="cleanTime()" value="清除">
                                 </input>
                             </div>
                         </div>
                         <div class="col-xs-12 col-sm-1 form-inline">
                             <div class="form-group area-search-control-view">
                                 <input type="submit" class="btn btn-primary searchList" value="查询">
+                                </input>
+                            </div>
+                        </div>
+                        <div class="col-xs-12 col-sm-1 form-inline">
+                            <div class="form-group area-search-control-view">
+                                <input type="button" class="btn btn-primary searchList"
+                                       onclick="exportTable()" value="导出">
                                 </input>
                             </div>
                         </div>
@@ -80,17 +85,13 @@
                     <table class="table area-result-view table-bordered table-hover">
                         <thead>
                         <tr style="background-color: lightslategrey;">
-                            <th width="">订单编号</th>
-                            <th>姓名</th>
+                            <th width="">订单号</th>
+                            <th>预订人</th>
                             <th>手机号</th>
-                            <th>报名人数</th>
-                            <th>支付方式</th>
-                            <th>报名费</th>
-                            <th>活动名称</th>
-                            <th>活动类型</th>
-                            <th>发起人</th>
-                            <th>蜂约状态</th>
-                            <th>提交时间</th>
+                            <th>预订信息</th>
+                            <th>金额</th>
+                            <th>预订状态</th>
+                            <th>下单时间</th>
                             <th width="">操作</th>
                         </tr>
                         </thead>
@@ -109,14 +110,8 @@
                                     <td><?php echo $no; ?></td>
                                     <td><?php echo $record->name; ?></td>
                                     <td><?php echo $record->phone; ?></td>
-                                    <td><?php echo $record->reg_num; ?></td>
                                     <td><?php echo $pay[$record->pay_type]; ?></td>
                                     <td><?php echo($record->reg_num * $record->cost); ?></td>
-                                    <td><?php echo $record->event_name; ?></td>
-                                    <td><?php echo $eventType[$record->type]; ?></td>
-                                    <td><?php echo $this->user_model->getUsernameById($record->organizer_id)->name; ?></td>
-                                    <!--                                    <td><?php echo current($creation_name)->creation_name; ?></td>
- -->
                                     <td><?php echo $bookingState[$record->state]; ?></td>
                                     <td><?php echo $record->submit_time; ?></td>
                                     <td class="text-center">
@@ -141,4 +136,18 @@
     </section>
 </div>
 <script type="text/javascript" src="<?php echo base_url(); ?>assets/js/common.js" charset="utf-8"></script>
+<script>
+
+    $(function () {
+        $(".datepicker-inline").datepicker({
+            format: 'yyyy-mm-dd'
+        });
+    });
+
+    function cleanTime() {
+        $("#fromTime").val("");
+        console.log("here");
+        $("#toTime").val("");
+    }
 </script>
+

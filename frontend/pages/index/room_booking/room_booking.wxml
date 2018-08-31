@@ -1,0 +1,60 @@
+<import src="../../profile/template/stadium_template.wxml" />
+<view class='container'>
+  <scroll-view class="top-scroll" scroll-x="{{true}}">
+    <view class="top-date-select-bar">
+      <block wx:for="{{dateList}}" wx:key="{{index}}">
+      <view class="top-date-item {{item.istoday}}" id="date-{{index}}" bindtap="selectDate">
+        <view class="top-date-title">{{item.date}}</view>
+        <view class="top-date-dayofweek">{{item.weekday}}</view>
+      </view>
+      </block>
+    </view>    
+    </scroll-view >
+    <scroll-view class="booking-scroll" scroll-y="{{true}}">
+      <view class="time-container">
+        <block wx:for="{{timeList}}" wx:key="index">
+          <view class="tr time"><view>{{item}}</view></view>
+        </block>
+      </view>
+      <scroll-view class="room-container" scroll-x="{{true}}">
+          <view class="table">
+            <view class="tr">
+              <block wx:for="{{roomList}}" wx:key="index">
+                <view class="th">{{item}}</view>
+              </block>
+            </view>
+            <block wx:for="{{bookList}}" wx:for-item="row" wx:key="rowid" wx:for-index="rowid">
+              <view class="tr">
+                <block wx:for="{{row}}" wx:key="timeid" wx:for-index="timeid">
+                  <view class="td disabled" wx:if="{{item.status==0}}" 
+                    bindtap="bookRoom" id="{{rowid}}-{{timeid}}">{{item.cost}}</view>
+                  <view class="td booked" wx:elif="{{item.status==1}}"
+                    bindtap="bookRoom" id="{{rowid}}-{{timeid}}">{{item.cost}}</view>
+                  <view class="td enabled" wx:elif="{{item.status==2}}"
+                    bindtap="bookRoom" id="{{rowid}}-{{timeid}}">{{item.cost}}</view>
+                </block>
+              </view>
+            </block>
+          </view>
+      </scroll-view>
+    </scroll-view>
+    <view class="bottom-tools">
+      <view class="booked-info">
+        <view class="info-label">已选场次:</view>
+        <scroll-view class="info-content" scroll-x="{{true}}">
+          <block wx:for="{{bookList}}" wx:for-item="row" wx:key="rowid">
+            <block wx:for="{{row}}" wx:key="timeid" wx:for-index="timeid">              
+              <view class="book-item" wx:if="{{item.status==1}}">
+                <view class="book-title">{{item.room_name}}</view>
+                <view class="book-time">{{item.start}} - {{item.end}}</view>
+              </view>
+            </block>
+          </block>
+        </scroll-view>
+      </view>
+      <view class="btn-area">
+        <view class="btn-info">总价:￥{{totalPrice}}</view>
+        <view class="btn-confirm" bindtap="applyBooking">确认提交</view>
+      </view>
+    </view>
+</view>

@@ -18,6 +18,10 @@
         width: 400px;
         left: 180px;
     }
+
+    input, select {
+        padding: 0 5px !important;
+    }
 </style>
 
 <div class="content-wrapper" style="min-height: 100%">
@@ -30,72 +34,186 @@
     <section class="content" style="min-height: 800px;">
         <div class="container">
             <div>
-                <?php echo form_open_multipart(base_url() . 'goodsmanage/addgoods'); ?>
+                <?php echo form_open_multipart(base_url() . 'eventmanage/addEvent'); ?>
 
                 <div class="row form-inline">
                     <label> *封面图片 : </label>
+                    <input hidden name="item_pics" value="<?= (isset($item_pics)) ? $item_pics : '' ?>">
+                    <div class="form-group text-center" style="padding: 0px 5px;">
+                        <img class="img_preview" src="<?php echo base_url(); ?>assets/images/picture.png"
+                             alt="user image" class="online" itemid="1"
+                             style="height: 100px; width:150px;cursor:pointer;"><br>
+                        <input name="img1" type="file" style="display: none" itemid="1" accept=".png,.jpg,.bmp,.gif"/>
+                    </div>
+                    <div class="form-group text-center" style="padding: 0px 5px;">
+                        <img class="img_preview" src="<?php echo base_url(); ?>assets/images/picture.png"
+                             alt="user image" class="online" itemid="2"
+                             style="height: 100px; width:150px; cursor:pointer;"><br>
+                        <input name="img2" type="file" style="display: none" itemid="2" accept=".png,.jpg,.bmp,.gif"/>
+                    </div>
+                    <div class="form-group text-center" style="padding: 0px 5px;">
+                        <img class="img_preview" src="<?php echo base_url(); ?>assets/images/picture.png"
+                             alt="user image" class="online" itemid="3"
+                             style="height: 100px; width:150px; cursor:pointer;"><br>
+                        <input name="img3" type="file" style="display: none" itemid="3" accept=".png,.jpg,.bmp,.gif"/>
+                    </div>
 
-                    <div class="form-group text-center" style="padding: 0px 20px;">
-                        <img id="product_logo_image" src="<?php echo base_url(); ?>assets/images/picture.png"
-                             alt="user image" class="online"
-                             style="height: 190px; width:375px; padding: 20px; padding-bottom:2px;""><br>
-                        <input id="upload_product_logo" name="upload_product_logo" type="file" style="display: none"/>
-                        <input name="logo_cover" id="product_logo_src" type="text" style="display: none"
-                               value=''>
-                        <span id="product_logo_filename" style="display: none;"></span>
-                    </div>
-                    <a class="btn btn-primary" href="#" onclick="$('#upload_product_logo').click();">
-                        <?php
-                        echo '<span>*上传</span>';
-                        ?>
-                    </a>
-                </div>
-                <div class="row form-inline">
-                    <label> *商品图片 : </label>
-                    <div class="form-group text-center" style="padding: 0px 20px;">
-                        <img id="product_image"
-                             src="<?php echo base_url(); ?>assets/images/picture.png"
-                             alt="user image" class="online"
-                             style="height: 200px; width:320px; padding: 20px; padding-bottom:2px;"><br>
-                        <input name="image_cover" id="product_img_src" type="text" style="display: none"
-                               value=''>
-                        <input id="upload_product_imgs" name="upload_product_imgs" type="file" style="display: none"/>
-                    </div>
-                    <div class="form-group text-center">
-                        <a class="btn btn-primary" href="#" onclick="$('#upload_product_imgs').click();">
-                            <?php
-                            echo '<span>*上传</span>';
-                            ?>
-                        </a>
-                    </div>
+                    <div class="input-group margin"
+                         style="color: red;"><?php if (isset($error_pic)) echo $error_pic; ?></div>
+                    <script>
+                        $('.img_preview').on('click', function () {
+                            var id = $(this).attr('itemid');
+                            $('input[name="img' + id + '"]').trigger('click');
+                        })
+                        $('input[type="file"]').on('change', function () {
+                            var id = $(this).attr('itemid');
+                            preview_image($('.img_preview[itemid="' + id + '"]'), this.files[0]);
+                        })
+
+                        function preview_image(item, file) {
+                            var previewer = item;
+                            var reader = new FileReader();
+                            reader.onloadend = function () {
+                                previewer.attr('src', reader.result)
+                            };
+                            if (file) {
+                                reader.readAsDataURL(file);//reads the data as a URL
+                            } else {
+                                previewer.css({
+                                    background: '#f0f0f0'
+                                })
+                            }
+                        }
+                    </script>
                 </div>
 
                 <input type="hidden" name="id" value=""/>
-                <input type="hidden" name="image1" value="0"/>
                 <div class="row form-inline">
-                    <label> *商品名称 : </label>
+                    <label> *赛事名称 : </label>
                     <div class="input-group margin">
-                        <input name="name" type="text" id="barcode" class="form-control"
-                               value="<?php if (isset($good_name)) echo $good_name; ?>" maxlength="10"
+                        <input name="name" type="text" class="form-control" placeholder="请输入"
+                               value="<?php if (isset($item_name)) echo $item_name; ?>" maxlength="10"
                                style="margin: 0 ; padding: 0px 20px;"/>
                     </div>
                     <div class="input-group margin"
                          style="color: red;"><?php if (isset($error_name)) echo $error_name; ?></div>
                 </div>
                 <div class="row form-inline">
-                    <label> *消耗蜂蜜 : </label>
+                    <label> *报名费 : </label>
                     <div class="input-group margin">
-                        <input name="price" type="text" id="product_name" class="form-control"
-                               value="<?php if (isset($amount)) echo $amount; ?>"/>
+                        <input name="cost" type="number" class="form-control" placeholder="请输入"
+                               value="<?php if (isset($item_cost)) echo $item_cost; ?>" maxlength="10"
+                               style="margin: 0 ; padding: 0px 20px; width: 80px; vertical-align: middle"/>
+                        <label style="width: auto; line-height: 2.5"> 元 / 人 </label>
                     </div>
-                    <div class="input-group margin">ml</div>
                     <div class="input-group margin"
-                         style="color: red;"><?php if (isset($error_amount)) echo $error_amount; ?></div>
+                         style="color: red;"><?php if (isset($error_cost)) echo $error_cost; ?></div>
                 </div>
                 <div class="row form-inline">
-                    <label> *商品详情 : </label>
-                    <div name="summernote" id="summernote_1">
+                    <label> *比赛地点 : </label>
+                    <div class="input-group margin">
+                        <input name="address" type="text" class="form-control" placeholder="请输入"
+                               value="<?php if (isset($item_address)) echo $item_address; ?>" maxlength="10"
+                               style="margin: 0 ; padding: 0px 20px;"/>
                     </div>
+                    <div class="input-group margin"
+                         style="color: red;"><?php if (isset($error_address)) echo $error_address; ?></div>
+                </div>
+                <div class="row form-inline">
+                    <label> *比赛时间 : </label>
+                    <div class="input-group margin">
+                        <input id="fromTime" name="fromTime" class="datepicker-inline form-control" size="16"
+                               placeholder="请选择"
+                               type="text" value="<?php if (isset($item_fromTime)) echo $item_fromTime; ?>" readonly="">
+                    </div>
+                    <div class="input-group margin"
+                         style="color: red;"><?php if (isset($error_fromTime)) echo $error_fromTime; ?></div>
+                </div>
+                <div class="row form-inline">
+                    <label> *报名截止时间 : </label>
+                    <div class="input-group margin">
+                        <input id="toTime" name="toTime" class="datepicker-inline form-control" size="16"
+                               placeholder="请选择"
+                               type="text" value="<?php if (isset($item_toTime)) echo $item_toTime; ?>" readonly="">
+                    </div>
+                    <div class="input-group margin"
+                         style="color: red;"><?php if (isset($error_toTime)) echo $error_toTime; ?></div>
+                </div>
+                <div class="row form-inline">
+                    <label> *支付方式 : </label>
+                    <div class="input-group margin">
+                        <label style="width: auto" class="margin">
+                            <input type="radio" name="payOption" itemid="0" onclick="$('.payMode').val(0)"
+                                <?php if (isset($item_payMode) && $item_payMode == '0') echo 'checked="checked"'; ?>>
+                            线上
+                        </label>
+                        <label style="width: auto" class="margin">
+                            <input type="radio" name="payOption" itemid="1" onclick="$('.payMode').val(1)"
+                                <?php if (isset($item_payMode) && $item_payMode == '1') echo 'checked="checked"'; ?>>
+                            线下
+                        </label>
+                        <input type="text" name="payMode" hidden class="payMode"
+                               value="<?= (isset($item_payMode)) ? $item_payMode : ''; ?>">
+                    </div>
+                    <div class="input-group margin"
+                         style="color: red;"><?php if (isset($error_payMode)) echo $error_payMode; ?></div>
+                </div>
+
+                <div class="row form-inline">
+                    <label> *赛事类型 : </label>
+                    <div class="input-group margin">
+                        <select class="form-control" name="eventtype"
+                                value="<?= (isset($item_type)) ? $item_type : '0'; ?>">
+                            <?php
+                            for ($index = 0; $index < count($eventType); $index++) {
+                                ?>
+                                <option value="<?= $index; ?>"><?= $eventType[$index]; ?></option>
+                                <?php
+                            }
+                            ?>
+                        </select>
+                    </div>
+                    <div class="input-group margin"
+                         style="color: red;"><?php if (isset($error_type)) echo $error_payMode; ?></div>
+                </div>
+
+                <div class="row form-inline">
+                    <label> *报名限制 : </label>
+                    <div class="row form-inline">
+                        <label style="font-size:12px;"> *必填：</label>
+                        <select name="limit1" id="limit1">
+                            <option value="0">姓名</option>
+                            <option value="1">电话</option>
+                            <option value="2">性别</option>
+                            <option value="3">身份证号</option>
+                            <option value="4">所在城市</option>
+                            <option value="5">所在大学</option>
+                            <option value="6">职业</option>
+                            <option value="7">微信号</option>
+                            <option value="8">邮箱</option>
+                        </select>
+                        <div class="input-group margin"
+                             style="color: red;"><?php if (isset($error_limit1)) echo $error_limit1; ?></div>
+                    </div>
+                    <div class="row form-inline">
+                        <label style="font-size:12px;">选填：</label>
+                        <select name="limit2" id="limit2">
+                            <option value="0">姓名</option>
+                            <option value="1">电话</option>
+                            <option value="2">性别</option>
+                            <option value="3">身份证号</option>
+                            <option value="4">所在城市</option>
+                            <option value="5">所在大学</option>
+                            <option value="6">职业</option>
+                            <option value="7">微信号</option>
+                            <option value="8">邮箱</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="row form-inline">
+                    <label> *赛事介绍 : </label>
+                    <div name="summernote" id="summernote_1"></div>
                     <div class="input-group margin">
                         <textarea name="contents" style="height: 500px;"
                                   maxlength="500"><?php if (isset($comment)) echo $comment; ?></textarea>
@@ -107,7 +225,8 @@
                 <div class="row form-inline">
                     <div class="row" style="padding-left: 200px;">
                         <div class="col-xs-12 col-sm-12 form-inline">
-                            <a class="btn btn-default form-control" href="<?php echo base_url(); ?>goods">
+                            <a class="btn btn-default form-control"
+                               href="<?php echo base_url(); ?>newseventmanage">
                                 <span>返回</span>
                             </a>
                             <input class="btn btn-primary form-control" type="submit" value="保存">
@@ -196,6 +315,13 @@
 <script type="text/javascript" src="<?php echo base_url(); ?>assets/editor/js/languages/zh_cn.js"></script>
 <script>
     $(function () {
+        var pics = $('input[name="item_pics"]').val();
+        if (pics != '') {
+            pics = pics.split(',');
+            for (var i = 0; i < pics.length; i++) {
+                $('.img_preview[itemid="' + (i + 1) + '"]').attr('src', baseURL + pics[i]);
+            }
+        }
         $('textarea').froalaEditor({
             tabSpaces: 4,
             language: 'zh_cn',
@@ -327,24 +453,18 @@
 
 </script>
 <script>
-    $("#upload_product_imgs").change(function () {
-        var input = this;
-        console.log("here");
-        var dest_height = 190;
-        var dest_width = 375;
-        $('#crop-image-panel').show();
-        type = 2;
-        upload("upload_product_imgs", 2, dest_width, dest_height);
+
+    $(function () {
+        $(".datepicker-inline").datetimepicker({
+            format: 'yyyy-mm-dd hh:ii'
+        });
     });
-    $("#upload_product_logo").change(function () {
-        var input = this;
+
+    function cleanTime() {
+        $("#fromTime").val("");
         console.log("here");
-        var dest_height = 200;
-        var dest_width = 320;
-        $('#crop-image-panel').show();
-        type = 1;
-        upload("upload_product_logo", 1, dest_width, dest_height);
-    });
+        $("#toTime").val("");
+    }
 </script>
 <script type="text/javascript" src="<?php echo base_url(); ?>assets/js/product_manage/goods.js"
         charset="utf-8"></script>

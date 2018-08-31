@@ -12,18 +12,21 @@
           <image class="activity-type" src="../../image/my_bee_category@2x.png"></image>
           <text class="activity-type-text">{{eventType[item.type]}}</text>
           <image class="activity-limit" src="../../image/my_bee_number@2x.png"></image>
-          <text class="activity-limit-text">{{item.current_member}}人</text>
-          <block wx:if="{{item.role==1}}">
+          <text class="activity-limit-text">{{item.current_member}}/{{item.limit}}人</text>
+          <block>
             <image class="activity-cost" src="../../image/my_bee_m@2x.png"></image>
             <text class="activity-cost-text">{{item.cost}}元/人</text>
           </block>
+          <text class='activity-favourite-text'>{{item.favor}}</text>
+          <image id="{{item.phonenumber}}" class='activity-favourite-image' src='{{image_favs[item.is_favor]}}'></image>
+
         </view>
         <text class="activity-time">时间 | {{item.start_time+' - '+item.end_time}}</text>
         <view class="activity-endline">
           <view class="activity-address">地址 | </view>
           <view class="activity-address1">{{item.province+item.city+item.area+item.detail_address}}</view>
-          <text class='activity-favourite-text'>{{favor[index]}}</text>
-          <image id="{{item.phonenumber}}" class='activity-favourite-image' src='../../image/good_s@2x.png'></image>
+          <text class='activity-distance-text'>{{item.distance_str}}</text>
+          <image id="{{item.phonenumber}}" class='activity-location-image' src='../../image/location1@2x.png'></image>
         </view>
       </view>
     </view>

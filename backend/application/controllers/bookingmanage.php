@@ -36,32 +36,43 @@ class bookingmanage extends basecontroller
         $searchPay = 10;
         $searchState = 10;
         $searchStatus = null;
+        $searchStart = '';
+        $searchEnd = '';
         if ($sData) {
             $searchType = $sData['searchType'];
             $searchName = $sData['searchName'];
             $searchPay = $sData['searchPay'];
             $searchState = $sData['searchState'];
             $searchStatus = $sData['searchStatus'];
+            $searchStart = $sData['searchStart'];
+            $searchEnd = $sData['searchEnd'];
         }
-        $this->bookingCollectListing($searchStatus, $searchName, $searchType,  $searchState, $searchPay);
+        $this->bookingCollectListing($searchStatus, $searchName, $searchType,
+            $searchState, $searchPay, $searchStart,$searchEnd);
     }
 
     /**
      * This function is used to load the booking list
      */
-    function bookingCollectListing($searchStatus = null, $searchName = '', $searchType = 100,  $searchState = 10, $searchPay = 10)
+    function bookingCollectListing($searchStatus = null, $searchName = '', $searchType = 100,
+                                   $searchState = 10, $searchPay = 10, $searchStart='', $searchEnd='')
     {
         $this->global['pageTitle'] = "蜂约订单";
         if ($searchName == 'ALL') $searchName = '';
-        $count = $this->booking_model->bookingListingCount($searchStatus, $searchName, $searchType, $searchState, $searchPay);
+        $count = $this->booking_model->bookingListingCount($searchStatus, $searchName, $searchType,
+            $searchState, $searchPay, $searchStart, $searchEnd);
         $returns = $this->paginationCompress("bookingmanage/", $count, 10);
-        $data['bookingList'] = $this->booking_model->bookingListing($searchStatus, $searchName, $searchType, $searchState, $searchPay, $returns['page'], $returns['segment']);
-        $data['creation_name'] = $this->booking_model->getCreationName($searchStatus, $searchName, $searchType, $searchState, $searchPay, $returns['page'], $returns['segment']);
+        $data['bookingList'] = $this->booking_model->bookingListing($searchStatus, $searchName, $searchType,
+            $searchState, $searchPay, $returns['page'], $returns['segment'], $searchStart, $searchEnd);
+        $data['creation_name'] = $this->booking_model->getCreationName($searchStatus, $searchName, $searchType,
+            $searchState, $searchPay, $returns['page'], $returns['segment'], $searchStart, $searchEnd);
         $this->global['searchStatus'] = $searchStatus;
         $this->global['searchText'] = $searchName;
         $this->global['searchPay'] = $searchPay;
         $this->global['searchState'] = $searchState;
         $this->global['searchType'] = $searchType;
+        $this->global['searchStart'] = $searchStart;
+        $this->global['searchEnd'] = $searchEnd;
         $this->global['pageType'] = 'booking';
         $this->loadViews("bookingmanage", $this->global, $data, NULL);
     }
@@ -76,14 +87,18 @@ class bookingmanage extends basecontroller
         $searchPay = $this->input->post('searchPay');
         $searchState = $this->input->post('searchState');
         $searchType = $this->input->post('searchType');
+        $searchStart = $this->input->post('searchStart');
+        $searchEnd = $this->input->post('searchEnd');
         $this->session->set_userdata('booking_infos', array(
         'searchType'=>$searchType,
         'searchName'=>$searchName,
         'searchPay'=>$searchPay,
         'searchState'=>$searchState,
         'searchStatus'=>$searchStatus,
+        'searchStart'=>$searchStart,
+        'searchEnd'=>$searchEnd,
         ));
-        $this->bookingCollectListing($searchStatus, $searchName, $searchType, $searchState, $searchPay);
+        $this->bookingCollectListing($searchStatus, $searchName, $searchType, $searchState, $searchPay, $searchStart, $searchEnd);
     }
 
     /**

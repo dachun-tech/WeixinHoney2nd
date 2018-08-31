@@ -1,7 +1,20 @@
 <!--pages/booking/booking.wxml-->
 <import src="../template/act_template.wxml" />
 
-<view class="container">
+
+<import src="booking.wxml" />
+<view class="all_tab">
+  <view class="all_tab_bar">
+    <view class="activity_tab {{select_active}}" bindtap='selectActivityTab'>
+      我发起的
+    </view>
+    <view class="booking_tab {{select_book}}" bindtap='selectBookingTab'>
+      我参与的
+    </view>      
+  </view>
+</view>
+
+<view class="container" wx:if="{{select_state==0}}">
 
   <view class="tab">
     <view class="tab-bar">
@@ -19,11 +32,15 @@
   <scroll-view class="activities">
     <view wx:for="{{events}}" wx:item="item" wx:key="index">
       <view wx:if="{{item.state == selected_state}}">
-        <template is="act-template" data="{{item, userRole, eventType, eventState}}" />
+        <template is="act-template" data="{{item, userRole, eventType, eventState, image_favs}}" />
         <view wx:if="{{item.state == 0 && item.isbtn}}" class="btn-view">
           <button  id="{{index}}" class="activity-button" bindtap='btn_remove_booking'>取消活动</button>
         </view>
       </view>
     </view>
   </scroll-view>
+</view>
+
+<view class="container" wx:if="{{select_state==1}}">
+  <template is="booking_act-template" data="{{book_active1, book_active2,book_active3, booking, register_num, userRole, selectedtab, eventType, bookingState, image_favs,eventState}}" />
 </view>

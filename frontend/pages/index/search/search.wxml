@@ -23,7 +23,7 @@
     
     <view class='main-type-content'>    
       <view class="type_title">大家都在搜</view>
-      <view class='type_contain_each' wx:for="{{sport_type_array}}" wx:key="index">
+      <view class='type_contain_each' wx:for="{{sport_type_array}}" wx:key="{{index}}">
         <view class='display_type' bindtap="clicked_sport_type" id="{{index}}" >{{item}}</view>
       </view>      
     </view>
@@ -50,15 +50,15 @@
 
 <!-- place array -->
   <scroll-view scroll-x="{{false}}" scroll-y="{{true}}" class="place_content" wx:if="{{show_place_state}}">    
-    <view  wx:for="{{filter_site_array}}" wx:key="index">
+    <view  wx:for="{{filter_site_array}}" wx:key="{{index}}">
       <template is="template_place" data="{{item, uploadUrl, favorite_pictures, event_type, starparam,rooturl}}" />
     </view>
     
   </scroll-view>
   <!-- activity array -->
   <scroll-view scroll-x="{{false}}" scroll-y="{{true}}" class="active_content" wx:if="{{show_activity_state}}">
-    <view  wx:for="{{filter_events}}" wx:item="item" wx:key="index">
-      <template is="act-template" data="{{item, userRole, eventType, eventState,rooturl}}" />
+    <view  wx:for="{{filter_events}}" wx:item="item" wx:key="{{index}}">
+      <template is="act-template" data="{{item, userRole, eventType, eventState,rooturl,image_favs}}" />
     </view>    
   </scroll-view>
     

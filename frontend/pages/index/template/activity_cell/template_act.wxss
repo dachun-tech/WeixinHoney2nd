@@ -102,20 +102,20 @@
     font-family: "PingFangSC-Regular";
   }
   .activity-favourite-text {
-    float: right;
-    margin-right: 30rpx;
-    margin-top: 18rpx;
-    font-family: PingFangSC-Regular;
-    font-size: 22rpx;
-    color: #472e00;
-    letter-spacing: 0.47rpx;
+    float:right;
+    margin-right:30rpx;
+    margin-top:11rpx;
+    font-family:PingFangSC-Regular;
+    font-size:22rpx;
+    color:#472e00;
+    letter-spacing:0.47rpx;
   }
   
   .activity-favourite-image {
-    float: right;
-    margin-top: 20rpx;
-    margin-right: 20rpx;
-    width: 29rpx;
-    height: 24rpx;
+    float:right;
+    margin-top:10rpx;
+    margin-right:10rpx;
+    width:30rpx;
+    height:29rpx;
   }
   

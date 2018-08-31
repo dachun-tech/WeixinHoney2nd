@@ -34,34 +34,40 @@ class roombookingmanage extends basecontroller
         $searchPay = 10;
         $searchState = 10;
         $searchStatus = null;
+        $searchStart = '';
+        $searchEnd = '';
         if ($sData) {
             $searchType = $sData['searchType'];
             $searchName = $sData['searchName'];
             $searchPay = $sData['searchPay'];
             $searchState = $sData['searchState'];
             $searchStatus = $sData['searchStatus'];
+            $searchStart = $sData['startTime'];
+            $searchEnd = $sData['endTime'];
         }
-        $this->bookingCollectListing($searchStatus, $searchName, $searchType,  $searchState, $searchPay);
+        $this->bookingCollectListing($searchStatus, $searchName, $searchType,  $searchState, $searchPay, $searchStart, $searchEnd);
     }
 
     /**
      * This function is used to load the booking list
      */
-    function bookingCollectListing($searchStatus = null, $searchName = '', $searchType = 100,  $searchState = 10, $searchPay = 10)
+    function bookingCollectListing($searchStatus = null, $searchName = '', $searchType = 100,  $searchState = 10, $searchPay = 10, $searchStart='', $searchEnd='')
     {
-        $this->global['pageTitle'] = "蜂约订单";
+        $this->global['pageTitle'] = "预订订单";
         if ($searchName == 'ALL') $searchName = '';
-        $count = $this->booking_model->bookingListingCount($searchStatus, $searchName, $searchType, $searchState, $searchPay);
+        $count = $this->roombooking_model->bookingListingCount($searchStatus, $searchName, $searchType, $searchState, $searchPay, $searchStart, $searchEnd);
         $returns = $this->paginationCompress("bookingmanage/", $count, 10);
-        $data['bookingList'] = $this->booking_model->bookingListing($searchStatus, $searchName, $searchType, $searchState, $searchPay, $returns['page'], $returns['segment']);
-        $data['creation_name'] = $this->booking_model->getCreationName($searchStatus, $searchName, $searchType, $searchState, $searchPay, $returns['page'], $returns['segment']);
+        $data['bookingList'] = $this->roombooking_model->bookingListing($searchStatus, $searchName, $searchType, $searchState, $searchPay, $searchStart, $searchEnd, $returns['page'], $returns['segment']);
+        $data['creation_name'] = $this->roombooking_model->getCreationName($searchStatus, $searchName, $searchType, $searchState, $searchPay, $searchStart, $searchEnd, $returns['page'], $returns['segment']);
         $this->global['searchStatus'] = $searchStatus;
         $this->global['searchText'] = $searchName;
         $this->global['searchPay'] = $searchPay;
         $this->global['searchState'] = $searchState;
         $this->global['searchType'] = $searchType;
-        $this->global['pageType'] = 'booking';
-        $this->loadViews("bookingmanage", $this->global, $data, NULL);
+        $this->global['searchStart'] = $searchStart;
+        $this->global['searchEnd'] = $searchEnd;
+        $this->global['pageType'] = 'roombooking';
+        $this->loadViews("roombookingmanage", $this->global, $data, NULL);
     }
 
     /**
@@ -74,14 +80,18 @@ class roombookingmanage extends basecontroller
         $searchPay = $this->input->post('searchPay');
         $searchState = $this->input->post('searchState');
         $searchType = $this->input->post('searchType');
+        $searchStart = $this->input->post('fromTime');
+        $searchEnd = $this->input->post('toTime');
         $this->session->set_userdata('booking_infos', array(
         'searchType'=>$searchType,
         'searchName'=>$searchName,
         'searchPay'=>$searchPay,
         'searchState'=>$searchState,
         'searchStatus'=>$searchStatus,
+        'searchStart'=>$searchStart,
+        'searchEnd'=>$searchEnd
         ));
-        $this->bookingCollectListing($searchStatus, $searchName, $searchType, $searchState, $searchPay);
+        $this->bookingCollectListing($searchStatus, $searchName, $searchType, $searchState, $searchPay, $searchStart, $searchEnd);
     }
 
     /**
@@ -90,7 +100,7 @@ class roombookingmanage extends basecontroller
     function deleteBooking()
     {
         $bookingId = $this->input->post('bookingId');
-        $result = $this->booking_model->deletebooking($bookingId);
+        $result = $this->roombooking_model->deletebooking($bookingId);
         if ($result) {
             $this->session->set_flashdata('success', '删除成功.');
             echo(json_encode(array('status' => TRUE)));
@@ -104,11 +114,11 @@ class roombookingmanage extends basecontroller
      */
     function showBookingDetail($bookingId)
     {
-        $data['bookingDetail'] = $this->booking_model->getBookingById($bookingId);
-        $eventId = $this->booking_model->getEventId($bookingId);
+        $data['bookingDetail'] = $this->roombooking_model->getBookingById($bookingId);
+        $eventId = $this->roombooking_model->getEventId($bookingId);
         $data['eventDetail'] = $this->event_model->getEventById($eventId->event_id);
         $boss = $this->event_model->getOrganizerId($eventId->event_id);
-        $user = $this->booking_model->getUserId($bookingId);
+        $user = $this->roombooking_model->getUserId($bookingId);
         $data['rating'] = $this->rating_model->getRatingContentById($user->user_id, $boss[0]->organizer_id);
         $this->global['pageTitle'] = '活动详情';
         $this->loadViews("bookingdetail", $this->global, $data, NULL);

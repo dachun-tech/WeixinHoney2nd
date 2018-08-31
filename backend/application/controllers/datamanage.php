@@ -24,6 +24,7 @@ class datamanage extends CI_Controller
         $this->load->model('favourite_event_model');
         $this->load->model('goods_model');
         $this->load->model('exchange_model');
+        $this->load->model('roombooking_model');
         $this->load->model('binding_model');
     }
 

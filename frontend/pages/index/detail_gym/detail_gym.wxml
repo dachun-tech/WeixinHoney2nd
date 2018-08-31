@@ -15,22 +15,42 @@
     </view>
     <view class='focus-event-rating'>
       <view wx:for="{{starparam.stars}}" style='display: inline;' wx:key="star">
-        <image class="star-image" style="margin-left: 10rpx; padding-top: 20rpx; width:26rpx; height:26rpx " src="{{item-(starparam.score-1) <= 0 ? starparam.srcImage_4 : (item-(starparam.score-1) >= 1 ? starparam.srcImage_0 :(item-(starparam.score-1) < 0.5 ? starparam.srcImage_3 : (item-(starparam.score-1) == 0.5 ? starparam.srcImage_2 : starparam.srcImage_1)))}}">
+        <image class="star-image" style="margin-left: 10rpx; padding-top: 20rpx; width:26rpx; height:26rpx " 
+          src="{{item-(starparam.score-1) <= 0 ? starparam.srcImage_4 : (item-(starparam.score-1) >= 1 ? starparam.srcImage_0 :(item-(starparam.score-1) < 0.5 ? starparam.srcImage_3 : (item-(starparam.score-1) == 0.5 ? starparam.srcImage_2 : starparam.srcImage_1)))}}">
         </image>
       </view>
       <text class='rating-star-text'>{{starparam.score}}分</text>
-      <text class='focus-count-comment' bindtap="on_Clicked_Comment" id="{{site.boss_id}}">{{site.rating_amount}}条评论》</text>
+    </view>
+    <view class="focus-event-favor-btn">
+      <image class="focus-event-favor" bindtap="on_click_favourite" src='{{favourite_image[site.fav_state]}}'></image>
+    </view>     
+    <view>
+      <image class="place-type" src="{{rooturl}}image/my_bee_category@2x.png"></image>
+      <text class="place-type-text">{{site.site_type_detail}}</text>
+      <text class="place-favorite-text">已有{{site.favourite_count}}人关注</text>
     </view>
     <view>
-      <view class="focus-event-date">电话 | <text bindtap='phone_call' style="text-decoration: underline; color: blue;">{{site.phone}}</text></view>
+      <view class="focus-event-date">电话 | <text bindtap='phone_call' style="text-decoration: underline; color: blue;">{{site.phone}}</text></view>      
+      <text class='focus-count-comment' bindtap="on_Clicked_Comment" id="{{site.boss_id}}">{{site.rating_amount}}条评论》</text>
     </view>
     <view>
       <view class="focus-event-place-detail">
         <view style='widht: 10%; float: left; display: inline-block;'>地址 | </view>
         <view class="detail-addr"><text selectable='true'>{{site.province+site.city+site.area+site.detail_address}}</text></view>
       </view>
-      <image class="focus-event-favor" bindtap="on_click_favourite" src='{{favourite_image[site.fav_state]}}'></image>
     </view>
+  </view>
+  <view class='comment-gym'>
+    <view class='comment-gym-label'>
+      <text style="font-weight: bold;">预订规则</text>
+    </view>
+    <view style="padding-left: 30rpx; padding-right:30rpx;margin-top:10rpx;">      
+      <text selectable = "true" class='comment-gym-text'>开始前24小时可退/可用蜂蜜{{site.allow_time!=null?site.allow_time:''}}</text>
+    </view>
+    <view style="width:100%;text-align:center;">
+    <button class="booking-btn" bindtap="go2booking">去预订</button>
+    </view>
+
   </view>
   <view class='comment-gym'>
     <view class='comment-gym-label'>
@@ -51,7 +71,7 @@
   <view class='gym_events'>
     <view class='gym-events-label' style="font-weight: bold;">场馆活动（共{{event.length}}场）</view>
     <view wx:for="{{event}}" wx:key="event_index">
-      <template is="stadium-template" data="{{item, eventType, userRole, eventState}}" />
+      <template is="stadium-template" data="{{item, eventType, userRole, eventState, image_favs}}"/>
     </view>
   </view>
 </view>

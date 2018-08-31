@@ -1,2 +1,58 @@
 <!--index.wxml-->
-<view class="container">{{text}}</view>
+<view class="container">
+    <view class="profile_image">
+        <image class="img_profile" src="../../image/my_s@2x.png" />
+    </view>
+    <view class="item_view">
+        <view class = "text_area">昵称：</view>
+        <input class="text_area" placeholder="请输入昵称"/>        
+    </view>
+    <view class="item_view">
+        <view class = "text_area">性别：</view>
+        <radio-group class="sex-group" bindchange="payment_radioChange">
+            <radio value='1' checked></radio>男
+            <radio value='0' style="margin-left: 30rpx;"></radio>女        
+        </radio-group>
+    </view>
+    <view class="item_view">
+        <view class = "text_area">年龄：</view>
+        <view class="text_area">19岁</view>
+    </view>
+    <view class="item_view">
+        <view class = "text_area">电话：</view>
+        <view class="text_area">12345678900</view>
+        <radio-group class="phone-group" bindchange="payment_radioChange">            
+            <radio value='0'></radio>不公开            
+        </radio-group>
+    </view>
+
+    <view class="item_view">
+        <view class = "text_area">运动项目：</view>
+        <scroll-view scroll-x="{{true}}" class="sport_type">
+            <view class = "type_item">
+                <image src="../../image/del02@2x.png" />
+                <view>练球</view>
+                                
+            </view>
+            <view class = "type_item">
+                <image src="../../image/del02@2x.png" />   
+                <view>练球</view>                             
+            </view>
+            <view class = "type_item">
+                <image src="../../image/del02@2x.png" />   
+                <view>练球</view>                             
+            </view>            
+        </scroll-view>  
+        <image class="img_plus" src="../../image/plus2x.png"/>
+        
+    </view>
+    
+        
+    
+    <view class="item_view" style="border: none;">
+        <view class = "property_text">个性签名：</view>
+        <textarea class="detail_text" placeholder = "多行输入100字以内"></textarea>
+    </view>
+    <view class="submit_btn">确认修改</view>
+
+</view>

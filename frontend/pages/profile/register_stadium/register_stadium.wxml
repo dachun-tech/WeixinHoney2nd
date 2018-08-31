@@ -1,19 +1,28 @@
 <view class='container'>
-  <view class='stadium-avatar-view' bindtap='on_click_selectavatar'>
-    <view class='stadium-avatar-text'>*场馆图标：</view>
-    <image class='stadium-image-next' mode="aspectFill" src='../../../image/next@2x.png' />
-    <image class='stadium-avatar-image' mode="aspectFill" src='{{icon_path}}' />
-  </view>
+  <!-- select sport kind list -->
+  <view class="item_view">
+    <view class = "text_area">场馆类别:</view>
+    <view class="sport_type">
+        <view class = "type_item" wx:for="{{selected_sport_type}}" wx:key="{{index}}">
+            <image id="{{index}}" src="../../../image/del02@2x.png" bindtap = 'On_click_deleteType' />
+            <view>{{item}}</view>                                
+        </view>                     
+    </view>  
+    <image class="stadium-image-next" src="../../../image/next@2x.png" bindtap = 'On_click_AddType' />
+  </view>  
+  <!-- site description -->
   <view class='stadium-input-view'>
     <view class='stadium-input-text'>*场馆介绍：</view>
-    <textarea class='stadium-input-textarea' maxlength='500' placeholder='请输入场馆简介，不超过500字' bindblur='blur_on_introduction' value="{{introduction}}">
+    <textarea class='stadium-input-textarea' maxlength='500' placeholder='请输入场馆简介，不超过500字' bindinput='blur_on_introduction' value="{{bossInfo.site_introduction}}">
     </textarea>
   </view>
+  <!-- service description -->
   <view class='stadium-input-view'>
     <view class='stadium-input-text'>*服务介绍：</view>
-    <textarea class='stadium-input-textarea' maxlength='500' placeholder='请输入场馆简介，不超过500字' bindblur='blur_on_service' value="{{service}}">
+    <textarea class='stadium-input-textarea' maxlength='500' placeholder='请输入场馆简介，不超过500字' bindinput='blur_on_service' value="{{bossInfo.site_service}}">
     </textarea>
   </view>
+  <!-- upload image part -->
   <view class='stadium-images-view'>
     <view class='stadium-images-text'>*场馆图片(最多上传5张)：</view>
     <image class='stadium-images-image' id="0" mode="aspectFill" src='{{(image_path[0]=="")?"../../../image/shop_license.png":image_path[0]}}' bindtap='on_click_image'>
@@ -32,5 +41,203 @@
     </image>
     <image wx:if="{{selected==5}}" class='stadium-images-delete1' id="4" mode="aspectFill" src="../../../image/del02@2x.png" bindtap="on_click_delete"></image>
   </view>
+
+  <!-- booking part-->  
+  <view class='stadium-booking-view' wx:if="{{edit_state==0}}">
+    <view class="modal-mask" wx:if="{{select_weekday_state}}"></view>
+    <view class="time_list" wx:if="{{select_weekday_state}}">
+        <view  wx:for="{{weekday_strs}}" wx:key="{{index}}">
+          <view class="time_item"  bindtap="clicked_weekday_item" id="{{index}}" style="color:{{color_array[weekday_array[index]]}}">{{item}}</view>
+        </view>
+        <view>
+          <view class="time_btn"  bindtap="hideTimeListView">确定</view>
+        </view>         
+    </view>
+
+    <view class="modal-mask" bindtap="preventTouchMove" catchtouchmove="preventTouchMove"  wx:if="{{select_bookingUnit_state}}"></view>
+    <view class="unit_list"  wx:if="{{select_bookingUnit_state}}">
+      <view wx:for="{{booking_units}}" wx:key="{{index}}">
+        <view class="unit_item" bindtap="clicked_bookingUnit_item" id="{{index}}" style="color:{{index==booking_unit_index?color_array[1]:color_array[0]}}">{{item.name}}</view>
+      </view>       
+    </view>
+    
+
+
+    <view class='stadium-input-text'>*预定设置: </view>
+    <view class='stadium-time'>
+      
+      <view class="stadium-input-text">营业时间: </view>
+      <view class="select_time" bindtap="onclick_weekday">
+        <view class="select_text">{{weekday_one}}</view>
+        <image class="arrow_btn" src="../../../image/btn_updown@2x.png"/>        
+      </view>
+      <view class="select_time_text">(多选)</view>      
+    </view>
+    <view class='stadium-input-text'>
+      <view class="inline_text">上午: </view>
+      <picker mode="multiSelector" class='inline_value_text' value="{{time_start1}}" bindchange="changeStartTime1" bindcolumnchange="changeStartTimeColumn1" range="{{timeArray}}">
+        <view class="inline_value_text" style="margin-left: 0rpx;">
+          {{timeArray[0][time_start1[0]]}}:{{timeArray[1][time_start1[1]]}}
+        </view>
+      </picker>
+
+      <view class="inline_text">至</view>
+      <picker mode="multiSelector" class='inline_value_text' value="{{time_end1}}" bindchange="changeEndTime1" bindcolumnchange="changeEndTimeColumn1" range="{{timeArray}}">
+        <view class="inline_value_text" style="margin-left: 0rpx;">
+          {{timeArray[0][time_end1[0]]}}:{{timeArray[1][time_end1[1]]}}
+        </view>
+      </picker>      
+    </view>
+    <view class='stadium-input-text'>
+      <view class="inline_text">下午: </view>
+      <picker mode="multiSelector" class='inline_value_text' value="{{time_start2}}" bindchange="changeStartTime2" bindcolumnchange="changeStartTimeColumn2" range="{{timeArray}}">
+        <view class="inline_value_text" style="margin-left: 0rpx;">
+          {{timeArray[0][time_start2[0]]}}:{{timeArray[1][time_start2[1]]}}
+        </view>
+      </picker>
+
+      <view class="inline_text">至</view>
+      <picker mode="multiSelector" class='inline_value_text' value="{{time_end2}}" bindchange="changeEndTime2" bindcolumnchange="changeEndTimeColumn2" range="{{timeArray}}">
+        <view class="inline_value_text" style="margin-left: 0rpx;">
+          {{timeArray[0][time_end2[0]]}}:{{timeArray[1][time_end2[1]]}}
+        </view>
+      </picker>
+    </view>
+    <view class='stadium-unit' bindtap="onclick_bookingUnit">      
+      <view class="stadium-input-text">订场单位: </view>
+      <view class="select_unit">
+        <view class="select_text">{{booking_units[booking_unit_index].name}}</view>
+        <image class="arrow_btn" src="../../../image/btn_updown@2x.png"/>        
+      </view>
+      
+    </view>
+    
+
+
+    <view class='stadium-input-text'  style="padding-top: 35rpx;">场地详情: </view>
+
+    <view class='room_info' wx:for="{{room_info_array}}" wx:key="{{index}}">      
+      <view class="inline_text">名称: </view>
+      <input class="inline_value_text" placeholder="单行输入" id = "{{index}}" bindinput = "input_roomName" value="{{item.name}}"></input>
+      <view class="inline_text">单价: </view>
+      <input class="inline_value_text" placeholder="单行输入" id = "{{index}}" bindinput = "input_roomCost"  value="{{item.cost}}"></input>
+      <image class="img_del" bindtap="deleteRoomInfo" id = "{{index}}" src="../../../image/room_del@2x.png"/>  
+    </view>
+    <view style="text-align:center;">
+      <image class="img_plus" src="../../../image/plus2x.png" bindtap = "onClick_AddRoom"/>
+    </view>
+    
+    <view class="modal-mask" bindtap="preventTouchMove" catchtouchmove="preventTouchMove" wx:if="{{select_typeUnit_state}}"></view>
+    <view class='room_cancel_time'>
+      <view class="inline_text">退订详情: </view>      
+      <view class="select_cancel_item" bindtap="onclick_typeUnit">
+        <view class="select_text">{{type_units[type_unit_index].name}}</view>
+        <image class="arrow_btn" src="../../../image/btn_updown@2x.png"/>        
+      </view>
+
+      <view class="cancel_type_list"  wx:if="{{select_typeUnit_state}}">
+        <view wx:for="{{type_units}}" wx:key="{{index}}">
+          <view class="cancel_type"  class="unit_item" bindtap="clicked_typeUnit_item" id="{{index}}" style="color:{{index==type_unit_index?color_array[1]:color_array[0]}}">{{item.name}}</view>
+        </view>          
+      </view>      
+    </view>
+    
+  </view>
+
+  <!-- booking part only view-->  
+  <view class='stadium-booking-view'  wx:if="{{edit_state==1}}">
+    <view class="modal-mask" bindtap="hideTimeListView" style = "background:white" wx:if="{{select_weekday_state}}"></view>
+    <view class="time_list" wx:if="{{select_weekday_state}}">
+        <view  wx:for="{{weekday_strs}}" wx:key="{{index}}">
+          <view class="time_item" style="color:{{color_array[weekday_array[index]]}}">{{item}}</view>
+        </view>        
+    </view>
+
+    <view class="unit_list"  wx:if="{{select_bookingUnit_state}}">
+      <view wx:for="{{booking_units}}" wx:key="{{index}}">
+        <view class="unit_item" style="color:{{index==booking_unit_index?color_array[1]:color_array[0]}}">{{item.name}}</view>
+      </view>       
+    </view>
+    
+
+
+    <view class='stadium-input-text'>*预定设置: </view>
+    <view class='stadium-time'>
+      
+      <view class="stadium-input-text">营业时间: </view>
+      <view class="select_time" bindtap="onclick_weekday">
+        <view class="select_text">{{weekday_one}}</view>
+        <image class="arrow_btn" src="../../../image/btn_updown@2x.png"/>        
+      </view>
+      <view class="select_time_text">(多选)</view>      
+    </view>
+    <view class='stadium-input-text'>
+      <view class="inline_text">上午: </view>
+      <view class="inline_value_text" style="margin-left: 0rpx;">
+        {{timeArray[0][time_start1[0]]}}:{{timeArray[1][time_start1[1]]}}
+      </view>      
+      <view class="inline_text">至</view>
+      <view class="inline_value_text" style="margin-left: 0rpx;">
+        {{timeArray[0][time_end1[0]]}}:{{timeArray[1][time_end1[1]]}}
+      </view>            
+    </view>
+    <view class='stadium-input-text'>
+      <view class="inline_text">下午: </view>
+      <view class="inline_value_text" style="margin-left: 0rpx;">
+      {{timeArray[0][time_start2[0]]}}:{{timeArray[1][time_start2[1]]}}
+      </view>      
+      <view class="inline_text">至</view>
+      <view class="inline_value_text" style="margin-left: 0rpx;">
+        {{timeArray[0][time_end2[0]]}}:{{timeArray[1][time_end2[1]]}}
+      </view>      
+    </view>
+    <view class='stadium-unit'>      
+      <view class="stadium-input-text">订场单位: </view>
+      <view class="select_unit">
+        <view class="select_text">{{booking_units[booking_unit_index].name}}</view>               
+      </view>      
+    </view>
+
+    <view class='stadium-input-text'  style="padding-top: 35rpx;">场地详情: </view>
+
+    <view class='room_info' wx:for="{{room_info_array}}" wx:key="{{index}}">      
+      <view class="inline_text">名称: </view>
+      <view class="inline_value_text" >{{item.name}}</view>
+      <view class="inline_text">单价: </view>
+      <view class="inline_value_text">{{item.cost}}</view>        
+    </view>   
+    
+    <view class='room_cancel_time' style="padding-top: 40rpx;">
+      <view class="inline_text">退订详情: </view>      
+      <view class="select_cancel_item">
+        <view class="select_text">{{type_units[type_unit_index].name}}</view>               
+      </view>            
+    </view>    
+  </view>
+
+
+
+
+
+
+
+
   <button class='btn-submit' bindtap="on_click_save">完成</button>
+
+
+  <view class="modal-mask" bindtap="preventTouchMove" catchtouchmove="preventTouchMove" wx:if="{{select_menu_state}}"></view>
+  <view class="modal-dialog" catchtouchmove="preventTouchMove" wx:if="{{select_menu_state}}">
+    <view class='main-type-content'>
+      <view class='type_contain_each' wx:for="{{remain_array}}" wx:key="{{index}}">
+        <view class='display_type' bindtap="clicked_style_item" id="{{index}}" style="color:{{index==select_index?color_array[1]:color_array[0]}}">
+          {{item}}
+        </view>
+      </view>        
+    </view>
+    <view class='main-type-buttons'>
+      <image class="type-button-cancel" bindtap="cancel_btn_clicked" src="../../../image/btn_cancel.png"></image>
+      <image class="type-button-ok" bindtap="ok_btn_clicked" src="../../../image/btn_ok.png"></image>
+    </view>
+  </view>
+
 </view>

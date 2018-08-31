@@ -9,6 +9,7 @@ Page({
     show_place_state: 0,
     show_activity_state: 0,
     rooturl: "../../../",
+    image_favs: ["../../../image/good_n@2x.png","../../../image/good_s@2x.png"],
     active1: "",
     active2: "",
     favorinput: [],
@@ -73,8 +74,11 @@ Page({
     event_type: app.globalData.eventType,
 
   },
-  onLoad: function () {
+  onLoad: function (option) {
 
+  },
+  onShow: function (option) {
+  
     if (!wx.getStorageSync("favorinputtext")) {
       wx.setStorageSync("favorinputtext", [])
     }
@@ -136,7 +140,7 @@ Page({
                   }
                   console.log(event_buf);
                   that.setData({
-                    events: event_buf,
+                    events: event_buf.filter(item => (item.owner == "1")),
                     userInfo: app.globalData.userInfo,
                     eventType: app.globalData.eventType,
                     userRole: app.globalData.userRole,
@@ -169,6 +173,7 @@ Page({
                         site_array: res.data.site,
                         sport_type_array: that.data.sport_type_array
                       });
+                      that.get_filtered_array(that.data.inputtext);
                     },
                   });
                 }

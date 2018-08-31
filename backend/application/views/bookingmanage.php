@@ -59,6 +59,20 @@
                                 </select>
                             </div>
                         </div>
+                        <div class="col-xs-12 col-sm-6 form-inline" style="margin-top: 10px;">
+                            <div class="form-group">
+                                <span> <?= ($pageType != 'news') ? '新增' : $type ?>时间 </span>
+                                <input id="fromTime" name="searchStart" class="datepicker-inline form-control" size="16"
+                                       type="text" value="<?php echo $searchStart; ?>" readonly="">
+
+                                <span> 至 </span>
+                                <input id="toTime" name="searchEnd" class="datepicker-inline form-control" size="16"
+                                       type="text" value="<?php echo $searchEnd; ?>" readonly="">
+                                <input type="button" class="btn btn-primary searchList"
+                                       onclick="cleanTime()" value="清除">
+                                </input>
+                            </div>
+                        </div>
                         <div class="col-xs-12 col-sm-1 form-inline">
                             <div class="form-group area-search-control-view">
                                 <input type="button" class="btn btn-primary searchList"
@@ -115,13 +129,12 @@
                                     <td><?php echo $record->event_name; ?></td>
                                     <td><?php echo $eventType[$record->type]; ?></td>
                                     <td><?php echo $this->user_model->getUsernameById($record->organizer_id)->name; ?></td>
-                                    <!--                                    <td><?php echo current($creation_name)->creation_name; ?></td>
- -->
+                                    <!--<td><?php echo current($creation_name)->creation_name; ?></td>-->
                                     <td><?php echo $bookingState[$record->state]; ?></td>
                                     <td><?php echo $record->submit_time; ?></td>
                                     <td class="text-center">
                                         <a href="<?php echo base_url() . 'bookingDetail/' . $record->id; ?>">
-                                            查看 &nbsp;
+                                            查看
                                         </a>
                                     </td>
                                 </tr>
@@ -141,4 +154,18 @@
     </section>
 </div>
 <script type="text/javascript" src="<?php echo base_url(); ?>assets/js/common.js" charset="utf-8"></script>
+<script>
+
+    $(function () {
+        $(".datepicker-inline").datepicker({
+            format: 'yyyy-mm-dd'
+        });
+    });
+
+    function cleanTime() {
+        $("#fromTime").val("");
+        console.log("here");
+        $("#toTime").val("");
+    }
 </script>
+

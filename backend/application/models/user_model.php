@@ -102,8 +102,7 @@ class user_model extends CI_Model
         $query = $this->db->get();
         $result = $query->result();
         if ($result[0]->role == 1) {
-            $query = $this->db->query("select user.avatar, user.nickname, user.name, user.phone, user.honey, 
-                    user.state, user.role, user.forbidden, user.gender, user.age, user.person_sign, user.shared_count,                     
+            $query = $this->db->query("select user.*,                     
                     boss.allow_pic, boss.id_pic1, boss.id_pic2, boss.id_no, boss.site_name, provinces.province,
                     cities.city,areas.area,boss.detail_address, boss.province as province_id, 
                     boss.city as city_id, boss.area as area_id
@@ -121,6 +120,30 @@ class user_model extends CI_Model
         $result = $query->result();
         return $result;
     }
+
+	function getUserDetailById1($userId)
+    {
+        $this->db->select("*");
+        $this->db->from("user");
+        $this->db->where("no", $userId);
+        $query = $this->db->get();        
+        $result = $query->result();
+        return $result;
+    }
+
+	function getTypeListById($userId)
+    {
+        $this->db->select("event.type as type, count(booking.id) AS count");
+        $this->db->from("booking");
+        $this->db->join("event", "event.id=booking.event_id");
+        $this->db->where('booking.user_id', $userId);
+		$this->db->where('booking.state', '1');
+        $this->db->group_by("event.type");
+        $query = $this->db->get();
+        $result = $query->result();
+        return $result;
+    }
+
 
     /**
      * This function is used to get honey waste detail by exchange
@@ -249,6 +272,19 @@ where event.organizer_id=" . $userId . " and event.additional=1 and rule.no=9;")
     function updateUser($userInfo, $usernickname)
     {
         $this->db->where('nickname', $usernickname);
+        $this->db->update('user', $userInfo);
+
+        return TRUE;
+    }
+
+	/**
+     * This function is used to update the user information
+     * @param array $userInfo : This is users updated information
+     * @param number $userId : This is user id
+     */
+    function updateUserById($userInfo, $user_id)
+    {
+        $this->db->where('no', $user_id);
         $this->db->update('user', $userInfo);
 
         return TRUE;

@@ -71,12 +71,6 @@ $route['eventListingByFilter'] = 'eventmanage/eventListingByFilter';
 $route['eventListingByFilter/(:num)'] = 'eventmanage/eventListingByFilter';
 $route['eventDetail/(:num)'] = 'eventmanage/showEventDetail/$1';
 
-$route['newsevent'] = 'newseventmanage';
-$route['newseventmanage/(:num)'] = 'newseventmanage';
-$route['newseventListingByFilter'] = 'newseventmanage/eventListingByFilter';
-$route['newseventListingByFilter/(:num)'] = 'newseventmanage/eventListingByFilter';
-$route['newseventDetail/(:num)'] = 'newseventmanage/showEventDetail/$1';
-
 $route['booking'] = 'bookingmange';
 $route['bookingmanage/(:num)'] = 'bookingmanage';
 $route['bookingListingByFilter'] = 'bookingmanage/bookingListingByFilter';
@@ -111,8 +105,6 @@ $route['rating/(:num)'] = 'rating';
 $route['ratingListingByFilter'] = 'rating/ratingListingByFilter';
 $route['rulemanage'] = "rule";
 $route['saveRule'] = "rule/saveRule";
-$route['template/(:num)'] = "template/index/$1";
-$route['saveTemplate'] = "template/saveItem";
 
 $route['alarm'] = "alarm";
 $route['alarm/(:num)'] = "alarm";
@@ -180,6 +172,10 @@ $route['api/deleteAcceptAddress'] = "api/datamanage/deleteAcceptAddress";
 $route['api/getSiteStatus'] = "api/datamanage/getSiteStatus";
 $route['api/addSiteInfo'] = "api/datamanage/addSiteInfo";
 $route['api/addSitePicture'] = "api/datamanage/addSitePicture";
+$route['api/imageUpload'] = "api/datamanage/imageUpload";
+$route['api/getTemplates'] = "api/datamanage/getTemplates";
+
+
 $route['api/editSiteInfo'] = "api/datamanage/editSiteInfo";
 $route['api/editSiteInfo1'] = "api/datamanage/editSiteInfo1";
 $route['api/addSitePictureURL'] = "api/datamanage/addSitePictureURL";

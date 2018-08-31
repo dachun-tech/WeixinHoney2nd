@@ -1,24 +1,74 @@
 /**index.wxss**/
 
+.site_detail {
+  border-bottom:20rpx solid #f4f4f4;
+  position:relative;
+  left:0rpx;
+  top:0rpx;
+  width:100%;
+  height:200rpx;
+  background:white;
+  text-align:center;
+  font-size:30rpx;
+  padding-bottom:35rpx;
+}
+.site_point {   
+  padding: 0rpx;
+}
+.site_name {
+  font-size:40rpx;
+  padding:30rpx;
+  padding-bottom:20rpx;
+}
+
+.point_text {
+  font-size:30rpx;
+  display:inline;
+  padding-left:10rpx;
+}
+.star-image{ 
+  transform:translateY(5%);
+  margin-left:10rpx;
+  width:28rpx;
+  height:28rpx;
+}
+
+
+.site_type {
+  padding:20rpx;
+  padding-bottom:35rpx;  
+}
+
+.img_point {
+  width:30rpx;
+  height:30rpx;
+  display:inline-block;
+  transform:translateY(10%);
+}
+.type_text {
+  display:inline-block;
+  padding-left:20rpx; 
+}
+
+
 .cls_score_title_bar {
-  border-top: 20rpx solid #f4f4f4;
-  border-bottom: 20rpx solid #f4f4f4; 
-  position: absolute;
-  left: 0rpx;
-  top: 0rpx;
-  width: 100%;
-  height: 88rpx;
+  border-bottom:20rpx solid #f4f4f4;
+  position:relative;
+  left:0rpx;
+  top:10rpx;
+  width:100%;
+  height:88rpx;
 }
 
 .cls_score_title {
-  position: absolute;
-  left: 30rpx;
-  top: 23rpx;
-  width: auto;
-  height: auto;
-  font-family: PingFangSC-Regular;
-  font-size: 30rpx;
-  color: #333;
+  position:absolute;
+  left:30rpx;
+  top:23rpx;
+  width:auto;
+  height:auto;
+  font-family:PingFangSC-Regular;
+  font-size:30rpx;
+  color:#333;
 }
 
 .cls_score_star {
@@ -41,25 +91,29 @@
 }
 
 .cls_score_text_area {
-  position: absolute;
-  top: 158rpx;
-  left: 30rpx;
-  background-color: #f4f4f4;
-  width: 690rpx;
-  height: 320rpx;
-  font-size: 28rpx;
-  font-family: PingFangSC-Regular;
+  position:relative;
+  top:40rpx;
+  left:30rpx;
+  background-color:#f4f4f4;
+  width:680rpx;
+  height:320rpx;
+  font-size:28rpx;
+  font-family:PingFangSC-Regular;
+  border-radius:10rpx;
+  padding-left:15rpx;
+  padding-top:15rpx;
 }
 
 .cls_text_count {
-  position: absolute;
-  right: 40rpx;
-  top: 498rpx;
-  width: auto;
-  height: auto;
-  font-family: PingFangSC-Semibold;
-  font-size: 28rpx;
-  color: #888;
+  position:relative;
+  right:30rpx;
+  top:60rpx;
+  width:auto;
+  height:auto;
+  font-family:PingFangSC-Semibold;
+  font-size:28rpx;
+  color:#888;
+  float:right;
 }
 
 .btn_add_comment {

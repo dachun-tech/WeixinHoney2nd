@@ -1,66 +1,191 @@
-<!--index.wxml-->
+<!-- index.wxml -->
 <import src="template/template.wxml" />
+<import src="template/template_event.wxml" />
 <view class="container">
   <view class="tab">
     <view class="tab-bar">
-      <view id="tab-btn1" class="tab-item tab-item1 {{active1}}" bindtap='selectTab'>
-        热门活动
-      </view>
-      <view id="tab-btn2" class="tab-item tab-item2 {{active2}}" bindtap='selectTab'>
-        关注场馆活动
-      </view>
+      <view id="tab-btn1" class="tab-item tab-item1 {{active1}}" bindtap='selectTab'>蜂约</view>
+      <view id="tab-btn2" class="tab-item tab-item2 {{active2}}" bindtap='selectTab'>赛事培训</view>
     </view>
     <image class='tab-detail-open' bindtap="On_click_modal_open" src='../../image/filter@2x.png'></image>
   </view>
-  <scroll-view scroll-y class="activities">
-    <view wx:for="{{events}}" wx:item="item" wx:key="index">
-      <view wx:if="{{active1 == 'active'}}">
-        <view wx:if="{{!isfilterset}}">
-          <template is="act-template" data="{{item, userRole, eventType, eventState, favor, index}}" />
-        </view>
-        <view wx:if = "{{isfilterset && select_role==item.role && select_type==item.type && select_start <= item.start_time_now && item.end_time_now <= select_end}}">
-          <template is="act-template" data="{{item, userRole, eventType, eventState, favor, index}}" />
-        </view>
-      </view>
-      <view wx:if="{{active2 == 'active'}}">
-        <view wx:if="{{!isfilterset && item.is_favor != '0'}}">
-          <template is="act-template" data="{{item, userRole, eventType, eventState, favor, index}}" />
-        </view>
-        <view wx:if="{{isfilterset && select_role==item.role && select_type==item.type && select_start <= item.start_time_now && item.end_time_now <= select_end && item.is_favor != '0'}}">
-          <template is="act-template" data="{{item, userRole, eventType, eventState, favor, index}}" />
-        </view>
+  <!-- original event list -->
+  <scroll-view scroll-y class="activities" wx:if="{{active1 == 'active'}}">
+    <view wx:for="{{filter_events}}" wx:item="item" wx:key="index">
+      <view>
+        <template is="act-template" data="{{item, userRole, eventType, eventState,image_favs}}" />
       </view>
     </view>
   </scroll-view>
-
-  <view class="modal-mask" bindtap="hideModal" catchtouchmove="preventTouchMove" wx:if="{{showModal}}"></view>
-  <view class="modal-dialog" wx:if="{{showModal}}">
-    <view class='modal-title'>
-      <view bindtap='On_click_hide' class='modal-title-image'>{{'<'}}</view>
-      <view class='modal-title-text' style="font-weight: bold;">筛选</view>
-      <text class='modal-text-select'>请选择发起人类型</text>
-      <view class="modal-tab-bar">
-        <view id="modla-btn1" class="modal-tab-item modal-tab-item1 {{modal_active1}}" id="{{1}}" bindtap='on_click_role'>
-          场馆主
+  <!-- original event menu -->
+  <view wx:if="{{active1 == 'active'}}">
+    <!-- filter menu -->
+    <view class='index_table_search_view'>
+      <view bindtap="on_click_ordermenu" class='index_table_search_item_view' style='left:0%;width:24%'>
+        <view class="filter_order" style='color:{{color_array[select_order_menu_state]}}'>
+          {{menu_order_array[menu_order_index]}}
         </view>
-        <view id="modal-btn2" class="modal-tab-item modal-tab-item2 {{modal_active2}}" id="{{2}}" bindtap='on_click_role'>
-          个人
+        <cover-image class="img_up_arrow" src="{{menu_btn_array[select_order_menu_state]}}"></cover-image>
+      </view>
+      <view class='index_table_search_item_view' style='left:24%;width:0.5%;height:60%;top:20%;background:#cccccc'></view>
+      <view bindtap="on_click_rolemenu" class='index_table_search_item_view' style='left:24.5%;width:24%'>
+        <view class="filter_order" style='color:{{color_array[select_role_menu_state]}}'>
+          {{menu_role_array[menu_role_index]}}
+        </view>
+        <cover-image class="img_up_arrow" src="{{menu_btn_array[select_role_menu_state]}}"></cover-image>
+      </view>
+      <view class='index_table_search_item_view' style='left:48.5%;width:0.5%;height:60%;top:20%;background:#cccccc'></view>
+      <view bindtap="on_click_timemenu" class='index_table_search_item_view' style='left:49%;width:25%'>
+        <view class="filter_order" style='color:{{color_array[select_time_menu_state]}}'>活动时间</view>
+        <cover-image class="img_up_arrow" src="{{menu_btn_array[select_time_menu_state]}}"></cover-image>
+      </view>
+      <view class='index_table_search_item_view' style='left:74%;width:0.5%;height:60%;top:20%;background:#cccccc'></view>
+      <view bindtap="on_click_stylemenu" class='index_table_search_item_view' style='left:74.5%;width:25%'>
+        <view class="filter_order" style='color:{{color_array[select_style_menu_state]}}'>
+          {{menu_style_index<33?sport_kind_text[menu_style_index]:"全部"}}
+        </view>
+        <cover-image class="img_up_arrow" src="{{menu_btn_array[select_style_menu_state]}}"></cover-image>
+      </view>
+    </view>
+    <!-- select menu content -->
+    <view class="modal-mask1" bindtap="preventTouchMove" catchtouchmove="preventTouchMove" wx:if="{{select_menu_state}}"></view>
+    <!-- order menu content -->
+    <view class="modal-dialog1" catchtouchmove="preventTouchMove" wx:if="{{select_order_menu_state}}">
+      <view class='main-text1'>
+        <view wx:for="{{menu_order_array}}" wx:key="index">
+          <view class='display_show' bindtap="clicked_order_item" id="{{index}}" style="color:{{index==menu_order_index?color_array[1]:color_array[0]}}">
+            {{item}}
+          </view>
         </view>
       </view>
     </view>
-    <view class='modal-selkind'>
-      <text class='modal-selkind-text'>活动类型</text>
-      <view class="modal-kind-view">
-        <view class="modal-kind-btn {{(filter_type==index)?'selected':''}}" wx:for="{{sport_kind_text}}" wx:key="index" bindtap="on_click_type" id="{{index}}">{{item}}</view>
+    <!-- role menu content -->
+    <view class="modal-dialog2" catchtouchmove="preventTouchMove" wx:if="{{select_role_menu_state}}">
+      <scroll-view scroll-y class='main-text1'>
+        <view wx:for="{{menu_role_array}}" wx:key="index">
+          <view class='display_show' bindtap="clicked_role_item" id="{{index}}" style="color:{{index==menu_role_index?color_array[1]:color_array[0]}}">
+            {{item}}
+          </view>
+        </view>
+      </scroll-view>
+    </view>
+    <!-- time menu content -->
+    <view class="modal-dialog3" catchtouchmove="preventTouchMove" wx:if="{{select_time_menu_state}}">
+      <view>
+        <picker class='modal-start-time' mode="date" start="1999-01-01" end="2999-12-12" bindchange="starttime_picker">
+          {{starttime}}
+        </picker>
+        <view class='model-time-symbol'></view>
+        <picker class='modal-end-time' mode="date" start="1999-01-01" end="2999-12-12" bindchange="endtime_picker">
+          {{endtime}}
+        </picker>
+        <view class="btn-item btn_ok active" bindtap='on_click_range_time'>确定</view>
       </view>
-      <view class='modal-actual-time'>活动时间</view>
-      <picker class='modal-start-time' mode="date" start="1999-01-01" end="2999-12-12" bindchange="starttime_picker">{{starttime}}</picker>
-      <view class='model-time-symbol'></view>
-      <picker class='modal-end-time' mode="date" start="1999-01-01" end="2999-12-12" bindchange="endtime_picker">{{endtime}}</picker>
-      <view class='modal-date'>
+      <view style="padding:40rpx;  text-align:center">
+        <view class="btn-item btn_endweek" bindtap='on_click_endweek'>只看周末</view>
+        <view class="btn-item btn_cancel" bindtap='on_click_cancel_btn'>取消</view>
       </view>
-      <button class='modal-cancel' bindtap="click_cancel">全部</button>
-      <button class='modal-ok' bindtap="change_filter">确定</button>
+    </view>
+    <!-- style menu content -->
+    <view class="modal-dialog4" catchtouchmove="preventTouchMove" wx:if="{{select_style_menu_state}}">
+      <view class='main-type-content'>
+        <view class='type_contain_each' wx:for="{{sport_kind_text}}" wx:key="index">
+          <view class='display_type' bindtap="clicked_style_item" id="{{index}}" style="color:{{index==menu_style_index?color_array[1]:color_array[0]}}">
+            {{item}}
+          </view>
+        </view>
+        <view class='type_contain_each'>
+          <view class='display_all_type' bindtap="clicked_style_all" style="color:{{menu_style_index==33?color_array[1]:color_array[0]}}">
+            全部
+          </view>
+        </view>
+      </view>
+      <view class='main-type-buttons'>
+        <image class="type-button-cancel" bindtap="cancel_btn_clicked" src="../../image/btn_cancel.png"></image>
+        <image class="type-button-ok" bindtap="ok_btn_clicked" src="../../image/btn_ok.png"></image>
+      </view>
+    </view>
+  </view>
+
+
+
+  <!-- added new type of event list -->
+  <scroll-view scroll-y class="activities" wx:if="{{active2 == 'active'}}">
+    <view wx:for="{{filter_new_events}}" wx:item="item" wx:key="index">
+      <view>
+        <template is="event-template" data="{{item, userRole, eventType, eventState,image_favs,uploadUrl}}" />
+      </view>
+    </view>
+  </scroll-view>
+  <!-- new type of event menu -->
+  <view wx:if="{{active2 == 'active'}}">
+    <view class='index_table_search_view_new'>
+      <view bindtap="on_click_ordermenu_new" class='index_table_search_item_view_new' style='left:0%;width:33%'>
+        <view class="filter_order_new" style='color:{{color_array[select_new_order_menu_state]}}'>
+          {{menu_order_array[menu_new_order_index]}}
+        </view>
+        <cover-image class="img_up_arrow_new" src="{{menu_btn_array[select_new_order_menu_state]}}"></cover-image>
+      </view>
+      <view class='index_table_search_item_view_new' style='left:33%;width:0.5%;height:60%;top:20%;background:#cccccc'></view>
+      <view bindtap="on_click_timemenu_new" class='index_table_search_item_view_new' style='left:33.5%;width:33%'>
+        <view class="filter_order_new" style='color:{{color_array[select_new_time_menu_state]}}'>活动时间</view>
+        <cover-image class="img_up_arrow_new" src="{{menu_btn_array[select_new_time_menu_state]}}"></cover-image>
+      </view>
+      <view class='index_table_search_item_view_new' style='left:66.5%;width:0.5%;height:60%;top:20%;background:#cccccc'></view>
+      <view bindtap="on_click_stylemenu_new" class='index_table_search_item_view_new' style='left:66.5%;width:33%'>
+        <view class="filter_order_new" style='color:{{color_array[select_new_style_menu_state]}}'>
+          {{menu_new_style_index<33?sport_kind_text[menu_new_style_index]:"全部"}}
+        </view>
+        <cover-image class="img_up_arrow_new" src="{{menu_btn_array[select_new_style_menu_state]}}"></cover-image>
+      </view>
+    </view>
+    <!-- select menu content -->
+    <view class="modal-mask1" bindtap="preventTouchMove" catchtouchmove="preventTouchMove" wx:if="{{select_new_menu_state}}"></view>
+    <!-- order menu content -->
+    <view class="modal-dialog1" catchtouchmove="preventTouchMove" wx:if="{{select_new_order_menu_state}}">
+      <view class='main-text1'>
+        <view wx:for="{{menu_order_array}}" wx:key="index">
+          <view class='display_show' bindtap="clicked_order_item_new" id="{{index}}" style="color:{{index==menu_new_order_index?color_array[1]:color_array[0]}}">
+            {{item}}
+          </view>
+        </view>
+      </view>
+    </view>
+    <!-- time menu content -->
+    <view class="modal-dialog3" catchtouchmove="preventTouchMove" wx:if="{{select_new_time_menu_state}}">
+      <view>
+        <picker class='modal-start-time' mode="date" start="1999-01-01" end="2999-12-12" bindchange="starttime_picker_new">
+          {{new_starttime}}
+        </picker>
+        <view class='model-time-symbol'></view>
+        <picker class='modal-end-time' mode="date" start="1999-01-01" end="2999-12-12" bindchange="endtime_picker_new">
+          {{new_endtime}}
+        </picker>
+        <view class="btn-item btn_ok active" bindtap='on_click_range_time_new'>确定</view>
+      </view>
+      <view style="padding:40rpx;  text-align:center">
+        <view class="btn-item btn_endweek" bindtap='on_click_endweek_new'>只看周末</view>
+        <view class="btn-item btn_cancel" bindtap='on_click_cancel_btn_new'>取消</view>
+      </view>
+    </view>
+    <!-- style menu content -->
+    <view class="modal-dialog4" catchtouchmove="preventTouchMove" wx:if="{{select_new_style_menu_state}}">
+      <view class='main-type-content'>
+        <view class='type_contain_each' wx:for="{{sport_kind_text}}" wx:key="index">
+          <view class='display_type' bindtap="clicked_style_item_new" id="{{index}}" style="color:{{index==menu_new_style_index?color_array[1]:color_array[0]}}">
+            {{item}}
+          </view>
+        </view>
+        <view class='type_contain_each'>
+          <view class='display_all_type' bindtap="clicked_style_all_new" style="color:{{menu_new_style_index==33?color_array[1]:color_array[0]}}">
+            全部
+          </view>
+        </view>
+      </view>
+      <view class='main-type-buttons'>
+        <image class="type-button-cancel" bindtap="cancel_btn_clicked_new" src="../../image/btn_cancel.png"></image>
+        <image class="type-button-ok" bindtap="ok_btn_clicked_new" src="../../image/btn_ok.png"></image>
+      </view>
     </view>
   </view>
 </view>

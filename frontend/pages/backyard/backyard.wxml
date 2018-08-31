@@ -1,15 +1,47 @@
-<!--index.wxml-->
-<import src="honeybox/honeybox.wxml"/>
+<!-- index.wxml -->
+<import src="honeybox/honeybox.wxml" />
 <view class="container">
   <view class='content-view'>
     <image class='content-background-image' src='../../image/garden_bg@2x.png'></image>
     <image class='content-avatar-image' src='{{avatar}}'></image>
     <text class='content-honey-text'>{{total}}ml</text>
     <image bindtap="On_click_beeshop" class="content-shop-imagebtn" src='../../image/garden_sc@2x.png'></image>
-    <image bindtap="On_click_beelist" class="content-list-imagebtn" src='../../image/garden_dh@2x.png'></image>
-    <image bindtap="On_click_comment"class="content-explain-imagebtn" src='../../image/garden_bz@2x.png'></image>
+    <image bindtap="On_click_beelist" class="content-list-imagebtn" src='../../image/garden_jl@2x.png'></image>
+    <image bindtap="On_click_comment" class="content-explain-imagebtn" src='../../image/garden_bz@2x.png'></image>
+    <view bindtap="On_click_leader" class="content-leader-imagebtn">排行榜</view>
+    <image bindtap="On_click_friend" class="content-friend-imagebtn" src='../../image/garden_fy@2x.png'>
+      <view class="friend-notify">3</view>
+    </image>
     <view class="content-bee-view">
-    <template is="honeybox" wx:for="{{honeybox_array}}" wx:key="{{item.start_time}}" data="{{item}}"/>
+      <template is="honeybox" wx:for="{{honeybox_array}}" wx:key="{{item.start_time}}" data="{{item}}" />
+    </view>
+    <view class="leader-view-container">
+      <scroll-view class="leader-list" scroll-y="{{true}}" scroll-x="{{false}}">
+        <view class="leader-item">
+          <image class="leader-icon" src="../../image/leader-1st@2x.png"></image>
+          <image class="leader-avatar" src="../../image/tableview_icon.png"></image>
+          <view class="leader-name">阿斯蒂芬</view>
+          <view class="leader-honey">100000ml</view>
+          <image class="leader-honey-icon" src="../../image/garden_sc_fm02@2x.png"></image>
+        </view>
+        <view class="leader-item">
+          <image class="leader-icon" src="../../image/leader-1st@2x.png"></image>
+          <image class="leader-avatar" src="../../image/tableview_icon.png"></image>
+          <view class="leader-name">阿斯蒂芬</view>
+          <view class="leader-honey">100000ml</view>
+          <image class="leader-honey-icon" src="../../image/garden_sc_fm02@2x.png"></image>
+        </view>
+        <view class="leader-item">
+          <image class="leader-icon" src="../../image/leader-1st@2x.png"></image>
+          <image class="leader-avatar" src="../../image/tableview_icon.png"></image>
+          <view class="leader-name">阿斯蒂芬</view>
+          <view class="leader-honey">100000ml</view>
+          <image class="leader-honey-icon" src="../../image/garden_sc_fm02@2x.png"></image>
+        </view>
+      </scroll-view>
+      <view class="leader-title fav cur" bindtap="leaderFavSelected">好友榜</view>
+      <view class="leader-title total" bindtap="leaderTotalSelected">总榜</view>
+      <image class="leader-close" bindtap="closeLeaderView" src="../../image/close@2x.png"></image>
     </view>
   </view>
 </view>

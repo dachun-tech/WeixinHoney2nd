@@ -45,7 +45,7 @@ Page({
     ],
     menu_order_index: 0,
     menu_filter_index: 1,
-    menu_style_index: 0,
+    menu_style_index: 33,
     prev_menu_style_index: 0,
     menu_order_array:[
       "离我最近",

@@ -45,11 +45,10 @@
 .activity-status {
   vertical-align: middle;
   float: right;
-  margin-right: 30rpx;
+  padding-right: 30rpx;
 }
 
-.activity-content {
-  width: 100%;
+.activity-content {  
   height: 36rpx;
   font-size: 26rpx;
   margin-left: 120rpx;
@@ -79,6 +78,22 @@
   padding-left: 30rpx;
 }
 
+.activity-favourite-text {
+  float: right;
+  margin-right: 30rpx;  
+  font-family: PingFangSC-Regular;
+  font-size: 22rpx;
+  color: #472e00;
+  letter-spacing: 0.47rpx;
+}
+
+.activity-favourite-image {
+  float: right;  
+  margin-right: 10rpx;
+  width: 30rpx;
+  height: 29rpx;
+}
+
 .activity-time {
   margin-top: 20rpx;
   display: block;
@@ -97,24 +112,23 @@
 .activity-address1 {
   vertical-align: top;
   display: inline-block;
-  width: 70%;
+  width: 65%;
   font-size: 26rpx;
   font-family: "PingFangSC-Regular";
 }
-.activity-favourite-text {
+.activity-distance-text {
   float: right;
-  margin-right: 30rpx;
-  margin-top: 18rpx;
+  margin-right: 20rpx;  
   font-family: PingFangSC-Regular;
   font-size: 22rpx;
   color: #472e00;
   letter-spacing: 0.47rpx;
 }
 
-.activity-favourite-image {
-  float: right;
-  margin-top: 20rpx;
-  margin-right: 20rpx;
-  width: 29rpx;
-  height: 24rpx;
+.activity-location-image {
+  float: right; 
+  margin-right: 5rpx;
+  width: 25rpx;
+  height: 30rpx;
 }
+

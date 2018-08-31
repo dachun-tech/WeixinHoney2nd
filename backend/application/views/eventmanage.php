@@ -1,8 +1,14 @@
+<?php
+$type = '活动';
+if ($pageType == 'news') {
+    $type = '赛事';
+}
+?>
 <div class="content-wrapper">
     <!-- Content Header (Page header) -->
     <section class="content-header">
         <h1>
-            活动列表
+            <?= $type ?>列表
         </h1>
     </section>
     <section class="content" style="min-height: 800px;">
@@ -13,7 +19,8 @@
                         <div class="col-xs-2 col-sm-4 form-inline">
                             <div class="form-group">
                                 <select class="form-control" id="searchStatus" name="searchStatus">
-                                    <option value="0"<?php if ($searchStatus == 0) echo ' selected'; ?>>活动名称</option>
+                                    <option value="0"<?php if ($searchStatus == 0) echo ' selected'; ?>><?= $type ?>名称
+                                    </option>
                                     <option value="1"<?php if ($searchStatus == 1) echo ' selected'; ?>>发起人</option>
                                     <option value="2"<?php if ($searchStatus == 2) echo ' selected'; ?>>联系方式</option>
                                 </select>
@@ -27,36 +34,86 @@
                         <div class="col-xs-2 col-sm-1 form-inline">
                             <div class="form-group">
                                 <select class="form-control" id="searchType" name="searchType">
-                                    <option value="100"<?php if ($searchType == 100) echo ' selected'; ?>>活动类型</option>
-                                   <?php
-                                    for($index = 0; $index<count($eventType) ; $index++){
-                                    ?>
-                                    <option value="<?php echo $index; ?>" <?php if ($searchType == $index) echo ' selected'; ?>><?php echo $eventType[$index]; ?></option>
-                                   <?php
+                                    <option value="100" <?php if ($searchType == 100) echo ' selected'; ?>><?= $type ?>
+                                        类型
+                                    </option>
+                                    <?php
+                                    for ($index = 0; $index < count($eventType); $index++) {
+                                        ?>
+                                        <option value="<?php echo $index; ?>" <?php if ($searchType == $index) echo ' selected'; ?>><?php echo $eventType[$index]; ?></option>
+                                        <?php
                                     }
                                     ?>
                                 </select>
                             </div>
                         </div>
-                        <div class="col-xs-2 col-sm-1 form-inline">
+                        <?php
+                        if ($pageType == 'news') {
+                            ?>
+                            <div class="col-xs-2 col-sm-1 form-inline">
+                                <div class="form-group">
+                                    <select class="form-control" id="searchState" name="searchState">
+                                        <option value="10"<?php if ($searchState == 10) echo ' selected'; ?>><?= $type ?>
+                                            状态
+                                        </option>
+                                        <option value="0"<?php if ($searchState == 0) echo ' selected'; ?>>进行中</option>
+                                        <option value="1"<?php if ($searchState == 1) echo ' selected'; ?>>已结束</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="col-xs-2 col-sm-1 form-inline">
+                                <div class="form-group">
+                                    <select class="form-control" id="searchRole" name="searchRole">
+                                        <option value="10"<?php if ($searchRole == 10) echo ' selected'; ?>>报名状态
+                                        </option>
+                                        <option value="2"<?php if ($searchRole == 0) echo ' selected'; ?>>进行中</option>
+                                        <option value="1"<?php if ($searchRole == 1) echo ' selected'; ?>>已截止</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <?php
+                        } else {
+                            ?>
+                            <div class="col-xs-2 col-sm-1 form-inline">
+                                <div class="form-group">
+                                    <select class="form-control" id="searchRole" name="searchRole">
+                                        <option value="10"<?php if ($searchRole == 10) echo ' selected'; ?>>角色类型
+                                        </option>
+                                        <option value="2"<?php if ($searchRole == 0) echo ' selected'; ?>>个人</option>
+                                        <option value="1"<?php if ($searchRole == 1) echo ' selected'; ?>>场馆主</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="col-xs-2 col-sm-1 form-inline">
+                                <div class="form-group">
+                                    <select class="form-control" id="searchState" name="searchState">
+                                        <option value="10"<?php if ($searchState == 10) echo ' selected'; ?>><?= $type ?>
+                                            状态
+                                        </option>
+                                        <option value="0"<?php if ($searchState == 0) echo ' selected'; ?>>进行中</option>
+                                        <option value="1"<?php if ($searchState == 1) echo ' selected'; ?>>已完成</option>
+                                        <option value="2"<?php if ($searchState == 2) echo ' selected'; ?>>已取消</option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <?php
+                        }
+                        ?>
+                        <div class="col-xs-12 col-sm-6 form-inline" style="margin-top: 10px;">
                             <div class="form-group">
-                                <select class="form-control" id="searchRole" name="searchRole">
-                                    <option value="10"<?php if ($searchRole == 10) echo ' selected'; ?>>角色类型</option>
-                                    <option value="2"<?php if ($searchRole == 0) echo ' selected'; ?>>个人</option>
-                                    <option value="1"<?php if ($searchRole == 1) echo ' selected'; ?>>场馆主</option>
-                                </select>
+                                <span> <?= ($pageType != 'news') ? '新增' : $type ?>时间 </span>
+                                <input id="fromTime" name="searchStart" class="datepicker-inline form-control" size="16"
+                                       type="text" value="<?php echo $searchStart; ?>" readonly="">
+
+                                <span> 至 </span>
+                                <input id="toTime" name="searchEnd" class="datepicker-inline form-control" size="16"
+                                       type="text" value="<?php echo $searchEnd; ?>" readonly="">
+                                <input type="button" class="btn btn-primary searchList"
+                                       onclick="cleanTime()" value="清除">
+                                </input>
                             </div>
                         </div>
-                        <div class="col-xs-2 col-sm-1 form-inline">
-                            <div class="form-group">
-                                <select class="form-control" id="searchState" name="searchState">
-                                    <option value="10"<?php if ($searchState == 10) echo ' selected'; ?>>活动状态</option>
-                                    <option value="0"<?php if ($searchState == 0) echo ' selected'; ?>>进行中</option>
-                                    <option value="1"<?php if ($searchState == 1) echo ' selected'; ?>>已完成</option>
-                                    <option value="2"<?php if ($searchState == 2) echo ' selected'; ?>>已取消</option>
-                                </select>
-                            </div>
-                        </div>  
                         <div class="col-xs-1 col-sm-3 form-inline">
                             <div class="form-group area-search-control-view">
                                 <button class="btn btn-primary searchList"
@@ -64,6 +121,19 @@
                                 </button>
                             </div>
                         </div>
+                        <?php
+                        if($pageType=='news'){
+                            ?>
+                            <div class="col-xs-1 col-sm-1 form-inline">
+                                <div class="form-group area-search-control-view">
+                                    <a class="btn btn-primary" href="<?= base_url('newseventmanage/add') ?>"
+                                       onclick="">新增
+                                    </a>
+                                </div>
+                            </div>
+                            <?php
+                        }
+                        ?>
                     </form>
                 </div>
             </div>
@@ -71,45 +141,89 @@
                 <div class="row">
                     <table class="table area-result-view table-bordered table-hover">
                         <thead>
-                        <tr style="background-color: lightslategrey;">
-                            <th style="width: 400px;">活动名称</th>
-                            <th>活动类型</th>
-                            <th>发起人</th>
-                            <th>联系方式</th>
-                            <th>角色类型</th>
-                            <th width="">活动状态</th>
-                            <th>新增时间</th>
-                            <th width="">操作</th>
-                        </tr>
+                        <?php if ($pageType == 'news') {
+                            ?>
+                            <tr style="background-color: lightslategrey;">
+                                <th>序号</th>
+                                <th style="width: 200px;">赛事名称</th>
+                                <th>比赛时间</th>
+                                <th>类型</th>
+                                <th>报名截止时间</th>
+                                <th>报名费</th>
+                                <th>已报名人数</th>
+                                <th>赛事状态</th>
+                                <th>操作</th>
+                            </tr>
+                            <?php
+                        } else {
+                            ?>
+                            <tr style="background-color: lightslategrey;">
+                                <th style="width: 200px;">活动名称</th>
+                                <th>活动类型</th>
+                                <th>发起人</th>
+                                <th>联系方式</th>
+                                <th>角色类型</th>
+                                <th width="">活动状态</th>
+                                <th>新增时间</th>
+                                <th width="">操作</th>
+                            </tr>
+                            <?php
+                        }
+                        ?>
                         </thead>
                         <tbody>
-                       <?php
+                        <?php
                         if (!empty($eventList)) {
                             $i = 0;
                             $eventRole = array('', '场馆主', '个人');
                             $eventState = array('进行中', '已完成', '已取消');
+                            $usedState = array('进行中', '已报名');
+                            $newsState = array('进行中', '已结束');
                             foreach ($eventList as $record) {
                                 $i++;
-                                ?>
-                                <tr>
-                                    <td><?php echo $record->name; ?></td>
-                                    <td><?php echo $eventType[($record->type)]; ?></td>
-                                    <td><?php echo $record->agent_name; ?></td>
-                                    <td><?php echo $record->phone; ?></td>
-                                    <td><?php echo $eventRole[$record->role]; ?></td>
-                                    <td><?php echo $eventState[$record->state]; ?></td>
-                                    <td><?php echo $record->reg_time; ?></td>
-                                    <td class="text-center">
-                                        <a href="<?php echo base_url().'eventDetail/'.$record->id; ?>">
-                                            活动详情 &nbsp;
-                                        </a>
-                                        <a  data-eventid="<?php echo $record->id; ?>"
-                                           onclick="confirmDelete('<?php echo $record->id; ?>')">
-                                            删除 &nbsp;
-                                        </a>
-                                    </td>
-                                </tr>
-                               <?php
+                                if ($pageType == 'news') {
+                                    ?>
+                                    <tr>
+                                        <td><?php echo $i; ?></td>
+                                        <td><?php echo $record->name; ?></td>
+                                        <td><?php echo $record->start_time; ?></td>
+                                        <td><?php echo $eventType[($record->type)]; ?></td>
+                                        <td><?php echo $record->end_time; ?></td>
+                                        <td><?php echo $record->cost; ?></td>
+                                        <td><?php echo 50; ?></td>
+                                        <td><?php echo $newsState[$record->state]; ?></td>
+                                        <td class="text-center">
+                                            <a href="<?php echo base_url() . 'newseventDetail/' . $record->id; ?>">
+                                                赛事详情
+                                            </a>
+                                            <a data-eventid="<?php echo $record->id; ?>"
+                                               onclick="confirmDelete('<?php echo $record->id; ?>')">
+                                                删除 &nbsp;
+                                            </a>
+                                        </td>
+                                    </tr>
+                                    <?php
+                                } else { ?>
+                                    <tr>
+                                        <td><?php echo $record->name; ?></td>
+                                        <td><?php echo $eventType[($record->type)]; ?></td>
+                                        <td><?php echo $record->agent_name; ?></td>
+                                        <td><?php echo $record->phone; ?></td>
+                                        <td><?php echo $eventRole[$record->role]; ?></td>
+                                        <td><?php echo $eventState[$record->state]; ?></td>
+                                        <td><?php echo $record->reg_time; ?></td>
+                                        <td class="text-center">
+                                            <a href="<?php echo base_url() . 'eventDetail/' . $record->id; ?>">
+                                                活动详情 &nbsp;
+                                            </a>
+                                            <a data-eventid="<?php echo $record->id; ?>"
+                                               onclick="confirmDelete('<?php echo $record->id; ?>')">
+                                                删除 &nbsp;
+                                            </a>
+                                        </td>
+                                    </tr>
+                                    <?php
+                                }
                             }
                         }
                         ?>
@@ -121,14 +235,16 @@
                                 <label>是否删除？</label>
                             </div>
                             <div class="form-group">
-                                <button class="btn btn-default" onclick="$('#custom-confirm-delete-view').hide();">取消</button>
-                                <button class="btn btn-primary" onclick="deleteEvent('<?php echo base_url(); ?>');">确定</button>
+                                <button class="btn btn-default" onclick="$('#custom-confirm-delete-view').hide();">取消
+                                </button>
+                                <button class="btn btn-primary" onclick="deleteEvent('<?php echo base_url(); ?>');">确定
+                                </button>
                                 <div id="eventId" style="display: none;"></div>
                             </div>
                         </div>
                     </div>
                     <div class="clearfix">
-                       <?php echo $this->pagination->create_links(); ?>
+                        <?php echo $this->pagination->create_links(); ?>
                     </div>
                 </div>
             </div>
@@ -137,4 +253,17 @@
 </div>
 <script type="text/javascript" src="<?php echo base_url(); ?>assets/js/common.js" charset="utf-8"></script>
 <script type="text/javascript" src="<?php echo base_url(); ?>assets/js/event.js" charset="utf-8"></script>
+<script>
+
+    $(function () {
+        $(".datepicker-inline").datepicker({
+            format: 'yyyy-mm-dd'
+        });
+    });
+
+    function cleanTime() {
+        $("#fromTime").val("");
+        console.log("here");
+        $("#toTime").val("");
+    }
 </script>

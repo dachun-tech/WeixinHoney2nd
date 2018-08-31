@@ -45,7 +45,7 @@
 
 .activity-status {
   float: right;
-  margin-right: 30rpx;
+  padding-right: 30rpx;
   font-family: PingFangSC-Semibold;
   font-size: 26rpx;
   color: #333;
@@ -100,7 +100,22 @@
 .activity-address1 {
   vertical-align: top;
   display: inline-block;
-  width: 80%;
+  width: 72%;
   font-size: 26rpx;
   font-family: "PingFangSC-Regular";
+}
+.activity-fav-text {
+  float: right;
+  margin-right: 30rpx;  
+  font-family: PingFangSC-Regular;
+  font-size: 22rpx;
+  color: #472e00;
+  letter-spacing: 0.47rpx;
+}
+
+.activity-fav-image {
+  float: right; 
+  margin-right: 5rpx;
+  width: 30rpx;
+  height: 30rpx;
 }

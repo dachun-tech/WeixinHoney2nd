@@ -4,6 +4,7 @@
       <image class="activity-picture" src="{{item.avatar}}"></image>
       <view class='activity-role'>
         <text class='activity-name' style="font-weight: bold;">{{item.name}}</text>
+        <!-- <text class="activity-role-text">{{item.role==1?'场馆主':'个人'}}</text> -->
         <text class="event-status" style="font-weight: bold;">{{eventState[item.state]}}</text>
       </view>
       <view class="activity-content">
@@ -19,6 +20,8 @@
       <view class="activity-time">时间 | {{item.start_time}} - {{item.end_time}}</view>
       <view class="activity-address">地址 | </view>
       <view class="activity-address1">{{item.province+item.city+item.area+item.detail_address}}</view>
+          <text class='activity-favourite-text'>{{item.favor}}</text>
+          <image id="{{item.phonenumber}}" class='activity-favourite-image' src='{{image_favs[item.is_favor]}}'></image>
     </view>
   </view>
 </template>

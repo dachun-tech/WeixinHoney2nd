@@ -137,6 +137,7 @@ class rating_model extends CI_Model
         else{
             $query = $query." limit 0, ".$page;
         }
+//        var_dump($query);
         $result = $this->db->query($query);
         return $result->result();
     }

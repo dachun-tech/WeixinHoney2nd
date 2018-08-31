@@ -1,0 +1,101 @@
+.event {
+    margin-top: 20rpx;
+    background-color: white;
+    width: 100%;
+    height: auto;
+    border-bottom: 2rpx solid #f4f4f4;
+  }
+  
+  .event-detail {
+    height: auto;
+    padding-top: 20rpx;    
+  }
+  
+  .event-picture {
+    position:relative;
+    width: 100%;
+    height: 400rpx;
+  }
+  
+  .event-role {
+    margin-left: 20rpx;
+    position:relative;
+    font-size:30rpx;
+    margin-top:20rpx;
+  }
+  
+  .event-name {
+    vertical-align: middle;
+    font-size: 40rpx;
+    width: 70%;
+  }
+  .event-cost {
+    width: 32rpx;
+    height: 36rpx;
+    padding-left: 30rpx;
+    vertical-align: middle;
+    float: right;
+  }
+  .event-cost-text {
+    vertical-align: middle;
+    float: right;
+    padding-right: 30rpx;
+    padding-left: 10rpx;
+  }
+
+  .event-content {  
+    position:relative;
+    height: 36rpx;
+    font-size: 30rpx;
+    margin-left: 20rpx;
+    font-family: "PingFangSC-Regular";
+  }
+  
+  .event-content image {
+    margin-right: 10rpx;
+    vertical-align: bottom;
+  }
+  .event-time {
+    margin-top: 20rpx;
+    display: inline-block;
+    font-size: 30rpx;
+    font-family: "PingFangSC-Regular";
+  }
+  .event-type {
+    width: 32rpx;
+    height: 32rpx;
+    display:inline-block;
+    padding-left:30rpx;
+  }
+  
+  .event-endline{
+    position:relative;
+    margin-bottom: 20rpx;
+    margin-top:30rpx;
+    font-size:30rpx;
+    padding-left:20rpx;
+  }
+  .remain-date {
+    background:black;
+    color:white;
+    display:inline-block;
+    border-radius:8rpx;
+    padding-left:10rpx;
+    padding-right:10rpx;
+  }
+
+  .event-distance-text {
+    float: right;
+    margin-right: 20rpx;  
+    font-family: PingFangSC-Regular;
+    font-size: 24rpx;
+    color: #472e00;
+    letter-spacing: 0.47rpx;
+  }
+  
+  .event-location-image {
+    float: right; 
+    margin-right: 5rpx;
+    width: 25rpx;
+    height: 30rpx;
+  }

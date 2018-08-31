@@ -541,7 +541,9 @@ Page({
   },
   on_submit: function () {
     
-    var _this = this;    
+    
+    var _this = this;   
+    
     _this.data.event.start_time = "" + _this.data.dateTimeArray1[0][_this.data.dateTime1[0]] + '-' + _this.data.dateTimeArray1[1][_this.data.dateTime1[1]] + '-' + _this.data.dateTimeArray1[2][_this.data.dateTime1[2]] + ' ' + _this.data.dateTimeArray1[3][_this.data.dateTime1[3]] + ':' + _this.data.dateTimeArray1[4][_this.data.dateTime1[4]];
 
     _this.data.event.end_time = "" + _this.data.dateTimeArray[0][_this.data.dateTime[0]] + '-' + _this.data.dateTimeArray[1][_this.data.dateTime[1]] + '-' + _this.data.dateTimeArray[2][_this.data.dateTime[2]] + ' ' + _this.data.dateTimeArray[3][_this.data.dateTime[3]] + ':' + _this.data.dateTimeArray[4][_this.data.dateTime[4]];
@@ -705,14 +707,17 @@ Page({
         _this.setData({ is_disabled: true })
       }
       else {
+        wx.setStorageSync("isfirstcreate", 0)
+        wx.setStorageSync("last_template_str", _this.data.event.comment); 
         _this.on_submit1()
+
       }
     }
   },
   on_submit1: function () {    
     var _this = this;
     var image_array = _this.data.image_path;
-    var image_str = "";
+    var image_str = "";    
     wx.uploadFile({
       url: app.globalData.mainURL + 'api/imageUpload',
       filePath: image_array[0],
@@ -768,8 +773,7 @@ Page({
     else if (this.data.isfirstbtn == 0) {
       this.data.isfirstbtn = 1
     }
-    wx.setStorageSync("isfirstcreate", 0)
-    wx.setStorageSync("last_template_str", this.data.textareastr);
+    
     var _this = this;
     wx.request({
       url: app.globalData.mainURL + 'api/createEvent',     

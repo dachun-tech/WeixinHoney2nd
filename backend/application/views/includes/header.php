@@ -116,7 +116,7 @@
                 </li>
                 <li class="treeview"
                     style="<?php echo(($menu_acc != '') ? ($menu_acc->p_20 == '1' ? '' : 'display:none;') : 'display:none'); ?>">
-                    <a href="<?php echo base_url(); ?>eventmanage">
+                    <a href="<?php echo base_url(); ?>roombookingmanage">
                         <i class="fa fa-dashboard"></i>
                         <span>预订列表</span>
                     </a>
@@ -137,7 +137,7 @@
                 </li>
                 <li class="treeview"
                     style="<?php echo(($menu_acc != '') ? ($menu_acc->p_30 == '1' ? '' : 'display:none;') : 'display:none'); ?>">
-                    <a href="<?php echo base_url(); ?>bookingmanage">
+                    <a href="<?php echo base_url(); ?>message">
                         <i class="fa fa-book"></i>
                         <span>留言管理</span>
                     </a>
@@ -186,7 +186,7 @@
                 </li>
 
                 <li class="treeview">
-                    <a href="<?php echo base_url(); ?>userListing">
+                    <a href="<?php echo base_url(); ?>template">
                         <i class="fa fa-laptop"></i>
                         <span class="pull-left-container">模板管理
                                 <i class="fa fa-angle-left pull-right"></i>

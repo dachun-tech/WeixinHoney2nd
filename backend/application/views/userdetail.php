@@ -148,21 +148,24 @@
                     <label class="col-sm-2">馆主姓名:</label>
                     <label class="col-sm-4" id="site_name"><?php echo $userDetail[0]->name; ?></label>
                 </div>
-            <?php
+                <?php
             }
             ?>
-                <div class="row custom-info-row">
-                    <label class="col-sm-2">联系电话:</label>
-                    <label class="col-sm-4" id="phone"><?php echo $userDetail[0]->phone; ?></label>
-                </div>
             <div class="row custom-info-row">
-                <label class="col-sm-2">身份证号:</label>
-                <label class="col-sm-4" id="nickname"><?php echo $userDetail[0]->id_no; ?></label>
+                <label class="col-sm-2">联系电话:</label>
+                <label class="col-sm-4" id="phone"><?php echo $userDetail[0]->phone; ?></label>
             </div>
+            <?php
+            if($userDetail[0]->role==1){
+                ?>
+<!--                <div class="row custom-info-row">-->
+<!--                    <label class="col-sm-2">身份证号:</label>-->
+<!--                    <label class="col-sm-4" id="nickname">--><?php //echo $userDetail[0]->id_no; ?><!--</label>-->
+<!--                </div>-->
 
-            <div class="row custom-info-row">
-                <label class="col-sm-2">身份证照片:</label>
-            </div>
+                <div class="row custom-info-row">
+                    <label class="col-sm-2">身份证照片:</label>
+                </div>
                 <div class="row custom-info-row">
                     <img id="product_logo_image" src="<?php echo base_url() . 'uploads/' . $userDetail[0]->id_pic1; ?>"
                          class="online"
@@ -171,6 +174,8 @@
                          class="online"
                          style="height: 200px; width:300px; padding: 20px; padding-bottom:2px;"">
                 </div>
+                <?php
+            }?>
             <?php
             if ($userDetail[0]->role == 1) {
                 ?>

@@ -2,7 +2,7 @@
     <!-- Content Header (Page header) -->
     <section class="content-header">
         <h1>
-            活动详情
+            <?=$pageTitle;?>
         </h1>
     </section>
     <section class="content">
@@ -70,7 +70,7 @@
             </div>
             <div class="row custom-info-row">
                 <label class="col-sm-2">每个用户最多报名人数:</label>
-                <label class="col-sm-4" id="nickname"><?php echo $eventDetail[0]->limit; ?>人</label>
+                <label class="col-sm-4" id="nickname"><?php echo $eventDetail[0]->person_limit; ?>人</label>
             </div>
             <?php
             if ($eventDetail[0]->role == 1) {
