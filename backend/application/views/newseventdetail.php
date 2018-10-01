@@ -30,12 +30,20 @@
     }
 </style>
 
+<?php
+$is_train = $this->session->userdata('event_infos')['is_train'];
+$type = '赛事';
+if ($is_train == 1)
+    $type = '培训';
+else $is_train = 0;
+?>
+
 
 <div class="content-wrapper" style="min-height: 100%">
     <!-- Content Header (Page header) -->
     <section class="content-header">
         <h1>
-            <span class="head-selected"><?= $pageTitle; ?>
+            <span class="head-selected"><?= $type; ?>详情
         </h1>
     </section>
     <section class="content" style="min-height: 800px;">
@@ -43,6 +51,7 @@
             <div>
                 <?php echo form_open_multipart(base_url() . 'eventmanage/addEvent');
                 $item = $eventDetail[0];
+                $limitStr = ['姓名', '电话', '性别', '身份证号', '所在城市', '所在大学院系', '职业', '微信号', '邮箱'];
                 ?>
 
                 <div class="row form-inline">
@@ -67,7 +76,7 @@
 
                 <input type="hidden" name="id" value="<?= $item->id ?>"/>
                 <div class="row form-inline">
-                    <label> *赛事名称 : </label>
+                    <label> *<?= $type ?>名称 : </label>
                     <div class="input-group margin">
                         <input name="name" type="text" class="form-control" placeholder="请输入"
                                value="<?= $item->eventName ?>" maxlength="10"
@@ -108,26 +117,77 @@
                     </div>
                 </div>
                 <div class="row form-inline">
+                    <label> *联系方式 : </label>
+                    <div class="input-group margin">
+                        <input id="toTime" name="toTime" class="datepicker-inline form-control" size="16"
+                               placeholder="请选择"
+                               type="text" value="<?= $item->agent_phone ?>" readonly="">
+                    </div>
+                </div>
+                <div class="row form-inline">
+                    <label> *人数上限 : </label>
+                    <div class="input-group margin">
+                        <input id="toTime" name="toTime" class="datepicker-inline form-control" size="16"
+                               placeholder="请选择"
+                               type="text" value="<?= $item->limit ?>" readonly="">
+                    </div>
+                </div>
+                <div class="row form-inline">
                     <label> *支付方式 : </label>
                     <div class="input-group margin">
-                        <label style="width: auto" class="margin"><?= ($item->pay_type == '0') ? '线上支付' : '线下支付' ?>
+                        <label style="width: auto" class="margin"><?php
+                            if ($item->pay_type == '0') echo '线下支付';
+                            else if ($item->pay_type == '1') echo '线上支付';
+                            else echo '线上支付 / 线下支付';
+                            ?>
                         </label>
                     </div>
                 </div>
 
                 <div class="row form-inline">
-                    <label> *赛事类型 : </label>
+                    <label> *<?= $type ?>类型 : </label>
                     <div class="input-group margin"><?= $eventType[$item->type]; ?>
                     </div>
                 </div>
 
                 <div class="row form-inline">
                     <label> *报名限制 : </label>
-                    <div class="input-group margin"><?= $item->limit; ?>,<?= $item->person_limit; ?></div>
+                    <?php
+                    $limit = $item->condition . ',-1,-1,-1,-1,-1,-1,-1,-1,-1,-1';
+                    $limit = explode(',', $limit); ?>
+                    <?php
+                    $j = 0;
+                    foreach ($limitStr as $cond) {
+                        echo '<div class="row" style="line-height: 1;">';
+                        echo '<label style="font-size:13px;"> ' . $cond . '</label>';
+                        echo '<div class="input-group" style="line-height: 1;">
+                                    <label style="width: auto; margin:0 20px;"><input type="radio" disabled ' . ($limit[$j] == 1 ? 'checked' : '') . ' value="' . ($j * 2) . '">必填项</label>
+                                    <label style="width: auto; margin:0 20px;"><input type="radio" disabled ' . ($limit[$j] == 0 ? 'checked' : '') . ' value="' . ($j * 2 + 1) . '">选填项</label>
+                                </div>';
+                        echo '</div>';
+                        $j++;
+                    }
+                    ?>
                 </div>
 
+
                 <div class="row form-inline">
-                    <label> *赛事介绍 : </label>
+                    <label> *阅览量 : </label>
+                    <div class="input-group margin"><?= $item->read_count; ?>
+                    </div>
+                </div>
+                <div class="row form-inline">
+                    <label> *点赞数 : </label>
+                    <div class="input-group margin"><?= $favourite_amount; ?>
+                    </div>
+                </div>
+                <!--<div class="row form-inline">
+                    <label> *转发量 : </label>
+                    <div class="input-group margin"><?= (($shared_amount == null) ? '0' : $shared_amount); ?>
+                    </div>
+                </div>-->
+                <div class="row form-inline">
+                    <label style="vertical-align: top;"> *<?= $type ?>介绍 : </label>
                     <div class="input-group margin">
                         <div>
                             <?= $item->comment; ?>
@@ -148,23 +208,71 @@
                         <table class="table table-bordered area-result-view">
                             <thead>
                             <tr style="background-color: lightslategrey;">
-                                <th>姓名</th>
-                                <th>电话</th>
-<!--                                <th>身份证号</th>-->
+                                <th>昵称</th>
+                                <?php
+                                $opt = $limitStr;
+                                $condition = explode(',', $item->condition);
+                                $jj = 0;
+                                foreach ($condition as $it) {
+                                    if ($it != '-1')
+                                        echo '<th>' . $opt[$jj] . '</th>';
+                                    $jj++;
+                                }
+                                ?>
+                                <!--                                <th>身份证号</th>-->
                                 <th>支付方式</th>
                                 <th>使用蜂蜜优惠</th>
+                                <th>操作</th>
                             </tr>
                             </thead>
+                            <style>
+                                td a, td div {
+                                    display: inline-block;
+                                    margin: 0 10px;
+                                }
+                            </style>
                             <tbody id="content_tbl">
                             <?php
-                            foreach ($booking as $item) {
+                            foreach ($booking as $it) {
+
                                 ?>
                                 <tr>
-                                    <td><?php echo $item->name; ?></td>
-                                    <td><?php echo $item->username; ?></td>
-<!--                                    <td>--><?php //echo $item->id_no; ?><!--</td>-->
-                                    <td><?php echo ($item->pay_type == 0) ? '线上已支付' : '线下已支付'; ?></td>
-                                    <td><?php echo ($item->pay_honey == 0) ? '未使用' : $item->pay_honey; ?></td>
+                                    <td><?php echo $it->name; ?></td>
+                                    <?php
+
+                                    $book_info = json_decode($it->book_info);
+                                    $genderStr = ['男', '女'];
+                                    $kk = 0;
+                                    foreach ($condition as $cond) {
+                                        if ($cond != '-1') {
+                                            if ($kk == 2)
+                                                echo '<td>' . $genderStr[(($book_info[$kk] == '') ? 0 : $book_info[$kk])] . '</td>';
+                                            else
+                                                echo '<td>' . $book_info[$kk] . '</td>';
+                                        }
+                                        $kk++;
+                                    }
+                                    ?>
+                                    <!--                                    <td>-->
+                                    <?php //echo $item->id_no; ?><!--</td>-->
+                                    <td><?php echo ($it->pay_type == 0) ? '线下已支付' : '线上已支付'; ?></td>
+                                    <td><?php echo ($it->pay_honey == 0) ? '未使用' : ($it->pay_honey . 'ml'); ?></td>
+                                    <td>
+
+                                        <?php
+                                        echo '<a href="' . base_url() . 'userDetail/' . (($it->state==2)?$it->cancel_user:$it->user_id) . '">查看用户</a>';
+                                        if ($it->state == 0)
+                                            echo '<a href="#" onclick="cancel_booking(\'' . $it->id . '\','
+                                                . '\'' . $it->user_id . '\','
+                                                . '\'' . $it->open_id . '\','
+                                                . '\'' . $it->out_trade_no . '\','
+                                                . '\'' . $it->pay_online . '\','
+                                                . ')">取消报名</a>';
+                                        else if ($it->state == 2)
+                                            echo '<div>已取消</div>';
+                                        else
+                                            echo '<div>进行中</div>';; ?>
+                                    </td>
                                 </tr>
                                 <?php
                             }
@@ -180,7 +288,7 @@
                         <div class="col-xs-12 col-sm-12 form-inline">
                             <a class="btn btn-default form-control"
                                href="<?php echo base_url(); ?>newseventmanage">
-                                <span>返回赛事列表</span>
+                                <span>返回<?= $type ?>列表</span>
                             </a>
                         </div>
                     </div>
@@ -271,7 +379,7 @@
         if (pics != '') {
             pics = pics.split(',');
             for (var i = 0; i < pics.length; i++) {
-                $('.img_preview[itemid="' + (i + 1) + '"]').attr('src', baseURL + 'uploads/'+pics[i]);
+                $('.img_preview[itemid="' + (i + 1) + '"]').attr('src', baseURL + 'uploads/' + pics[i]);
             }
         }
         $('textarea').froalaEditor({
@@ -417,7 +525,61 @@
         console.log("here");
         $("#toTime").val("");
     }
+
+    function cancel_booking(id, user_id, open_id, trade_no, fee) {
+        if (confirm('是否取消此用户的报名?')) {
+            var refund_no = '1500220062' + Date.now();
+            if (parseFloat(fee) > 0) {
+                $.ajax({
+                    type: 'post',
+                    url: baseURL + 'api/refund',
+                    contentType: 'application/json',
+                    dataType: 'application/json',
+                    data: JSON.stringify({
+                        id: open_id,
+                        user_id: user_id,
+                        fee: fee,
+                        out_trade_no: trade_no,
+                        out_refund_no: refund_no
+                    }),
+                    complete: function (res) {
+                        $.ajax({
+                            type: 'post',
+                            url: baseURL + 'api/datamanage/cancelBooking',
+                            contentType: 'application/json',
+                            dataType: 'application/json',
+                            data: JSON.stringify({booking_id: id, out_refund_no: refund_no}),
+                            complete: function (res) {
+                                location.reload();
+//                                if (res.status == 'success') {
+//                                    alert('取消成功!');
+//
+//                                } else {
+//                                    alert('取消失败!');
+//                                }
+                            }
+                        });
+                    }
+                });
+            } else {
+                $.ajax({
+                    type: 'post',
+                    url: baseURL + 'api/datamanage/cancelBooking',
+                    contentType: 'application/json',
+                    dataType: 'application/json',
+                    data: JSON.stringify({booking_id: id, out_refund_no: refund_no}),
+                    complete: function (res) {
+                        locaton.reload();
+//                        if (res.status == 'success') {
+//                            alert('取消成功!');
+//                            location.reload();
+//                        } else {
+//                            alert('取消失败!');
+//                        }
+                    }
+                });
+            }
+        }
+    }
 </script>
-<script type="text/javascript" src="<?php echo base_url(); ?>assets/js/product_manage/goods.js"
-        charset="utf-8"></script>
 

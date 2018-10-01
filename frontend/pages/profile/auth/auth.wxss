@@ -111,7 +111,7 @@
 .input-info-input {
   vertical-align: middle;
   margin-left: 30rpx;
-  width: auto;
+  width: 450rpx;
   margin-right: 5rpx;
   display: inline-block;
   position: relative;
@@ -132,8 +132,8 @@
 }
 
 .detailaddress-view {
-  width: atuo;
-  margin-left: 150rpx;
+  width: auto;
+  margin-left: 10rpx;
   height: 85rpx;
   border-bottom: solid 3rpx #f4f4f4;
   font-family: PingFangSC-Regular;

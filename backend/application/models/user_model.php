@@ -102,7 +102,7 @@ class user_model extends CI_Model
         $query = $this->db->get();
         $result = $query->result();
         if ($result[0]->role == 1) {
-            $query = $this->db->query("select user.*,                     
+            $query = $this->db->query("select user.*, boss.longitude, boss.latitude,                    
                     boss.allow_pic, boss.id_pic1, boss.id_pic2, boss.id_no, boss.site_name, provinces.province,
                     cities.city,areas.area,boss.detail_address, boss.province as province_id, 
                     boss.city as city_id, boss.area as area_id
@@ -158,8 +158,8 @@ class user_model extends CI_Model
         $query = $this->db->get();
         $result = $query->result();
         $query = $this->db->query("select goods.cost, exchange.submit_time , exchange.no
-from exchange, goods 
-where exchange.user_id=" . $userId . " and exchange.good_id=goods.id;");
+            from exchange, goods 
+            where exchange.user_id=" . $userId . " and exchange.good_id=goods.id;");
         $result = $query->result();
         return $result;
     }
@@ -177,8 +177,8 @@ where exchange.user_id=" . $userId . " and exchange.good_id=goods.id;");
         $query = $this->db->get();
         $result = $query->result();
         $query = $this->db->query("select rule.value, event.reg_time, event.id as no
-from event, rule
-where event.organizer_id=" . $userId . " and event.additional=1 and rule.no=9;");
+            from event, rule
+            where event.organizer_id=" . $userId . " and event.additional=1 and rule.no=9;");
         $result = $query->result();
         return $result;
     }
@@ -345,9 +345,10 @@ where event.organizer_id=" . $userId . " and event.additional=1 and rule.no=9;")
      */
     function getStateByOpenId($open_id)
     {
-        $this->db->select("*");
+        $this->db->select("user.*, binding.amount");
         $this->db->from("user");
-        $this->db->where("open_id", $open_id);
+		$this->db->join("binding", "user.no = binding.user_id", 'left');
+        $this->db->where("user.open_id", $open_id);
         $query = $this->db->get();
         return $query->result();
     }
@@ -470,6 +471,27 @@ where event.organizer_id=" . $userId . " and event.additional=1 and rule.no=9;")
     {
         $amount = $this->db->query("select cost from goods where id=" . $good_id)->result();
         $result = $this->db->query("update user set honey=honey-" . (1 * $amount[0]->cost) . " where no=" . $user_id);
+        return $result;
+    }
+    /**
+     * This function is used to sub honey
+     * @param int $user_id : This is amount of honey
+     * @param int $good_id : this is id of good which user exchange
+     * @return boolean $result: this is status of adding
+     */
+    function removeHoney($user_id, $honey)
+    {
+        $rules = $this->db->query("select * from rule ")->result();
+        $userInfo = $this->db->query("select * from user where no = ".$user_id)->row();
+        $result = $this->member_state_model->getMemberState($user_id);
+        $honey_unit = $rules[8]->value;
+        $honey_price_unit = $rules[9]->value;
+        if($result != null){
+            $honey_unit = $rules[10]->value;
+            $honey_price_unit = $rules[11]->value;
+        }
+
+        $result = $this->db->query("update user set honey = honey - " . (1 * $honey / $honey_price_unit * $honey_unit) . " where no = " . $user_id);
         return $result;
     }
 

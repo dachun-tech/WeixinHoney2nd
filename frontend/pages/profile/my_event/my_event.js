@@ -48,14 +48,7 @@ Page({
             book[index].pic = book[index].pic.split(",")[0];             
             book[index].avatar = app.globalData.uploadURL + book[index].pic; 
             book[index].favor_num = favor[index];
-            var tempdate
-            tempdate = Date.parse(book[index].start_time.replace(/-/g, '/'))
-            if (tempdate - Date.now() < 21600000) {
-              book[index].isbtn = 0
-            }
-            else {
-              book[index].isbtn = 1
-            }
+            
             if (book[index].favor_state == null) {
               book[index].favor_state = 0;
               book[index].idshow = '0000000000'
@@ -145,98 +138,7 @@ Page({
         this.showevent(2)
         break;
     }
-  },
-  //called when user clicked cancel event button.
-  btn_remove_booking: function (event) {
-    var no = event.currentTarget.id
-    var that = this
-
-    wx.showModal({
-      content: '是否取消蜂约？',
-      success: function (res) {
-        if (res.confirm) {
-
-          if (that.data.booking[no].pay_type == "1") {
-            var ordercode = that.data.booking[no].cost * that.data.booking[no].reg_num;
-            var out_refund_no = app.globalData.mch_id + Date.now()
-
-            wx.login({
-              success: function (res) {
-                if (res.code) {
-                  wx.request({
-                    url: app.globalData.mainURL + 'api/refund',
-                    data: {
-                      id: wx.getStorageSync('openid'),//要去换取openid的登录凭证
-                      fee: ordercode,
-                      user_id: app.globalData.userInfo.user_id,
-                      out_trade_no: that.data.booking[no].out_trade_no,
-                      out_refund_no: out_refund_no
-                    },
-                    method: 'POST',
-                    header:
-                    {
-                      'content-type': 'application/json'
-                    },
-                    success: function (res) {
-
-                      wx.request({
-                        url: app.globalData.mainURL + 'api/cancelBooking',
-                        method: 'POST',
-                        header:
-                        {
-                          'content-type': 'application/json'
-                        },
-                        data: {
-                          booking_id: that.data.booking[no].id,
-                          out_refund_no: out_refund_no
-                        },
-                        success: function (res) {
-
-                          if (res.data.status == true) {
-                            var booking = that.data.booking;
-                            booking[no].out_refund_no = out_refund_no
-                            booking[no].state = 2
-                            that.setData({
-                              booking: booking
-                            })
-                          }
-                        }
-                      })
-                    }
-                  })
-                  that.onLoad()
-                } else {
-                }
-              }
-            });
-          }
-          else {
-            wx.request({
-              url: app.globalData.mainURL + 'api/cancelBooking',
-              method: 'POST',
-              header:
-              {
-                'content-type': 'application/json'
-              },
-              data: {
-                booking_id: that.data.booking[no].id,
-              },
-              success: function (res) {
-
-                if (res.data.status == true) {
-                  var booking = that.data.booking;
-                  booking[no].out_refund_no = out_refund_no
-                  booking[no].state = 2
-                  that.setData({ booking: booking })
-                }
-              }
-            })
-          }
-        } else if (res.cancel) {
-        }
-      }
-    })
-  },
+  },  
   //called when user wants to see detail
   click_detail_event: function (event) {
     wx.navigateTo({

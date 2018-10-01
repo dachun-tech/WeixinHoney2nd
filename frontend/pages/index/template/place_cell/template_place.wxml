@@ -4,8 +4,7 @@
             <view class="place-detail">
                 <image class="place-picture" src="{{uploadUrl + item.site_icon}}"></image>
                 <view class="place-role">
-                    <text class="place-name" style="font-weight: bold;">{{item.site_name}}</text>
-                    <image class="place-status" src="{{favorite_pictures[item.isfavourite]}}"></image>
+                    <text class="place-name" style="font-weight: bold;">{{item.site_name}}</text>                    
                 </view>
                 <view class="place-content">
                     <image class="place-type" src="{{rooturl}}image/my_bee_category@2x.png"></image>
@@ -26,5 +25,6 @@
                 </view>
             </view>
         </view>
+        <image class="place-status" bindtap="click_set_status"  id="{{item.boss_id}}" src="{{favorite_pictures[item.isfavourite]}}"></image>
     </view>
 </template>

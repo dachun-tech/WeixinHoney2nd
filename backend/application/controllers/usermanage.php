@@ -18,6 +18,7 @@ class usermanage extends basecontroller
     {
         parent::__construct();
         $this->load->model('user_model');
+        $this->load->model('member_state_model');
         $this->isLoggedIn();
     }
 
@@ -173,6 +174,25 @@ class usermanage extends basecontroller
         $data['userDetail'] = $this->user_model->getUserDetailById($userId);
         $data['exchange'] = $this->user_model->getExchangeHoneyWasteById($userId);
         $userRole = $this->user_model->getRoleById($userId);
+        $data['isMember'] = $this->member_state_model->getStateById($userId);
+        $data['typeList'] = $this->user_model->getTypeListById($userId);
+
+        $user_sports = explode(',',$data['userDetail'][0]->sport_type);
+        $show_arr = [];
+        $j=0;
+        foreach ($user_sports as $sp){
+            $item = array('type'=>$sp, 'count'=>0);
+            foreach($data['typeList'] as $unit){
+                if($unit->type == $item['type']){
+                    $item['count'] = $unit->count;
+                    break;
+                }
+            }
+            array_push($show_arr, $item);
+            $j++;
+        }
+        $data['typeList'] = json_decode(json_encode($show_arr));
+
         if($userRole->role == 2){
             $data['event'] = $this->user_model->getEventHoneyWasteById($userId);
         }

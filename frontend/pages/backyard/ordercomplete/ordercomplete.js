@@ -58,12 +58,6 @@ Page({
   
   },
 
-  /**
-   * 用户点击右上角分享
-   */
-  onShareAppMessage: function () {
-  
-  },
   on_click_shop: function () {
     wx.navigateTo({
       url: '../mainbeeshop/mainbeeshop',

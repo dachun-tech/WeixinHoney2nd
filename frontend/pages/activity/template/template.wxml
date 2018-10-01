@@ -24,7 +24,7 @@
         <text class="activity-time">时间 | {{item.start_time+' - '+item.end_time}}</text>
         <view class="activity-endline">
           <view class="activity-address">地址 | </view>
-          <view class="activity-address1">{{item.province+item.city+item.area+item.detail_address}}</view>
+          <view class="activity-address1">{{item.detail_address}}</view>
           <text class='activity-distance-text'>{{item.distance_str}}</text>
           <image id="{{item.phonenumber}}" class='activity-location-image' src='../../image/location1@2x.png'></image>
         </view>

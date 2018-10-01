@@ -1,6 +1,6 @@
 <template name="event-template">
   <view class="event">
-    <view id="{{item.id}}" bindtap="click_detail_event">
+    <view id="{{item.id}}" bindtap="click_detail_new_event">
       <view class="event-detail">
         <swiper style="height: 400rpx;" indicator-dots="true" autoplay="true" interval="3000" duration="300">
             <block wx:for="{{item.pic_array}}" wx:key="index">
@@ -20,7 +20,7 @@
         <view class='event-content'>
           <text class="event-time">时间 | {{item.start_time}}</text>
           <image class="event-type" src="../../image/my_bee_category@2x.png"></image>
-          <text>{{eventType[item.type]}}</text>
+          <text style="vertical-align:middle;font-size:24rpx;">{{eventType[item.type]}}</text>
         </view>
         <view class="event-endline">
           <text>距报名截止还有 </text>

@@ -38,7 +38,7 @@ class message extends basecontroller
         $this->global['pageTitle'] = '留言列表';
         $count = $this->feedback_model->itemListingCount($searchType, $searchName);
         $returns = $this->paginationCompress("message", $count, 10);
-        $data['feedbackList'] = $this->feedback_model->itemListing($searchType, $searchName, $returns['page'], $returns['segment']);
+        $data['itemList'] = $this->feedback_model->itemListing($searchType, $searchName, $returns['page'], $returns['segment']);
         $this->global['searchStatus'] = $searchType;
         $this->global['searchText'] = $searchName;
         $this->global['pageType'] = 'feedback';

@@ -43,7 +43,8 @@ Page({
           var temparray = res.data.result
           for(var iter = 0; iter < temparray.length; iter ++)
           {
-            temparray[iter].showphone = temparray[iter].phone.slice(0, 3) + "*****" + temparray[iter].phone.slice(8, 11)
+            temparray[iter].showphone = temparray[iter].phone;
+            //temparray[iter].showphone = temparray[iter].phone.slice(0, 3) + "*****" + temparray[iter].phone.slice(8, 11)
           }
           that.setData({
             address: temparray

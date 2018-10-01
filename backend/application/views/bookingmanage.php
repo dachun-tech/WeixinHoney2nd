@@ -114,6 +114,7 @@
                             $pay = array('线下支付', '线上支付');
                             $bookingState = array('进行中', '已完成', '已取消');
                             foreach ($bookingList as $record) {
+                                if($record->owner == 0) continue;
                                 $no = "";
                                 for ($index = 0; $index < (10 - strlen($record->id . "")); $index++)
                                     $no = $no . "0";

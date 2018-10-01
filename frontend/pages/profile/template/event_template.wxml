@@ -19,7 +19,7 @@
         </view>
         <view class="event-time">时间 | {{item.start_time}}</view>
         <view class="event-address">地址 | </view>
-        <view class="event-address1">{{item.province+item.city+item.area+item.detail_address}}</view>
+        <view class="event-address1">{{item.detail_address}}</view>
         <text class='event-fav-text'>{{item.favor_num}}</text>
         <image class='event-fav-image' src='{{image_favs[item.favor_state]}}'></image>
       </view>

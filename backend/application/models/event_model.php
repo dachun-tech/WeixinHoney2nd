@@ -8,11 +8,15 @@ class event_model extends CI_Model
      * @return number $count : This is row count
      */
     function eventListingCount($searchStatus = null, $searchText = '', $searchType,
-                               $searchRole, $searchState, $searchStart, $searchEnd, $type = 1)
+                               $searchRole, $searchState, $searchStart, $searchEnd, $type = 1, $is_train = 0)
     {
-        $query = "select count(event.id) as cnt ";
-        $query .= " from event, `user` ";
-        $query .= " where event.organizer_id = user.no and event.owner = " . $type;
+        $query = "select event.id ";
+        $query .= " from event ";
+        $query .= " left join user on event.organizer_id = user.no ";
+        $query .= " left join booking on event.id = booking.event_id ";
+        $query .= " where event.owner = " . $type;
+        if ($is_train != 2)
+            $query .= " and event.is_train = " . $is_train;
         if ($searchRole != 10) {
             if ($type == 1)
                 $query .= " and user.role = " . $searchRole;
@@ -42,9 +46,11 @@ class event_model extends CI_Model
                 }
             }
         }
-        $result = $this->db->query($query);
+        $query .= ' group by event.id';
+        $query .= " order by event.reg_time desc";
+        $result = $this->db->query($query)->result();
 
-        return $result->row()->cnt;
+        return count($result);
     }
 
     /**
@@ -55,14 +61,18 @@ class event_model extends CI_Model
      * @return array $result : This is result
      */
     function eventListing($searchStatus = null, $searchText = '', $searchType,
-                          $searchRole, $searchState, $searchStart, $searchEnd, $page, $segment, $type = 1)
+                          $searchRole, $searchState, $searchStart, $searchEnd, $page, $segment, $type = 1, $is_train = 0)
     {
-        $query = "select event.*, 
-                    user.nickname, user.phone, user.role ";
-        $query .= " from event, `user` ";
-        $query .= " where event.organizer_id = user.no and event.owner = " . $type;
+        $query = "select event.*, event.id as id,
+                    user.nickname, user.phone, user.role, sum(booking.reg_num) as current_member ";
+        $query .= " from event ";
+        $query .= " left join user on event.organizer_id = user.no ";
+        $query .= " left join booking on event.id = booking.event_id ";
+        $query .= " where event.owner = " . $type;
+        if ($is_train != 2)
+            $query .= " and event.is_train = " . $is_train;
         if ($searchRole != 10) {
-            if($type==1)
+            if ($type == 1)
                 $query .= " and user.role = " . $searchRole;
             else
                 $query .= " and event.is_used = " . $searchRole;
@@ -90,6 +100,7 @@ class event_model extends CI_Model
                 }
             }
         }
+        $query .= ' group by event.id';
         $query .= " order by event.reg_time desc";
         if ($segment != "") {
             $query .= " limit " . $segment . ", " . $page;
@@ -97,7 +108,6 @@ class event_model extends CI_Model
             $query .= " limit 0, " . $page;
         }
         $result = $this->db->query($query);
-
         return $result->result();
     }
 
@@ -130,6 +140,26 @@ class event_model extends CI_Model
         return $query->result();
     }
 
+    function addReadCount($event_id)
+    {
+        $this->db->select("*");
+        $this->db->from('event');
+        $this->db->where('id', $event_id);
+        $query = $this->db->get()->result();
+        if (count($query) > 0) {
+            foreach ($query as $item) {
+                $item->read_count = $item->read_count + 1;
+                $this->db->where('id', $event_id);
+                $this->db->update('event', $item);
+            }
+            return true;
+        } else {
+            return false;
+        }
+
+
+    }
+
     /**
      * This function is used to get event detail with eventId
      * @param {number} $eventId : This is event id
@@ -149,7 +179,7 @@ class event_model extends CI_Model
             if ($result[0]->role == 1) {
                 $query = $this->db->query("SELECT event.*, event.name AS eventName,                    
                     provinces.province, cities.city,areas.area, event.id as id,
-                    boss.boss_id,boss.site_name, user.name, user.phone, user.role, count(favourite_event.`user_id`)>0 AS favor_state, sum(booking.reg_num) as current_member
+                    boss.boss_id,boss.site_name, user.name, user.phone, user.role, user.avatar, count(favourite_event.`user_id`)>0 AS favor_state, sum(booking.reg_num) as current_member
                 FROM  `user`, boss, `event`
                 LEFT JOIN cities ON cities.id=event.city
                 LEFT JOIN areas ON areas.id=event.area
@@ -159,8 +189,8 @@ class event_model extends CI_Model
                 WHERE event.id = " . $eventId . " AND user.no = event.organizer_id AND boss.boss_id = user.no GROUP BY event.id");
             } else {
                 $query = $this->db->query("SELECT event.*,event.name AS eventName, 
-                    provinces.province, cities.city,areas.area, event.id as id,
-                    user.name, user.phone, user.role, count(favourite_event.`user_id`)>0 AS favor_state, sum(booking.reg_num) as current_member
+                    provinces.province, cities.city,areas.area, event.id as id, 
+                    user.name, user.phone, user.role, user.avatar, count(favourite_event.`user_id`)>0 AS favor_state, sum(booking.reg_num) as current_member
                 FROM  `user`, `event`
                 LEFT JOIN cities ON cities.id=event.city
                 LEFT JOIN areas ON areas.id=event.area
@@ -197,6 +227,41 @@ class event_model extends CI_Model
                 LEFT JOIN booking ON  booking.event_id = event.id  and booking.state=" . $event_state[0]->state . "
                 WHERE event.id = " . $eventId . " AND user.no = event.organizer_id GROUP BY event.id");
             }
+        }
+        return $query->result();
+    }
+
+    /**
+     * This function is used to get event detail with eventId which created by backend
+     * @param {number} $eventId : This is event id
+     * @param {number} $userId : This is user id
+     * @return array $result : This is searched result
+     */
+    function getNewEventDetailById($eventId, $userId = 0)
+    {
+        $event_state = $this->db->query("select state from event where id=" . $eventId)->result();
+        if ($userId != 0) {
+            $query = $this->db->query("SELECT event.*,event.name AS eventName, 
+                provinces.province, cities.city,areas.area, event.id as id,
+                count(favourite_event.`user_id`)>0 AS favor_state, sum(booking.reg_num) as current_member
+            FROM  `event`
+            LEFT JOIN cities ON cities.id=event.city
+            LEFT JOIN areas ON areas.id=event.area
+            LEFT JOIN provinces ON provinces.id=event.province
+            LEFT JOIN favourite_event ON favourite_event.`event_id`=event.id AND favourite_event.`user_id` = " . $userId . "
+            LEFT JOIN booking ON  booking.event_id = event.id  and booking.state=" . $event_state[0]->state . "
+            WHERE event.id = " . $eventId . " GROUP BY event.id");
+
+        } else {
+            $query = $this->db->query("SELECT event.id as id, event.*,event.name AS eventName, 
+                event.additional,  provinces.province, cities.city,areas.area, 
+                sum(booking.reg_num) as current_member
+            FROM  `event`
+            LEFT JOIN cities ON cities.id=event.city
+            LEFT JOIN areas ON areas.id=event.area
+            LEFT JOIN provinces ON provinces.id=event.province
+            LEFT JOIN booking ON  booking.event_id = event.id  and booking.state=" . $event_state[0]->state . "
+            WHERE event.id = " . $eventId . " GROUP BY event.id");
         }
         return $query->result();
     }
@@ -314,12 +379,12 @@ class event_model extends CI_Model
     {
         $this->db->select("event.*,provinces.province, cities.city, areas.area, user.role, user.avatar, sum(booking.reg_num) as register_num, count(favourite_event.no) as favor_state");
         $this->db->from("event");
-        $this->db->join("provinces", "provinces.id=event.province");
-        $this->db->join("cities", "cities.id=event.city");
-        $this->db->join("areas", "areas.id=event.area");
+        $this->db->join("provinces", "provinces.id=event.province", 'left');
+        $this->db->join("cities", "cities.id=event.city",'left');
+        $this->db->join("areas", "areas.id=event.area",'left');
         $this->db->join("user", "user.no = event.organizer_id");
         $this->db->join("booking", "event.id = booking.event_id and booking.state = event.state", "left");
-        $this->db->join("favourite_event", "favourite_event.event_id = event.id and favourite_event.user_id = ".$user_id, "left");
+        $this->db->join("favourite_event", "favourite_event.event_id = event.id and favourite_event.user_id = " . $user_id, "left");
         $this->db->where("event.organizer_id", $user_id);
         if ($state != 3) {
             $this->db->where('event.state', $state);
@@ -336,16 +401,17 @@ class event_model extends CI_Model
     function add($arr, $id)
     {
         unset($arr['id']);
-        if($id==''){
+        if ($id == '') {
             $this->db->insert("event", $arr);
-            $id =  $this->db->insert_id();
-        }else {
+            $id = $this->db->insert_id();
+        } else {
             $this->db->where('id', $id);
             $this->db->set($arr);
             $this->db->update('event');
         }
         return $id;
     }
+
     /**
      * This function is used to create event
      * @return array $event : This is event changed state
@@ -360,7 +426,7 @@ class event_model extends CI_Model
                 $query = $this->db->get();
                 $honey = $query->result();
                 $rule = $this->db->query("select value from rule where no = 9")->result();
-                $remain['honey'] = $honey[0]->honey - $rule[0]->value;
+                $remain['honey'] = $honey[0]->honey;// - $rule[0]->value;
                 $this->db->where("no", $event['organizer_id']);
                 $this->db->update("user", $remain);
             }
@@ -399,13 +465,13 @@ class event_model extends CI_Model
     function getEventByProvince($province, $city, $userId)
     {
         $this->db->select("event.*, sum(booking.reg_num) as current_member, event.longitude, event.latitude,
-            provinces.province, cities.city, areas.area, user.avatar, user.role,count(favourite_event.no) as is_favor ");
+            provinces.province, cities.city, areas.area, user.avatar, user.role, count( favourite_event.no )>0 as is_favor ");
         $this->db->from("event");
-        $this->db->join("cities", "cities.id=event.city");
-        $this->db->join("areas", "areas.id=event.area");
-        $this->db->join("provinces", "provinces.id = event.province");
+        $this->db->join("cities", "cities.id=event.city", 'left');
+        $this->db->join("areas", "areas.id=event.area", 'left');
+        $this->db->join("provinces", "provinces.id = event.province", 'left');
         $this->db->join("booking", "booking.event_id = event.id and event.state=booking.state", "left");
-        $this->db->join("favourite_event", "favourite_event.event_id = event.id and favourite_event.user_id = ".$userId, "left");
+        $this->db->join("favourite_event", "favourite_event.event_id = event.id and favourite_event.user_id = " . $userId, "left");
         $this->db->join("user", "user.no = event.organizer_id", "left");
         if ($province == '北京市' || $province == '上海市' || $province == ' 天津市' || $province == '重庆市') {
             $this->db->where('provinces.province', $province);

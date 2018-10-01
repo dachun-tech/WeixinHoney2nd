@@ -57,7 +57,7 @@
             </div>
             <div class="row custom-info-row">
                 <label class="col-sm-2">报名人数:</label>
-                <label class="col-sm-4" id="nickname"><?php echo $bookingDetail[0]->reg_num; ?>人</label>
+                <label class="col-sm-4" id="nickname"><?php echo intval($bookingDetail[0]->reg_num); ?>人</label>
             </div>
             <div class="row custom-info-row">
                 <label class="col-sm-2">支付方式:</label>
@@ -65,22 +65,22 @@
             </div>
             <div class="row custom-info-row">
                 <label class="col-sm-2">应付金额:</label>
-                <label class="col-sm-4" id="site_name"><?php echo ($bookingDetail[0]->reg_num*$eventDetail[0]->cost); ?>元</label>
+                <label class="col-sm-4" id="site_name"><?php echo floatval($bookingDetail[0]->pay_cost); ?>元</label>
             </div>
             <div class="row custom-info-row">
                 <label class="col-sm-2">优惠金额:</label>
-                <label class="col-sm-4" id="site_name"><?php echo (0); ?>元</label>
+                <label class="col-sm-4" id="site_name"><?php echo floatval($bookingDetail[0]->pay_honey); ?>元</label>
             </div>
             <div class="row custom-info-row">
                 <label class="col-sm-2">实付金额:</label>
-                <label class="col-sm-4" id="site_name"><?php echo ($bookingDetail[0]->reg_num*$eventDetail[0]->cost); ?>元</label>
+                <label class="col-sm-4" id="site_name"><?php echo floatval($bookingDetail[0]->pay_online); ?>元</label>
             </div>
             <div class="row custom-info-row">
                 <label class="col-sm-2">订单状态:</label>
                 <label class="col-sm-4" id="site_name"><?php echo $statusStr[$bookingDetail[0]->state]; ?></label>
             </div>
            <?php
-                if($eventDetail[0]->role == 1){
+                if(true || $eventDetail[0]->role == 1){
             ?>
             <div id="tip" class="row custom-info-row">
                 <label class="col-sm-2"> 评分:</label>

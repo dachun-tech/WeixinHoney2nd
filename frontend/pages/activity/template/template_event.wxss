@@ -26,40 +26,45 @@
   
   .event-name {
     vertical-align: middle;
-    font-size: 40rpx;
+    font-size: 35rpx;
     width: 70%;
   }
   .event-cost {
     width: 32rpx;
     height: 36rpx;
     padding-left: 30rpx;
-    vertical-align: middle;
     float: right;
+    padding-top:10rpx;
   }
   .event-cost-text {
     vertical-align: middle;
     float: right;
     padding-right: 30rpx;
     padding-left: 10rpx;
+    line-height:50rpx;
+    font-size:26rpx;
   }
 
   .event-content {  
     position:relative;
     height: 36rpx;
-    font-size: 30rpx;
+    font-size: 26rpx;
     margin-left: 20rpx;
     font-family: "PingFangSC-Regular";
+    margin-top:25rpx;
   }
   
   .event-content image {
-    margin-right: 10rpx;
-    vertical-align: bottom;
-  }
-  .event-time {
-    margin-top: 20rpx;
     display: inline-block;
-    font-size: 30rpx;
+    position: relative;
+    margin-right: 10rpx;
+    paddint-top: 8rpx;  
+    vertical-align: middle;  
+  }
+  .event-time {    
+    display: inline-block;
     font-family: "PingFangSC-Regular";
+    vertical-align: middle;
   }
   .event-type {
     width: 32rpx;
@@ -72,7 +77,7 @@
     position:relative;
     margin-bottom: 20rpx;
     margin-top:30rpx;
-    font-size:30rpx;
+    font-size:26rpx;
     padding-left:20rpx;
   }
   .remain-date {
@@ -98,4 +103,6 @@
     margin-right: 5rpx;
     width: 25rpx;
     height: 30rpx;
+    margin-top:3rpx;
+
   }

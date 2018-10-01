@@ -13,6 +13,7 @@ Page({
         options: [],
         userRole: [],
         eventState: [],
+        cancel_time: 0,
         favourite_image: ['../../../image/favoriting.png', '../../../image/favorited.png'],
         image_favs: ['../../../image/good_n@2x.png', '../../../image/good_s@2x.png'],
         starparam: {
@@ -28,7 +29,7 @@ Page({
             srcImage: '',
         },
         weekStr: ['星期日', '星期一', '星期二', '星期三', '星期四', '星期五', '星期六'],
-        curDate: '',
+        curDate: 0,
         curBossId: '',
         curUserId: '',
         dateList: [],
@@ -45,6 +46,8 @@ Page({
         ],
         totalPrice: 0,
         originalPrice: 0,
+        tmrID: 0,
+        isFirstInit: true,
     },
     onLoad: function(option) {
         var that = this;
@@ -53,19 +56,108 @@ Page({
         that.data.curUserId = app.globalData.userInfo.user_id;
         that.data.curDate = new Date();
     },
+    getUserModalHide: function() {
+        this.setData({
+            getUserInfoDisabled: false
+        })
+        this.data.isFirstInit = false;
+        app.globalData.initDisabled = false;
+        this.onShow();
+        // setTimeout(function() {
 
-    onShow: function() {
+        // }, 100);
+    },
+    onShow: function(option) {
+        var that = app;
+        var _this = this;
+        wx.getSetting({
+            success: function(res) {
+                var perm = res;
+
+                that.globalData.getUserInfoDisabled = !perm.authSetting['scope.userInfo'];
+                that.globalData.getUserLocationDisabled = !perm.authSetting['scope.userLocation'];
+                that.globalData.getWerunDataDisabled = !perm.authSetting['scope.werun'];
+
+                if (!that.globalData.getUserInfoDisabled && !that.globalData.getUserLocationDisabled && !that.globalData.getWerunDataDisabled) {
+                    _this.onPrepare();
+                    return;
+                }
+
+                if (perm.authSetting['scope.userInfo'] != true && that.globalData.initDisabled == false) {
+                    that.globalData.initDisabled = true;
+                    _this.setData({
+                        getUserInfoDisabled: true
+                    })
+                    wx.hideTabBar({})
+                } else {
+                    wx.authorize({
+                        scope: 'scope.userLocation',
+                        fail: function() {
+                            that.globalData.initDisabled = true;
+                        },
+                        complete: function() {
+                            wx.authorize({
+                                scope: 'scope.werun',
+                                fail: function() {
+                                    that.globalData.initDisabled = true;
+                                },
+                                complete: function() {
+                                    if (that.globalData.initDisabled)
+                                        that.go2Setting();
+                                    else {
+                                        that.globalData.getUserInfoDisabled = false;
+                                        _this.onPrepare();
+                                        isFirstLaunch = false;
+                                    }
+                                }
+                            })
+                        }
+                    });
+                }
+            }
+        });
+    },
+    onPrepare: function() {
         var that = this;
-
+        app.onInitialize();
         if (app.globalData.userInfo.user_id == 0) {
-            app.onLaunch();
-            setTimeout(function() {
-                that.onInitStart(that.data.options);
-            }, 4000);
+            clearTimeout(that.data.tmrID);
+            that.data.tmrID = setTimeout(function() {
+                that.onPrepare();
+            }, 1000);
         } else {
-            that.onInitStart(that.data.options);
+            that.onInitStart();
         }
-        wx.hideTabBar({})
+    },
+    onInitStart: function() {
+        var options = this.data.options;
+        this.setData({
+            eventType: app.globalData.eventType,
+            userRole: app.globalData.userRole,
+            bookingState: app.globalData.eventState,
+            eventState: app.globalData.eventState
+        });
+        var id = this.data.curBossId;
+        var that = this;
+        wx.request({
+                url: app.globalData.mainURL + 'api/getSiteDetail',
+                header: {
+                    'content-type': 'application/json'
+                },
+                method: 'POST',
+                data: {
+                    'boss_id': id,
+                    'user_id': app.globalData.userInfo.user_id
+                },
+                success: function(res) {
+                    console.log(res.data);
+                    if (res.data.status) {
+                        that.data.site = res.data;
+                        that.makeList();
+                    }
+                }
+            })
+            // set swiper image
     },
 
     makeList: function() {
@@ -77,6 +169,7 @@ Page({
         that.data.refDate = that.data.curDate.toDateString() + ' ';
         var weekStr = that.data.weekStr;
         that.data.dateList = [];
+
         for (var index = 0; index < 7; index++) {
             var month = da.getMonth() + 1;
             var day = da.getDate();
@@ -84,7 +177,6 @@ Page({
             var isToday = '';
             if (day == (new Date()).getDate()) {
                 str += '今天';
-
             }
             if (day == that.data.curDate.getDate()) {
                 isToday = 'cur';
@@ -101,6 +193,7 @@ Page({
         }
 
         var site = data.site[0];
+        that.data.cancel_time = site.cancel_time;
         var room = data.site_room;
         var booking = data.site_booking;
 
@@ -112,7 +205,6 @@ Page({
         var diff2 = end2_time.getHours() - start2_time.getHours();
         var time_step = parseFloat(site.service_unit); // unit:hour
         var service_time = site.service_time.split(',');
-
 
         that.data.timeList = [];
 
@@ -171,16 +263,22 @@ Page({
                     var item = booking[mm];
                     if (status == 0) continue;
                     if (item.room_id != room[i].id) continue;
-                    if (curstart >= (new Date(item.start_time)) &&
-                        curend <= (new Date(item.end_time))) {
-                        status = 1;
+                    if (item.state == 3) continue;
+                    if (curstart >= (new Date(item.start_time.replace(/-/g, '/'))) &&
+                        curend <= (new Date(item.end_time.replace(/-/g, '/')))) {
+                        status = 4;
+                        cost = -cost;
                         room[i].user_id = item.user_id;
                         room[i].book_id = item.id;
                         break;
                     }
                 }
+
+                if (curend < new Date()) status = 0;
+                if ((status == 1 || status == 4) && room[i].user_id != app.globalData.userInfo.user_id)
+                    status = 0;
                 arr.push({
-                    cost: '￥' + cost,
+                    cost: cost,
                     status: status,
                     room_id: room[i].id,
                     book_id: room[i].book_id,
@@ -207,14 +305,50 @@ Page({
             totalPrice: that.data.totalPrice
         });
     },
+    calculatePrice: function() {
+        var that = this;
+        var bookData = that.data.bookList;
+        var uploads = [];
+        var totalPrice = 0;
+
+        var curTime = new Date();
+
+        for (let i = 0; i < bookData.length; i++) {
+            var element = [];
+            element.push(bookData[i]);
+            element = element[0];
+            for (let j = 0; j < element.length; j++) {
+                var item = [];
+                item.push(element[j]);
+                item = item[0];
+                if (item.user_id == app.globalData.userInfo.user_id && item.status == 1) {
+                    var start = new Date(item.start_time);
+                    var end = new Date(item.end_time);
+                    item.state = 0;
+                    if (item.status == 2) //already cancelled
+                        item.state = 3;
+                    else if (item.status == 1 && curTime <= start) // already booked
+                        item.state = 0;
+                    else if (curTime >= end) // already expired
+                        item.state = 2;
+                    else if (curTime >= start && curTime <= end)
+                        item.state = 1;
+                    uploads.push(item);
+                    totalPrice += parseFloat(item.cost);
+                }
+            }
+        }
+        that.data.totalPrice = totalPrice;
+        that.setData({ totalPrice: totalPrice.toFixed(2) });
+    },
     bookRoom: function(event) {
         var that = this;
         var param = event.target.id;
-        var rowid = parseInt(param.split('-')[0]);
-        var timeid = parseInt(param.split('-')[1]);
+        var roomid = parseInt(param.split('-')[1]);
+        var timeid = parseInt(param.split('-')[0]);
         var start = that.data.timeList[timeid];
         var end = that.data.timeList[timeid + 1];
-        var room = that.data.bookList[rowid][timeid];
+        var room = that.data.bookList[timeid][roomid];
 
         switch (room.status) {
             case 0: // disabled
@@ -226,24 +360,67 @@ Page({
                 break;
             case 1: // booked
                 // that.data.bookList[rowid][timeid].status = 2;
-                if (room.user_id != app.globalData.userInfo.user_id) {
+                var booked_time = new Date(that.data.refDate + start);
+                var curTime = new Date();
+                booked_time.setTime(booked_time.getTime() - 3600000 * that.data.cancel_time);
+                if (true || curTime > booked_time) {
+                    // wx.showToast({
+                    //     title: '预订取消时间已过去了',
+                    //     icon: 'none',
+                    //     duration: 2000
+                    // });
+                    if (room.user_id == app.globalData.userInfo.user_id)
+                        that.data.bookList[timeid][roomid].status = 2;
+                } else {
+                    if (room.user_id != app.globalData.userInfo.user_id) {
+                        wx.showToast({
+                            title: '此号场已经被预订了',
+                            icon: 'none',
+                            duration: 2000
+                        });
+                    } else {
+                        that.data.bookList[timeid][roomid].status = 2;
+                    }
+                }
+                break;
+            case 4: // previous booked
+                // that.data.bookList[rowid][timeid].status = 2;
+                var booked_time = new Date(that.data.refDate + start);
+                var curTime = new Date();
+                booked_time.setTime(booked_time.getTime() - 3600000 * that.data.cancel_time);
+                if (false && curTime > booked_time) {
                     wx.showToast({
-                        title: '此号场已经被预订了',
+                        title: '预订取消时间已过去了',
                         icon: 'none',
                         duration: 2000
                     });
                 } else {
-                    that.data.bookList[rowid][timeid].status = 2;
+                    wx.showToast({
+                        title: '请取消 在“我的>我的预订”菜单中',
+                        icon: 'none',
+                        duration: 2000
+                    });
                 }
                 break;
             case 2: //enabled
-                that.data.bookList[rowid][timeid].status = 1;
-                that.data.bookList[rowid][timeid].user_id = app.globalData.userInfo.user_id;
-                that.data.bookList[rowid][timeid].book_id = (room.book_id == undefined) ? '' : room.book_id;
+                var booked_time = new Date(that.data.refDate + start);
+                var curTime = new Date();
+                if (curTime > booked_time) {
+                    wx.showToast({
+                        title: '预订时间已过去了',
+                        icon: 'none',
+                        duration: 2000
+                    });
+                } else {
+                    that.data.bookList[timeid][roomid].status = 1;
+                    that.data.bookList[timeid][roomid].user_id = app.globalData.userInfo.user_id;
+                    that.data.bookList[timeid][roomid].book_id = (room.book_id == undefined) ? '' : room.book_id;
+                }
                 break;
         }
         if (room.status == '0')
             console.log(room);
+        that.calculatePrice();
         that.setData({
             bookList: that.data.bookList
         })
@@ -261,7 +438,8 @@ Page({
                 var item = [];
                 item.push(element[j]);
                 item = item[0];
-                if (item.user_id == app.globalData.userInfo.user_id) {
+                // if (item.user_id == app.globalData.userInfo.user_id && (item.status == 1 || item.status == 4)) {
+                if (item.user_id == app.globalData.userInfo.user_id && (item.status == 1)) {
                     var start = new Date(item.start_time);
                     var end = new Date(item.end_time);
                     item.state = 0;
@@ -271,30 +449,20 @@ Page({
                         item.state = 0;
                     else if (curTime >= end) // already expired
                         item.state = 2;
-
+                    else if (curTime >= start && curTime <= end)
+                        item.state = 1;
                     uploads.push(item);
                 }
             }
         }
-        wx.request({
-            url: app.globalData.mainURL + 'api/setBookData',
-            header: {
-                'content-type': 'application/json'
-            },
-            method: 'POST',
-            data: {
-                'user_id': app.globalData.userInfo.user_id,
-                'bookData': JSON.stringify(uploads)
-            },
-            success: function(res) {
-                console.log(res.data);
-                if (res.data.status) {
-                    wx.switchTab({
-                        url: '../index'
-                    })
-                }
-            }
-        })
+        wx.setStorageSync("book_date", that.data.refDate);
+        wx.setStorageSync("book_info", uploads);
+        if (that.data.totalPrice > 0) {
+            wx.redirectTo({
+                url: '../../profile/my_booking/booking_user_detail?id=' + that.data.curBossId
+            })
+        }
+        return;
     },
     selectDate: function(event) {
         var that = this;
@@ -303,35 +471,6 @@ Page({
         that.data.curDate = (new Date()).setDate((new Date()).getDate() + id);
         that.data.curDate = new Date(that.data.curDate);
         that.makeList();
-    },
-    onInitStart: function(options) {
-        this.setData({
-            eventType: app.globalData.eventType,
-            userRole: app.globalData.userRole,
-            bookingState: app.globalData.eventState,
-            eventState: app.globalData.eventState
-        });
-        var id = this.data.curBossId;
-        var that = this;
-        wx.request({
-                url: app.globalData.mainURL + 'api/getSiteDetail',
-                header: {
-                    'content-type': 'application/json'
-                },
-                method: 'POST',
-                data: {
-                    'boss_id': id,
-                    'user_id': app.globalData.userInfo.user_id
-                },
-                success: function(res) {
-                    console.log(res.data);
-                    if (res.data.status) {
-                        that.data.site = res.data;
-                        that.makeList();
-                    }
-                }
-            })
-            // set swiper image
     },
     setDigit: function(num, length) {
         var r = "" + num;

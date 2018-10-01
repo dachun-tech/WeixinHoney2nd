@@ -7,7 +7,7 @@
     </view>
     <view class="reg_member_place" id="{{index}}" bindtap="btn_Clicked_Focus">
       <view class="reg-member-txt">地址｜</view>
-      <view class="reg-member-add">{{item.province+item.city+item.area+item.detail_address}}</view>
+      <view class="reg-member-add">{{item.detail_address}}</view>
     </view>
     <view class="reg_cls_comment_number">电话｜<text id="{{index}}" bindtap='phone_call' style="text-decoration: underline; color:blue;">{{item.phone}}</text></view>
   </view>

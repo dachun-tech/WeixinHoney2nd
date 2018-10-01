@@ -190,12 +190,7 @@ Page({
 
   },
 
-  /**
-   * 用户点击右上角分享
-   */
-  onShareAppMessage: function () {
 
-  },
   on_click_product: function (query) {
     wx.navigateTo({
       url: '../product_detail/product_detail?id=' + query.currentTarget.id,

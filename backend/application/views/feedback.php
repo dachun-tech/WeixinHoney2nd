@@ -48,19 +48,17 @@
                         if (!empty($itemList)) {
                             foreach ($itemList as $record) {
                                 $no = "";
-                                for($index = 0; $index < (10 - strlen($record->id."")); $index++)
+                                for($index = 0; $index < (10 - strlen($record->no."")); $index++)
                                     $no = $no."0";
-                                $no = $no.$record->id;
+                                $no = $no.$record->no;
                                 ?>
                                 <tr>
-                                    <td><?php echo $no; ?></td>
                                     <td><?php echo $record->nickname; ?></td>
-                                    <td><?php echo $record->phone; ?></td>
-                                    <td><?php echo $record->point; ?></td>
-                                    <td><?php echo $record->comment; ?></td>
                                     <td><?php echo $record->submit_time; ?></td>
+                                    <td><?php echo $record->name; ?></td>
+                                    <td><?php echo $record->comment; ?></td>
                                     <td class="text-center">
-                                        <a onclick="confirmDelete('<?php echo $record->id;?>')">
+                                        <a onclick="confirmDelete('<?php echo $record->no;?>')">
                                             删除 &nbsp;
                                         </a>
                                     </td>

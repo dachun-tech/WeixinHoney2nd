@@ -1,5 +1,5 @@
 <!--pages/booking/booking.wxml-->
-<import src="../template/booking_template.wxml" />
+<import src="template/book_template.wxml" />
 
 <view class="container">
 
@@ -18,11 +18,13 @@
   </view>
   <scroll-view class="activities">
     <view wx:for="{{booking}}" wx:key="index">
+      <block wx:if="{{(item.state==0)&&(selectedtab == 1)}}">
+        <template is="act-template" data="{{ register_num, item,index, userRole, eventType, bookingState}}" />
+      </block>
       <block wx:if="{{item.state==selectedtab}}">
-        <template is="act-template" data="{{ register_num, item,index, userRole, selectedtab, eventType, bookingState}}" />
-        <view wx:if="{{(selectedtab == 0 && item.isbtn) || ((selectedtab == 1) && (item.favor_state==0))}}" class="btn-view">
-          <button wx:if="{{selectedtab == 0}}" id="{{index}}" class="activity-button" bindtap='btn_remove_booking'> 取消蜂约 </button>
-          <button wx:if="{{(selectedtab == 1) && (item.favor_state==0)}}" id="{{item.id}}" class="activity-button" bindtap='btn_write_comment'> 评价 </button>
+        <template is="act-template" data="{{ register_num, item,index, userRole, eventType, bookingState}}" />
+        <view wx:if="{{(selectedtab == 2) && (item.is_rating==0) &&(item.roll_state == 0)}}" class="btn-view">         
+          <button id="{{index}}" class="activity-button" bindtap='btn_write_comment'> 评价 </button>
         </view>
       </block>
     </view>

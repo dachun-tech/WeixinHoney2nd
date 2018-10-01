@@ -10,9 +10,9 @@
     </view>
     <view class="site_type">
       <image class="img_point" src="../../../image/my_bee_category@2x.png" />
-      <view class="type_text">网球</view>
-      <view class="type_text">网球</view>
-      <view class="type_text">乒乓球</view>
+      <view class="type_text" wx:for="{{type_array}}">
+          {{item}}
+      </view>
     </view>
   </view>
   

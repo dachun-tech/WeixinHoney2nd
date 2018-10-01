@@ -26,9 +26,9 @@
       <view class="event-time">
         <label class="event-time-label">时间 |  {{booking.start_time}}</label>
       </view>
-      <view class="event-address">
+      <view class="event-address" bindtap="goto_mapView">
         <view style='display:inline-block; width: 11%; float: left;'>地址 |  </view>
-        <view style='display: inline-block; width: 80%; vertical-align: top;'><text selectable='true' style="text-decoration: underline;">{{booking.province+booking.city+booking.area+booking.detail_address}}</text></view>
+        <view style='display: inline-block; width: 80%; vertical-align: top;'><text selectable='true' style="text-decoration: underline;">{{booking.detail_address}}</text></view>
       </view>
       <view class="event-phone">
         <label class="event-phone-label" bindtap='phone_call'>电话 |  <text  style="text-decoration: underline;">{{booking.agent_phone}}</text></label>
@@ -45,11 +45,5 @@
     <view class="personal-phone">
       <label class="personal-phone-label">电话{{booking.phone}}</label>
     </view>
-  </view> 
-  
-  <block wx:if="{{booking.state==0  && bookingcanceltime}}">
-    <view class="cancel-button" bindtap='final_cancel'>
-      取消蜂约
-    </view>
-  </block>  
+  </view>   
 </view>

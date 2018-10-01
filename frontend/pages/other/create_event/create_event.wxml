@@ -14,11 +14,11 @@
     </view>
     <view class='event-view'>
       <text>活动名称:</text>
-      <input class='event-input' style="width: 70vw" placeholder='请输入活动名称' bindblur='on_event_name'></input>
+      <input class='event-input' style="width: 70vw" placeholder='请输入活动名称' bindinput='on_event_name' focus="{{focus_name}}"></input>
     </view>
     <view class='event-view' bindtap="showitem">
       <text>活动类型:</text>
-      <input class='event-input' disabled placeholder='请选择' value="{{eventType[event.kind]}}"></input>
+      <input class='event-input' disabled placeholder='请选择' value="{{eventType[event.kind]}}" focus="{{focus_type}}"></input>
       <image class='event-next-image' src='../../../image/next@2x.png'></image>
     </view>
 
@@ -40,35 +40,36 @@
 
     <view class='event-view' bindtap='On_click_map'>
       <text>活动地点:</text>
-      <input class='event-input' disabled placeholder='请选择' value="{{select_position_text}}"></input>
+      <input class='event-input' disabled placeholder='请选择'></input>
       <image class='event-next-image' src='../../../image/next@2x.png'></image>
     </view>
     
     <view class='event-view'>
-      <input class='event-input' value="{{detail_address}}" style='width: calc(100% - 180rpx); margin-left: 160rpx;' placeholder='请输入详细地址' bindblur='On_blur_detailaddress'></input>
+      <input class='event-input' value="{{detail_address}}" style='width:calc(100% - 20rpx); height:auto;margin-left:0rpx;' 
+            placeholder='请输入详细地址' bindinput='On_blur_detailaddress' focus="{{focus_address}}"></input>
     </view>
       
 
     <view class='event-view'>
       <text>人数上限:</text>
-      <input class='event-input' type="number" bindblur='on_blur_limit'></input>
+      <input class='event-input' type="number" bindinput='on_blur_limit' focus="{{focus_limit}}"></input>
       <text class='event-left-text'>人</text>
     </view>
     <view class='event-view'>
       <text>每个用户最多可以报名人数:</text>
-      <input class='event-input' style="width: 30%" type="number" bindblur='on_blur_limit_perUser'></input>
+      <input class='event-input' style="width: 30%" type="number" bindinput='on_blur_limit_perUser' focus="{{focus_limit_person}}"></input>
       <text class='event-left-text'>人</text>
     </view>
     <view class='event-view'>
       <text>活动费用:</text>
-      <input class='event-input' bindblur='on_blur_cost'></input>
+      <input class='event-input' bindinput='on_blur_cost' focus="{{focus_cost}}"></input>
       <text class='event-left-text'>元/人</text>
     </view> 
     <view wx:if="{{!showModal2  && !showModal1}}" class='event-view'>
       <text>支付方式:</text>
       <radio-group class="event-payment-group" bindchange="payment_radioChange">
-        <radio value='0' checked></radio>线上支付
-        <radio value='1'></radio>线下支付
+        <radio value='1' checked></radio>线上支付
+        <radio value='0'></radio>线下支付
         <radio value='2'></radio>不限制
       </radio-group>
     </view>
@@ -81,24 +82,27 @@
         </picker>
       </view>      
       <text style="float: right;padding-right: 15rpx;">插入模板</text>
-      <textarea class='event-comment-textarea' wx:if="{{!is_disabled}}" maxlength='500' value="{{textareastr}}" bindblur='on_blur_comment'></textarea>
+      <textarea class='event-comment-textarea' bindfocus="scrollDown"  wx:if="{{!is_disabled}}" focus="{{focus_comment}}"
+        maxlength='500' value="{{textareastr}}" bindinput='on_blur_comment' bindblur='on_blur_scroll'></textarea>
     </view>
     <view wx:if="{{!showModal2  && !showModal1}}" class='event-view'>
       <text>是否公开:</text>
       <radio-group class="event-private-group" bindchange="radioChange">
-        <radio value='1' checked></radio>公开创建
-        <radio value='0'></radio>隐私创建
+         <radio value='0'></radio>隐私创建
+         <radio value='1' checked></radio>公开创建
       </radio-group>
     </view>
     <view class='event-view'>
       <text>发起人: </text>
-      <input class='event-input' style="width: 70vw" placeholder='请输入发起人' bindblur='on_agent_name'></input>
+      <input class='event-input' style="width: 70vw" value="{{val_username}}" placeholder='请输入发起人' 
+              bindinput='on_agent_name' focus="{{focus_agent_name}}"></input>
     </view>
     <view class='event-view'>
       <text>电话: </text>
-      <input class='event-input' type="number" style="width: 70vw" placeholder='请输入联系方式' bindblur='on_agent_phone'></input>
+      <input class='event-input' type="number" style="width: 70vw" value="{{val_phone}}" 
+          placeholder='请输入联系方式' bindinput='on_agent_phone' focus="{{focus_phone}}"></input>
     </view>   
-    <block wx:if="{{!showModal2 && role==2 && publicity==1 && !showModal1}}">
+    <block wx:if="{{ false && !showModal2 && role==2 && publicity==1 && !showModal1}}">
       <view class='event-view'>
         <text>活动结束后是否在地图上生成能量:</text>
         <radio-group class="event-add-radiogroup" bindchange="radioChange1">
@@ -116,6 +120,7 @@
     </block>
   </view>
   <button wx:if="{{!showModal2 && !showModal1}}" class='btn_submit' bindtap="on_submit">创建活动</button>
+  <view wx:if="{{flag==1}}" style="height:400rpx;position:relative;display:inline-block;"></view>
 </view>
 
 <view class="modal-mask1" bindtap="hideModal" catchtouchmove="preventTouchMove" wx:if="{{showModal1}}"></view>
@@ -253,3 +258,4 @@
     </view>
   </scroll-view>
 </view>
+<view style="position:fixed:left:0;top:0;width:calc(100vw);height:calc(100vh);background:transparent;z-index:10000;" wx:if="{{isProcessing}}"></view>

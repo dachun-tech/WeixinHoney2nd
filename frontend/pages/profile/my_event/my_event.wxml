@@ -20,9 +20,6 @@
     <view wx:for="{{booking}}" wx:key="index">
       <block wx:if="{{item.state==selectedtab}}">
         <template is="act-template1" data="{{item,index, userRole, selectedtab, eventType, bookingState,image_favs}}" />
-        <view wx:if="{{(selectedtab == 0 && item.isbtn)}}" class="btn-view">
-          <button wx:if="{{selectedtab == 0}}" id="{{index}}" class="event-button" bindtap='btn_remove_booking'> 取消 </button>
-        </view>
       </block>
     </view>
   </scroll-view>

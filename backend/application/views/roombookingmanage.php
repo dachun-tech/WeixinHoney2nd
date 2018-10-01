@@ -10,7 +10,7 @@
         <div class="container">
             <div class="row">
                 <div class="col-xs-12">
-                    <form action="<?php echo base_url(); ?>bookingListingByFilter" method="POST" id="searchList">
+                    <form action="<?php echo base_url(); ?>roombookingListingByFilter" method="POST" id="searchList">
                         <div class="col-xs-2 col-sm-4 form-inline">
                             <div class="form-group">
                                 <select class="form-control" id="searchStatus" name="searchStatus">
@@ -43,10 +43,11 @@
                         <div class="col-xs-2 col-sm-1 form-inline">
                             <div class="form-group">
                                 <select class="form-control" id="searchState" name="searchState">
-                                    <option value="10"<?php if ($searchState == 10) echo ' selected'; ?>>活动状态</option>
-                                    <option value="0"<?php if ($searchState == 0) echo ' selected'; ?>>进行中</option>
-                                    <option value="1"<?php if ($searchState == 1) echo ' selected'; ?>>已完成</option>
-                                    <option value="2"<?php if ($searchState == 2) echo ' selected'; ?>>已取消</option>
+                                    <option value="10"<?php if ($searchState == 10) echo ' selected'; ?>>预订状态</option>
+                                    <option value="0"<?php if ($searchState == 0) echo ' selected'; ?>>已预订</option>
+                                    <option value="0"<?php if ($searchState == 1) echo ' selected'; ?>>进行中</option>
+                                    <option value="1"<?php if ($searchState == 2) echo ' selected'; ?>>已完成</option>
+                                    <option value="2"<?php if ($searchState == 3) echo ' selected'; ?>>已取消</option>
                                 </select>
                             </div>
                         </div>
@@ -97,9 +98,9 @@
                         </thead>
                         <tbody>
                         <?php
-                        if (!empty($creation_name)) {
+                        if (true || !empty($creation_name)) {
                             $pay = array('线下支付', '线上支付');
-                            $bookingState = array('进行中', '已完成', '已取消');
+                            $bookingState = array('已预订','进行中', '已完成', '已取消');
                             foreach ($bookingList as $record) {
                                 $no = "";
                                 for ($index = 0; $index < (10 - strlen($record->id . "")); $index++)
@@ -110,12 +111,14 @@
                                     <td><?php echo $no; ?></td>
                                     <td><?php echo $record->name; ?></td>
                                     <td><?php echo $record->phone; ?></td>
-                                    <td><?php echo $pay[$record->pay_type]; ?></td>
-                                    <td><?php echo($record->reg_num * $record->cost); ?></td>
+                                    <td><?php echo $record->site_name.' - '.$record->room_name; ?><br>
+                                        <?php echo $record->start_time.' - '.(explode(' ',$record->end_time)[1]); ?>
+                                    </td>
+                                    <td><?php echo '￥'.($record->cost); ?></td>
                                     <td><?php echo $bookingState[$record->state]; ?></td>
-                                    <td><?php echo $record->submit_time; ?></td>
+                                    <td><?php echo $record->end_time; ?></td>
                                     <td class="text-center">
-                                        <a href="<?php echo base_url() . 'bookingDetail/' . $record->id; ?>">
+                                        <a href="<?php echo base_url() . 'roombookingDetail/' . $record->id; ?>">
                                             查看 &nbsp;
                                         </a>
                                     </td>

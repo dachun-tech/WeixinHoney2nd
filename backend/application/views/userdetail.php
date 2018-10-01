@@ -32,19 +32,40 @@
 
             <div class="row custom-info-row">
                 <label class="col-sm-2">运动项目:</label>
-                <label class="col-sm-4" id="nickname"><?php echo $userDetail[0]->nickname; ?></label>
+                <?php
+                echo '<label class="col-sm-4" id="nickname">';
+                $i = 0;
+                foreach ($typeList as $item) {
+                    if ($item->type == null) continue;
+                    if ($i != 0) echo ',';
+                    echo $eventType[$item->type];
+                    $i++;
+                }
+                if ($i == 0)
+                    echo '没有运动项目';
+                echo '</label>';
+                ?>
             </div>
             <div class="row custom-info-row">
                 <label class="col-sm-2">运动次数:</label>
-                <label class="col-sm-4" id="nickname"><?php echo $userDetail[0]->nickname; ?></label>
+                <?php
+                echo '<label class="col-sm-4" id="nickname">';
+                $i = 0;
+                foreach ($typeList as $item) {
+                    if ($i != 0) echo ',';
+                    echo $item->count . '次';
+                    $i++;
+                }
+                echo '</label>';
+                ?>
             </div>
             <div class="row custom-info-row">
                 <label class="col-sm-2">年龄:</label>
-                <label class="col-sm-4" id="nickname"><?php echo $userDetail[0]->age; ?></label>
+                <label class="col-sm-4" id="nickname"><?php echo $userDetail[0]->age; ?>岁</label>
             </div>
             <div class="row custom-info-row">
                 <label class="col-sm-2">性别:</label>
-                <label class="col-sm-4" id="nickname"><?php echo $userDetail[0]->gender; ?></label>
+                <label class="col-sm-4" id="nickname"><?php echo ($userDetail[0]->gender == 0) ? '男' : '女'; ?></label>
             </div>
             <div class="row custom-info-row">
                 <label class="col-sm-2">个性签名:</label>
@@ -56,7 +77,7 @@
             </div>
             <div class="row custom-info-row">
                 <label class="col-sm-2">是不会员:</label>
-                <label class="col-sm-4" id="nickname"><?php echo $userDetail[0]->nickname; ?></label>
+                <label class="col-sm-4" id="nickname"><?php echo ($isMember[0]->state == null) ? '否' : '是'; ?></label>
             </div>
             <div id="tip" class="row custom-info-row">
                 <label class="col-sm-2">禁用状态:</label>
@@ -156,12 +177,13 @@
                 <label class="col-sm-4" id="phone"><?php echo $userDetail[0]->phone; ?></label>
             </div>
             <?php
-            if($userDetail[0]->role==1){
+            if ($userDetail[0]->role == 1) {
                 ?>
-<!--                <div class="row custom-info-row">-->
-<!--                    <label class="col-sm-2">身份证号:</label>-->
-<!--                    <label class="col-sm-4" id="nickname">--><?php //echo $userDetail[0]->id_no; ?><!--</label>-->
-<!--                </div>-->
+                <!--                <div class="row custom-info-row">-->
+                <!--                    <label class="col-sm-2">身份证号:</label>-->
+                <!--                    <label class="col-sm-4" id="nickname">--><?php //echo $userDetail[0]->id_no;
+                ?><!--</label>-->
+                <!--                </div>-->
 
                 <div class="row custom-info-row">
                     <label class="col-sm-2">身份证照片:</label>
@@ -175,14 +197,14 @@
                          style="height: 200px; width:300px; padding: 20px; padding-bottom:2px;"">
                 </div>
                 <?php
-            }?>
+            } ?>
             <?php
             if ($userDetail[0]->role == 1) {
                 ?>
                 <div class="row custom-info-row">
                     <label class="col-sm-2">场馆地址:</label>
                     <label class="col-sm-4"
-                           id="site_address"><?php echo $userDetail[0]->province . $userDetail[0]->city . $userDetail[0]->area . $userDetail[0]->detail_address; ?></label>
+                           id="site_address"><?php echo $userDetail[0]->detail_address; ?></label>
                 </div>
                 <div class="row custom-info-row">
                     <label class="col-sm-2">营业执照:</label>

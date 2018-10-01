@@ -64,7 +64,6 @@ class boss_model extends CI_Model
     function getSiteDetail($bossId, $userId)
     {
         $this->db->select("boss.*,user.phone");
-        $this->db->select("avg(rating.point) as point, count(rating.id) as rating_amount");
         $this->db->select("provinces.province, cities.city, areas.area");
         $this->db->from("boss");
         $this->db->join("provinces", "provinces.id = boss.province");
@@ -72,11 +71,24 @@ class boss_model extends CI_Model
         $this->db->join("areas", "areas.id = boss.area");
         $this->db->join("user", "user.no = boss.boss_id");
         $this->db->join("event", 'event.organizer_id = boss.boss_id', 'left');
-        $this->db->join("rating", "rating.event_id = event.id", 'left');
         $this->db->where("boss.boss_id", $bossId);
         $query = $this->db->get();
 
         $bossItem = $query->row();
+        $rating_result = $this->rating_model->getRatingByBoss($bossId);
+        $rating_amount = count($rating_result);
+        $point = 0.0;
+        if ($rating_amount > 0)
+        {
+            $sum = 0;
+            foreach($rating_result as $key=>$value){
+                if(isset($value->point))
+                    $sum += $value->point;
+            }
+            $point = $sum/$rating_amount;
+        }
+        $bossItem->rating_amount = $rating_amount;
+        $bossItem->point = $point;
         $bossItem->favourite_count = $this->getFavouriteCount($bossItem->boss_id);
         $sportType = $bossItem->site_type_detail;
         $sportType = explode(',', $sportType);
@@ -131,14 +143,22 @@ class boss_model extends CI_Model
     /*this function is for get place detail from event id*/
     function getSiteDetailFromEventId($eventId)
     {
-        $this->db->select("boss.*");
-        $this->db->from("boss");
-        $this->db->join("event", 'event.organizer_id = boss.boss_id');
+        $this->db->select("boss.*, user.no, user.sport_type, user.name, user.role");
+        $this->db->from("event");
+        $this->db->join("boss", 'event.organizer_id = boss.boss_id', 'left');
+        $this->db->join("user", 'event.organizer_id = user.no', 'left');
         $this->db->where("event.id", $eventId);
         $query = $this->db->get();
         $result = array();
         $result = $query->result();
         $boss_info = $result[0];
+        if ($boss_info->role == '2')
+        {
+            $boss_info->boss_id = $boss_info->no;
+            $boss_info->site_name = $boss_info->name;
+            $boss_info->site_type_detail = $boss_info->sport_type;
+
+        }
         $point = number_format((float)$this->getSiteRatingPoint($boss_info->boss_id), 1, '.', '');
         $response_data = array('boss_id' => $boss_info->boss_id, 'site_name' => $boss_info->site_name,
             'site_type_detail' => $boss_info->site_type_detail,
@@ -165,15 +185,19 @@ class boss_model extends CI_Model
 
     function getSiteRatingPoint($bossId)
     {
-        $this->db->select("avg(rating.point) as point");
-        $this->db->from("boss");
-        $this->db->join("event", 'event.organizer_id = boss.boss_id', 'left');
-        $this->db->join("rating", "rating.event_id = event.id", 'left');
-        $this->db->where("boss.boss_id", $bossId);
-        $query = $this->db->get();
-        $result = array();
-        $result = $query->result();
-        return (count($result) > 0) ? $result[0]->point : 0;
+        $result = $this->rating_model->getRatingByBoss($bossId);
+		if (count($result) > 0)
+		{
+			$sum = 0;
+			foreach($result as $key=>$value){
+				if(isset($value->point))
+					$sum += $value->point;
+			}
+			return $sum/count($result);
+		}else {
+			return 0;
+		}	
+        
     }
 
     /**
@@ -229,6 +253,7 @@ class boss_model extends CI_Model
         $this->db->select("picture");
         $this->db->from("site_picture");
         $this->db->where("boss_id", $bossId);
+        $this->db->order_by('order');
         $query = $this->db->get();
         return $query->result();
     }
@@ -308,10 +333,11 @@ class boss_model extends CI_Model
      * @param string $picture : This is the filename of picture
      * @return boolean $result : status of inputing information
      */
-    function addSitePicture($bossId, $picture)
+    function addSitePicture($bossId, $picture, $id=0)
     {
         $info['boss_id'] = $bossId;
         $info['picture'] = $picture;
+        $info['order'] = $id;
         $this->db->insert('site_picture', $info);
         $result = $this->db->affected_rows();
         return ($result > 0) ? true : false;
@@ -342,12 +368,9 @@ class boss_model extends CI_Model
 
     function getSiteByDistanceApi($longitude, $latitude, $userId)
     {
-        $this->db->select("boss_id, site_name, longitude, latitude, site_type, area");
-        $this->db->from("boss");
-        $this->db->where("( 6371 * acos( cos( radians($latitude) ) * cos( radians( latitude) )
-   * cos( radians(longitude) - radians($longitude)) + sin(radians($latitude))
-   * sin( radians(latitude))))<=5");
-        $query = $this->db->get();
+        $query = $this->db->query('select boss_id, site_name, longitude, latitude, site_type, area from boss where site_type and ( 6371 * acos( cos( radians('.$latitude.') ) * cos( radians( latitude) )
+   * cos( radians(longitude) - radians('.$longitude.')) + sin(radians('.$latitude.'))
+   * sin( radians(latitude))))<=5 ');
 
         $response_array = array();
         foreach ($query->result() as $item) {

@@ -82,7 +82,7 @@
   float: right;
   margin-right: 30rpx;  
   font-family: PingFangSC-Regular;
-  font-size: 22rpx;
+  font-size: 24rpx;
   color: #472e00;
   letter-spacing: 0.47rpx;
 }
@@ -92,6 +92,7 @@
   margin-right: 10rpx;
   width: 30rpx;
   height: 29rpx;
+  padding-top:2rpx;
 }
 
 .activity-time {
@@ -120,15 +121,16 @@
   float: right;
   margin-right: 20rpx;  
   font-family: PingFangSC-Regular;
-  font-size: 22rpx;
+  font-size: 24rpx;
   color: #472e00;
   letter-spacing: 0.47rpx;
 }
 
 .activity-location-image {
   float: right; 
-  margin-right: 5rpx;
-  width: 25rpx;
+  margin-right: 8rpx;
+  width: 24rpx;
   height: 30rpx;
+  padding-top:1rpx;
 }
 

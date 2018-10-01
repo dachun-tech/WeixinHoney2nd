@@ -27,11 +27,13 @@
               <view class="tr">
                 <block wx:for="{{row}}" wx:key="timeid" wx:for-index="timeid">
                   <view class="td disabled" wx:if="{{item.status==0}}" 
-                    bindtap="bookRoom" id="{{rowid}}-{{timeid}}">{{item.cost}}</view>
+                    bindtap="bookRoom" id="{{rowid}}-{{timeid}}">{{(item.status == 0) ? '已售' : ('￥' + item.cost)}}</view>
                   <view class="td booked" wx:elif="{{item.status==1}}"
-                    bindtap="bookRoom" id="{{rowid}}-{{timeid}}">{{item.cost}}</view>
+                    bindtap="bookRoom" id="{{rowid}}-{{timeid}}">{{(item.status == 0) ? '已售' : ('￥' + item.cost)}}</view>
+                  <view class="td disabled" wx:elif="{{item.status ==4}}"
+                    bindtap="bookRoom" id="{{rowid}}-{{timeid}}">{{(item.status == 4) ? '已售' : ('￥' + (-item.cost))}}</view>
                   <view class="td enabled" wx:elif="{{item.status==2}}"
-                    bindtap="bookRoom" id="{{rowid}}-{{timeid}}">{{item.cost}}</view>
+                    bindtap="bookRoom" id="{{rowid}}-{{timeid}}">{{(item.status == 0) ? '已售' : ('￥' + item.cost)}}</view>
                 </block>
               </view>
             </block>

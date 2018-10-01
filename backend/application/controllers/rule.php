@@ -30,7 +30,7 @@ class rule extends basecontroller
      */
     public function saveRule()
     {
-        for($index=1; $index<10; $index++)
+        for($index=1; $index<14; $index++)
         {
             $info['value'] = $this->input->post("rule".($index-1));
             $this->rule_model->updateRule($index, $info);

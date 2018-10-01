@@ -92,8 +92,8 @@
                             <th>头像</th>
                             <th>昵称</th>
                             <th>姓名</th>
-                            <th>手机号码</th>
-                            <th width="">认证角色</th>
+                            <th>手机号</th>
+                            <th>认证角色</th>
                             <th>现有蜂蜜量</th>
                             <th width="">认证时间</th>
                             <th>认证状态</th>
@@ -108,6 +108,7 @@
                             $userRole = array('无', '场馆主', '个人');
                             $userState = array('未认证', '认证中', '认证通过', '认证未通过');
                             for($i=0 ;$i<count($userList); $i++) {
+                                if($userList[$i]->no == '0') continue;
                                 ?>
                                 <tr>
                                     <td><?php echo ($i+1); ?></td>

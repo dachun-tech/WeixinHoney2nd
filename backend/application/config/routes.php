@@ -71,10 +71,21 @@ $route['eventListingByFilter'] = 'eventmanage/eventListingByFilter';
 $route['eventListingByFilter/(:num)'] = 'eventmanage/eventListingByFilter';
 $route['eventDetail/(:num)'] = 'eventmanage/showEventDetail/$1';
 
+$route['newsevent'] = 'eventmanage/0';
+$route['newseventmanage'] = 'eventmanage/index/0';
+$route['newseventmanage/(:num)'] = 'eventmanage/index/0';
+$route['newseventmanage/add'] = 'eventmanage/addItem';
+$route['newseventDetail/(:num)'] = 'eventmanage/showNewsEventDetail/$1';
+$route['newseventListingByFilter'] = 'eventmanage/eventListingByFilter/0';
+
 $route['booking'] = 'bookingmange';
 $route['bookingmanage/(:num)'] = 'bookingmanage';
 $route['bookingListingByFilter'] = 'bookingmanage/bookingListingByFilter';
 $route['bookingDetail/(:num)'] = 'bookingmanage/showBookingDetail/$1';
+
+$route['roombookingmanage/(:num)'] = 'roombookingmanage';
+$route['roombookingListingByFilter'] = 'roombookingmanage/bookingListingByFilter';
+$route['roombookingDetail/(:num)'] = 'roombookingmanage/showBookingDetail/$1';
 
 $route['member'] = 'membermanage';
 $route['member/(:num)'] = 'membermanage';
@@ -105,6 +116,8 @@ $route['rating/(:num)'] = 'rating';
 $route['ratingListingByFilter'] = 'rating/ratingListingByFilter';
 $route['rulemanage'] = "rule";
 $route['saveRule'] = "rule/saveRule";
+$route['template/(:num)'] = "template/index/$1";
+$route['saveTemplate'] = "template/saveItem";
 
 $route['alarm'] = "alarm";
 $route['alarm/(:num)'] = "alarm";
@@ -137,6 +150,7 @@ $route['api/setTodayFirst'] = "api/datamanage/setTodayFirst";
 $route['api/getMyBooking'] = "api/datamanage/getMyBooking";
 $route['api/getBookingDetail'] = "api/datamanage/getBookingDetail";
 $route['api/cancelBooking'] = "api/datamanage/cancelBooking";
+$route['api/setBookData'] = "api/datamanage/setBookData";
 $route['api/addRating'] = "api/datamanage/addRating";
 $route['api/getAllEvents'] = "api/datamanage/getEventByUser";
 $route['api/getEventDetail'] = "api/datamanage/getEventDetail";
@@ -214,6 +228,8 @@ $route['api/getNewAlarm'] = "api/datamanage/getNewAlarm";
 $route['api/getAlarm'] = "api/datamanage/getAlarm";
 $route['api/getAllBoss'] = "api/datamanage/getAllBoss";
 $route['api/getBackyard'] = "api/datamanage/getBackyard";
+
+$route['api/getHoneyFriend'] = "api/datamanage/getHoneyFriend";
 
 $route['api/test'] = "api/datamanage/test";
 /* End of file routes.php */

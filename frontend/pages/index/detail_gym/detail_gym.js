@@ -23,27 +23,95 @@ Page({
 
             score: 4.3,
             srcImage: '',
-        }
+        },
+        tmrID: 0,
+        isFirstInit: true,
+        pageType: '0'
     },
     onLoad: function(option) {
         var that = this;
         that.data.options = option;
-    },
-
-    onShow: function() {
-        var that = this;
-        if (app.globalData.userInfo.user_id == 0) {
-            app.onLaunch();
-            setTimeout(function() {
-                that.onInitStart(that.data.options);
-            }, 4000);
-        } else {
-            that.onInitStart(that.data.options);
+        var pageType = option.type;
+        if (pageType == '1') {
+            that.data.pageType = '1';
+            that.setData({ pageType: that.data.pageType });
         }
     },
+    getUserModalHide: function() {
+        this.setData({
+            getUserInfoDisabled: false
+        })
+        this.data.isFirstInit = false;
+        app.globalData.initDisabled = false;
+        this.onShow();
+        // setTimeout(function() {
 
-    onInitStart: function(options) {
+        // }, 100);
+    },
+    onShow: function(option) {
+        var that = app;
+        var _this = this;
+        wx.getSetting({
+            success: function(res) {
+                var perm = res;
 
+                that.globalData.getUserInfoDisabled = !perm.authSetting['scope.userInfo'];
+                that.globalData.getUserLocationDisabled = !perm.authSetting['scope.userLocation'];
+                that.globalData.getWerunDataDisabled = !perm.authSetting['scope.werun'];
+
+                if (!that.globalData.getUserInfoDisabled && !that.globalData.getUserLocationDisabled && !that.globalData.getWerunDataDisabled) {
+                    _this.onPrepare();
+                    return;
+                }
+
+                if (perm.authSetting['scope.userInfo'] != true && that.globalData.initDisabled == false) {
+                    that.globalData.initDisabled = true;
+                    _this.setData({
+                        getUserInfoDisabled: true
+                    })
+                    wx.hideTabBar({})
+                } else {
+                    wx.authorize({
+                        scope: 'scope.userLocation',
+                        fail: function() {
+                            that.globalData.initDisabled = true;
+                        },
+                        complete: function() {
+                            wx.authorize({
+                                scope: 'scope.werun',
+                                fail: function() {
+                                    that.globalData.initDisabled = true;
+                                },
+                                complete: function() {
+                                    if (that.globalData.initDisabled)
+                                        that.go2Setting();
+                                    else {
+                                        that.globalData.getUserInfoDisabled = false;
+                                        _this.onPrepare();
+                                        isFirstLaunch = false;
+                                    }
+                                }
+                            })
+                        }
+                    });
+                }
+            }
+        });
+    },
+    onPrepare: function() {
+        var that = this;
+        app.onInitialize();
+        if (app.globalData.userInfo.user_id == 0) {
+            clearTimeout(that.data.tmrID);
+            that.data.tmrID = setTimeout(function() {
+                that.onPrepare();
+            }, 1000);
+        } else {
+            that.onInitStart();
+        }
+    },
+    onInitStart: function() {
+        var options = this.data.options;
         this.setData({
             eventType: app.globalData.eventType,
             userRole: app.globalData.userRole,
@@ -112,7 +180,7 @@ Page({
                         */
                         that.setData({
                             site: site_buf,
-                            rooturl: that.rooturl,
+                            rooturl: that.data.rooturl,
                             pictures: images,
                             isFavourite: is_favourite,
                             event: filtered_event,
@@ -125,13 +193,7 @@ Page({
     },
 
     phone_call: function() {
-        var that = this
-        wx.makePhoneCall({
-            phoneNumber: that.data.site.phone,
-            complete: function() {
-                return
-            }
-        })
+        app.phoneCall(this.data.site.phone)
     },
 
     show_preview: function(res) {
@@ -155,11 +217,8 @@ Page({
         })
     },
     on_click_favourite: function() {
-        var site_buf = this.data.site
-        site_buf.fav_state = (1 + site_buf.fav_state) % 2;
-        this.setData({
-            site: site_buf
-        })
+
+
         var that = this;
         wx.request({
             url: app.globalData.mainURL + 'api/cancelFavouriteSite',
@@ -171,7 +230,18 @@ Page({
                 'user_id': app.globalData.userInfo.user_id,
                 'boss_id': that.data.site.boss_id
             },
-            success: function(res) {}
+            success: function(res) {
+                var site_buf = that.data.site
+                site_buf.fav_state = (1 + site_buf.fav_state) % 2;
+                if (site_buf.fav_state == 1) {
+                    site_buf.favourite_count = site_buf.favourite_count + 1;
+                } else {
+                    site_buf.favourite_count = site_buf.favourite_count - 1;
+                }
+                that.setData({
+                    site: site_buf
+                })
+            }
         })
     },
     onShareAppMessage: function(res) {
@@ -181,7 +251,7 @@ Page({
         }
         var that = this;
         return {
-            title: that.data.site.site_name, // '../detail_gym/detail_gym?id='+ event.currentTarget.id,
+            title: that.data.site.site_name,
             path: '/pages/index/detail_gym/detail_gym?id=' + that.data.site.boss_id +
                 '&user_id=' + app.globalData.userInfo.user_id +
                 '&nickname=' + app.globalData.userInfo.nickname +
@@ -196,5 +266,23 @@ Page({
         wx.navigateTo({
             url: '../room_booking/room_booking?id=' + that.data.site.boss_id,
         })
-    }
+    },
+    go_home: function() {
+        var that = this;
+        console.log(that.data);
+        wx.switchTab({
+            url: '../index',
+        })
+    },
+    goto_mapView: function() {
+        //view event location in map
+        var that = this;
+        wx.openLocation({
+                latitude: parseFloat(that.data.site.latitude),
+                longitude: parseFloat(that.data.site.longitude)
+            })
+            // wx.navigateTo({
+            //     url: "../detail_event/view_map?latitude=" + that.data.site.latitude + "&longitude=" + that.data.site.longitude
+            // })
+    },
 })

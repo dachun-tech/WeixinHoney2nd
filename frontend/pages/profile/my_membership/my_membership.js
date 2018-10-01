@@ -191,12 +191,6 @@ Page({
 
   },
 
-  /**
-   * 用户点击右上角分享
-   */
-  onShareAppMessage: function () {
-
-  },
   //listener for cost to be member
   btn_Clicked_Cost: function (evnet) {
 

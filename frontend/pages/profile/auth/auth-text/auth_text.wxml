@@ -10,7 +10,7 @@
       <view class='auth-text'>*联系方式：{{user_info.phone}}</view>
       <view class='auth-text-auto'>
         <view class='text-auto1'>*场馆地址：</view>
-        <view class='text-auto2'>{{user_info.province+user_info.city+user_info.area+user_info.detail_address}}</view>
+        <view class='text-auto2'>{{user_info.detail_address}}</view>
       </view>
       <view class='auth-image-view' style='height: auto'>
         <view class='auth-image-text'>*身份证照片：</view>
@@ -28,11 +28,11 @@
       <view class='auth-text'>*角色类型：场馆主</view>
       <view class='auth-text'>*场馆名称：{{user_info.site_name}}</view>
       <view class='auth-text'>*馆主姓名：{{user_info.name}}</view>
-      <view class='auth-text'>*联系方式：{{user_info.phone}}</view>
       <view class='auth-text-auto'>
         <view class='text-auto1'>*场馆地址：</view>
-        <view class='text-auto2'>{{user_info.province+user_info.city+user_info.area+user_info.detail_address}}</view>
+        <view class='text-auto2'>{{user_info.detail_address}}</view>
       </view>
+      <view class='auth-text'>*联系方式：{{user_info.phone}}</view>
       <view class='auth-image-view' style='height: auto'>
         <view class='auth-image-text'>*身份证照片：</view>
         <image class='auth-image' style="margin-right: 28rpx;" mode="aspectFill" src='{{user_info.id_pic1}}'></image>

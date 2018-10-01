@@ -1,7 +1,7 @@
 <view class='container'>
   <!-- select sport kind list -->
   <view class="item_view">
-    <view class = "text_area">场馆类别:</view>
+    <view class = "text_area">*场馆类别:</view>
     <view class="sport_type">
         <view class = "type_item" wx:for="{{selected_sport_type}}" wx:key="{{index}}">
             <image id="{{index}}" src="../../../image/del02@2x.png" bindtap = 'On_click_deleteType' />
@@ -17,7 +17,7 @@
     </textarea>
   </view>
   <!-- service description -->
-  <view class='stadium-input-view'>
+  <view class='stadium-input-view' wx:if="{{!select_menu_state}}">
     <view class='stadium-input-text'>*服务介绍：</view>
     <textarea class='stadium-input-textarea' maxlength='500' placeholder='请输入场馆简介，不超过500字' bindinput='blur_on_service' value="{{bossInfo.site_service}}">
     </textarea>
@@ -145,7 +145,7 @@
   </view>
 
   <!-- booking part only view-->  
-  <view class='stadium-booking-view'  wx:if="{{edit_state==1}}">
+  <view class='stadium-booking-view'  wx:if="{{edit_state>0}}">
     <view class="modal-mask" bindtap="hideTimeListView" style = "background:white" wx:if="{{select_weekday_state}}"></view>
     <view class="time_list" wx:if="{{select_weekday_state}}">
         <view  wx:for="{{weekday_strs}}" wx:key="{{index}}">
@@ -224,8 +224,11 @@
 
   <button class='btn-submit' bindtap="on_click_save">完成</button>
 
+</view>
 
-  <view class="modal-mask" bindtap="preventTouchMove" catchtouchmove="preventTouchMove" wx:if="{{select_menu_state}}"></view>
+
+
+<view class="modal-mask" bindtap="preventTouchMove" catchtouchmove="preventTouchMove" wx:if="{{select_menu_state}}"></view>
   <view class="modal-dialog" catchtouchmove="preventTouchMove" wx:if="{{select_menu_state}}">
     <view class='main-type-content'>
       <view class='type_contain_each' wx:for="{{remain_array}}" wx:key="{{index}}">
@@ -235,9 +238,7 @@
       </view>        
     </view>
     <view class='main-type-buttons'>
-      <image class="type-button-cancel" bindtap="cancel_btn_clicked" src="../../../image/btn_cancel.png"></image>
-      <image class="type-button-ok" bindtap="ok_btn_clicked" src="../../../image/btn_ok.png"></image>
+      <view class="type-button-cancel" bindtap="cancel_btn_clicked">取消</view>
+      <view class="type-button-ok" bindtap="ok_btn_clicked">确定</view>
     </view>
   </view>
-
-</view>

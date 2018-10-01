@@ -33,7 +33,7 @@
             <div class="row custom-info-row">
                 <label class="col-sm-2">收货地址:</label>
                 <label class="col-sm-4"
-                       id="nickname"><?php echo $exchangeDetail[0]->province . $exchangeDetail[0]->city . $exchangeDetail[0]->area . $exchangeDetail[0]->detail_address; ?></label>
+                       id="nickname"><?php echo $exchangeDetail[0]->detail_address; ?></label>
             </div>
             <div class="row custom-info-row">
                 <label class="col-sm-2">商品清单</label>

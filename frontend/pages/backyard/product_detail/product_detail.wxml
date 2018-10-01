@@ -6,7 +6,7 @@
       <text style="font-weight: bold;">{{product.name}}</text>
     </view>
     <view class='prodcut-cost'>
-      <image class="product-cost-image" src='../../../image/garden_fm@2x.png'></image>
+      <image class="product-cost-image" src='../../../image/garden_sc_fm02@2x.png'></image>
       <view class='product-cost-text'>
         <text>{{product.cost}}ml兑换</text>
       </view>

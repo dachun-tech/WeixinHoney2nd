@@ -13,6 +13,8 @@ Page({
     booking_id: 0,
     event_id:0 ,
     siteInfo:{},
+    all_sport_type:app.globalData.eventType,
+    type_array:[],
     starparam: {
       stars: [0, 1, 2, 3, 4],
       srcImage_0: "../../../image/star-0.png",
@@ -41,11 +43,17 @@ Page({
         'event_id': that.data.event_id        
       },
       success: function (res) {
-        
+        var site_type = res.data.site.site_type_detail.split(",");
+        var type_array = [];
+        for (let index = 0; index < site_type.length; index++) {
+          type_array.push(that.data.all_sport_type[site_type[index]])          
+        }
         that.setData({
-          siteInfo:res.data.site
+          siteInfo:res.data.site,
+          type_array:type_array
         });
         console.log(that.data.siteInfo);
+        console.log(that.data.type_array);
       }
     });
 

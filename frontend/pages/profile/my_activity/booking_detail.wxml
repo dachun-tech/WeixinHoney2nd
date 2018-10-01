@@ -26,16 +26,17 @@
       <view class="activity-time">
         <label class="activity-time-label">时间 | {{booking.start_time}} ~ {{booking.end_time}}</label>
       </view>
-      <view class="activity-address">
+      <view class="activity-address" bindtap="goto_mapView">
         <view style='display:inline-block; width: 11%; float: left;'>地址 | </view>
-        <view style='display: inline-block; width: 80%; vertical-align: top;text-decoration: underline;'><text selectable='true'>{{booking.province+booking.city+booking.area+booking.detail_address}}</text></view>
+        <view style='display: inline-block; width: 80%; vertical-align: top;text-decoration: underline;'><text selectable='true'>{{booking.detail_address}}</text></view>
       </view>
       <view class="activity-agent">
         <label class="activity-agent-label">发起人 | {{booking.agent_name}}</label>
       </view>
       <view class="activity-phone">
         <view style='display:inline-block; width: 11%; float: left;'>电话 | </view>
-        <view style='display: inline-block;width: 80%;vertical-align: top;text-decoration: underline;'><text selectable='true'>{{booking.agent_phone}}</text></view>
+        <view style='display: inline-block;width: 80%;vertical-align: top;text-decoration: underline;'
+          bindtap="phone_call"><text selectable='true'>{{booking.agent_phone}}</text></view>
       </view>
             
       

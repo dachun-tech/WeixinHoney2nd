@@ -36,7 +36,7 @@
     <view>
       <view class="focus-event-place-detail">
         <view style='widht: 10%; float: left; display: inline-block;'>地址 | </view>
-        <view class="detail-addr"><text selectable='true'>{{site.province+site.city+site.area+site.detail_address}}</text></view>
+        <view class="detail-addr" bindtap="goto_mapView"><text selectable='true'>{{site.detail_address}}</text></view>
       </view>
     </view>
   </view>
@@ -44,9 +44,21 @@
     <view class='comment-gym-label'>
       <text style="font-weight: bold;">预订规则</text>
     </view>
-    <view style="padding-left: 30rpx; padding-right:30rpx;margin-top:10rpx;">      
-      <text selectable = "true" class='comment-gym-text'>开始前24小时可退/可用蜂蜜{{site.allow_time!=null?site.allow_time:''}}</text>
+    <view wx:if="{{site.cancel_time>0 && site.cancel_time<100}}"
+          style="padding-left: 60rpx;margin-top:10rpx;">
+      <label  class='comment-gym-text'>开始前{{site.cancel_time}}小时可退/可用蜂蜜抵扣</label>
     </view>
+    <view wx:elif="{{site.cancel_time=='0'}}"
+          style="padding-left: 60rpx; margin-top:10rpx;">
+      <label  class='comment-gym-text'>开始前可退/可用蜂蜜抵扣</label>
+    </view>
+    <view wx:elif="{{site.cancel_time>100}}"
+          style="padding-left: 60rpx;margin-top:10rpx;">
+      <label  class='comment-gym-text'>不可退</label>
+    </view>
+    <!-- <view >      
+      <text selectable = "true" class='comment-gym-text'>开始前{{cancel_time}}可退/可用蜂蜜{{site.allow_time!=null?site.allow_time:''}}</text>
+    </view> -->
     <view style="width:100%;text-align:center;">
     <button class="booking-btn" bindtap="go2booking">去预订</button>
     </view>
@@ -74,4 +86,5 @@
       <template is="stadium-template" data="{{item, eventType, userRole, eventState, image_favs}}"/>
     </view>
   </view>
+   <button wx:if="{{pageType=='1'}}" bindtap="go_home" class="btn_submit">去首页</button>
 </view>

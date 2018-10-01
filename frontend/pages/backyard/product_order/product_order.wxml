@@ -5,7 +5,7 @@
       <text class='postman-name-text' style="font-weight: bold;">收货人：{{address.name}}</text>
       <text class='postman-number-text'>{{address.phone}}</text>
       <view class='postman-address-text' style="font-weight: bold;">
-        <text selectable='true'>{{address.province}}{{address.city}}{{address.area}}{{address.detail_address}}</text>
+        <text selectable='true'>{{address.detail_address}}</text>
       </view>
     </view> 
     <view wx:if="{{!show}}" class='not-address'>请填写收货地址!</view>

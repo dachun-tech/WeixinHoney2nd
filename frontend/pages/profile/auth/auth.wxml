@@ -15,22 +15,23 @@
     <view class='input-info'>
       <text class='input-info-name'>*场馆名称:</text>
       <input class='input-info-input' placeholder='请输入场馆名称' bindinput='On_blur_stadiuminfo' wx:if="{{method=='new'}}" />
-      <input class='input-info-input' placeholder='请输入场馆名称' bindinput='On_blur_stadiuminfo' value="{{user.site_name}}" disabled="{{disable}}" wx:else/>
+      <input class='input-info-input' placeholder='请输入场馆名称' bindinput='On_blur_stadiuminfo' value="{{user.site_name}}" wx:else/>
     </view>
     <view class='input-info'>
       <text class='input-info-name'>*馆主姓名:</text>
       <input class='input-info-input' placeholder='请输入馆主真实姓名' bindinput='On_blur_name' wx:if="{{method=='new'}}" />
-      <input class='input-info-input' placeholder='请输入馆主真实姓名' bindinput='On_blur_name' value="{{user.name}}" disabled="{{disable}}" wx:else/>
+      <input class='input-info-input' placeholder='请输入馆主真实姓名' bindinput='On_blur_name' value="{{user.name}}" wx:else/>
     </view>
 
     <view class='user-role' bindtap='On_click_map'>
-      <text class='user-role-text'>*场馆地址: {{select_location_text}}</text>
+      <!-- <text class='user-role-text'>*场馆地址: {{select_location_text}}</text> -->
+      <text class='user-role-text'>*场馆地址: 地图上选择</text>
       <image class='user-role-image' src='../../../image/next@2x.png'></image>
     </view>
 
     <view class='detailaddress-view'>
-      <input class='detailaddress-input' placeholder="请输入详细地址" bindinput='On_blur_detailaddress' wx:if="{{method=='new'}}" />
-      <input class='detailaddress-input' placeholder="请输入详细地址" bindinput='On_blur_detailaddress' value="{{user.detail_address}}" disabled="{{disable}}" wx:else/>
+      <input class='detailaddress-input' placeholder="请输入详细地址" bindinput='On_blur_detailaddress' value="{{user.detail_address}}" wx:if="{{method=='new'}}" />
+      <input class='detailaddress-input' placeholder="请输入详细地址" bindinput='On_blur_detailaddress' value="{{user.detail_address}}" wx:else/>
     </view>
 
     <view class='input-info'>
@@ -47,7 +48,7 @@
     <view class='input-info' style = "display:none">
       <text class='input-info-name'>*身份证号:</text>
       <input class='input-info-input' wx:if="{{method=='new'}}" placeholder='请输入身份证号' bindinput='On_blur_idcard' />
-      <input class='input-info-input' wx:else placeholder='请输入身份证号' bindinput='On_blur_idcard' value="{{user.id_no}}" disabled="{{disable}}" />
+      <input class='input-info-input' wx:else placeholder='请输入身份证号' bindinput='On_blur_idcard' value="{{user.id_no}}"  />
     </view>
 
     <view class='idcardimage-view'>
@@ -69,7 +70,7 @@
     <view class='input-info'  style="display: none">
       <text class='input-info-name'>*真实姓名:</text>
       <input class='input-info-input' placeholder='请输入真实姓名' bindinput='On_blur_name1' wx:if="{{method=='new'}}" />
-      <input class='input-info-input' placeholder='请输入真实姓名' bindinput='On_blur_name1' value="{{user.name}}" disabled="{{disable}}" wx:else/>
+      <input class='input-info-input' placeholder='请输入真实姓名' bindinput='On_blur_name1' value="{{user.name}}" wx:else/>
     </view>
     <view class='input-info'>
       <text class='input-info-name'>*联系方式:</text>

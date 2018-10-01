@@ -103,30 +103,12 @@
   height: 37rpx;
 }
 
-.favor_star {
-  position: absolute;
-  right: 51.1rpx;
-  top: 474.1rpx;
-  width: 37.8rpx;
-  height: 30.8rpx;
-}
-
 .act_date {
   margin-top: 30rpx;
   margin-left: 30rpx;
   font-size: 26rpx;
 }
-.favor_text {
-  position: absolute;
-  top: 507rpx;
-  right: 51.1rpx;
-  width: 37.8rpx;
-  font-size: 22rpx;
-  color: #472e00;
-  font-family: PingFangSC-Regular;
-  letter-spacing: 0.47rpx;
-  text-align: center;
-}
+
 
 .temp-fonts {
   margin-top: 10rpx;
@@ -145,23 +127,110 @@
   display: inline-block;
   vertical-align: top;
 }
+
+.fav_info {  
+  margin-top: 20rpx;
+  width: 100%;
+  font-size: 24rpx;
+  color: #333;
+  height:50rpx;
+}
+.favor_text{  
+  float: right;
+  padding-right:30rpx;
+}
+.favor_star{
+  float: right;
+  width: 30rpx;
+  height: 30rpx;
+  padding-right:10rpx;
+}
+.view_count_text{
+  float: right;
+  padding-right:30rpx;
+}
+.view_count_img {
+  float:right;
+  width:40rpx;
+  height:26rpx;
+  padding-right:10rpx;
+  transform:translateY(15%);
+}
+
+
+
 .place-info {
   margin-top: 20rpx;
   padding-top: 20rpx;
   height: auto;
   width: calc(100%-40rpx);
   background-color: white;
+  padding-bottom:10rpx;
 }
 
-.place-info-view {
-  height: 88rpx;
+.organizer_photo {  
   margin-left: 30rpx;
+  width: 100rpx;
+  height: 100rpx;
+  border-radius: 50%;
+  display: inline-block;
+  vertical-align:top;
+}
+.place_info_content{
+  display: inline-block;
+  width: 410rpx
+}
+.view_gym{
+  display:inline-block;
+  width:185rpx;
+  line-height:65rpx;
+  background-color:#e6b53c;
+  font-size:28rpx;
+  color:white;
+  overflow:visible;
+  text-align:center;
+  vertical-align:top;
+  border-radius:10rpx;
+  margin-top:40rpx;
+}
+
+.place-info-view {  
+  margin-left: 20rpx;
 }
 
 .place-info-text {
-  line-height: 88rpx;
+  line-height: 50rpx;
   color: #333;
+  font-size: 28rpx;
+}
+
+
+
+.limit_info {
+  margin-top: 20rpx;
+  padding-bottom: 10rpx;
+  width: (100% - 20rpx);
+  height: auto;
+  background-color: white;
+}
+
+.limit-payment {
+  line-height: 70rpx;
+  margin-left: 30rpx;
+}
+.limit-num {
+  line-height: 70rpx;
+  margin-left: 30rpx;
+}
+
+.limit-title-text {
+  border-left: 6rpx solid #e6b53c;
+  padding-left: 12rpx;
   font-size: 30rpx;
+}
+.limit-value-text {  
+  padding-left: 12rpx;
+  font-size: 28rpx;
 }
 
 .introduce {
@@ -193,21 +262,8 @@
   line-height: 70rpx;
 }
 
-.member_detail {
-  margin-top: 20rpx;
-  background-color: white;
-  width: 100%;
-}
 
-.view_more_detail {
-  margin-top: 10rpx;
-  font-family: PingFangSC-Semibold;
-  font-size: 26rpx;
-  color: #e6b53c;
-  letter-spacing: 0.56px;
-  float: right;
-  margin-right: 17rpx;
-}
+
 
 .applicant-view {
   width: 100%;
@@ -215,18 +271,29 @@
   min-height: 98rpx;
   margin-top: 20rpx;
   background-color: white;
+  padding-bottom:30rpx;
 }
 
 .applicant-title {
   width: clac(100%-30rpx);
   margin-left: 30rpx;
   padding-top: 20rpx;
+  padding-bottom:20rpx;
 }
 
 .applicant-title-text {
-  border-left: 6rpx solid #e6b53c;
-  padding-left: 12rpx;
-  font-size: 30rpx;
+  border-left:6rpx solid #e6b53c;
+  padding-left:30rpx;
+  font-size:30rpx;
+  width:300rpx;
+  display:inline-block;
+}
+.applicant-title-more {
+  display:inline-block;
+  color:#e6b53c;
+  font-size:28rpx;
+  width:calc(100% - 360rpx);
+  text-align:right;
 }
 
 .applicant-each-view {
@@ -237,56 +304,148 @@
   margin-left: 30rpx;
 }
 
-.applicant-image {
-  display: block;
-  margin: auto;
-  width: 70rpx;
-  height: 70rpx;
+
+
+.comment-view {
+  width: 100%;
+  margin-top: 10rpx;  
+  height: auto;
+  border-bottom: solid #F4F4F4 1rpx;
+  padding-bottom:10rpx;
+}
+.comment_user_photo {
+  display: inline-block;
+  margin-left: 30rpx;
+  width: 100rpx;
+  height: 100rpx;
+  border-radius: 50%;
+  vertical-align:middle;
+}
+.comment_user_info {
+  display: inline-block;
+  padding-top: 10rpx;  
+  width: 200rpx;
+  height:100rpx;
+  vertical-align:middle;
+}
+
+.comment_name {  
+  margin-bottom:15rpx;
+  margin-left:10rpx;
+  width:auto;
+  height:auto;
+  font-family:PingFangSC-Semibold;
+  font-size:30rpx;
+  font-weight:bold;
+  padding-top:5rpx;
+}
+.comment_phone {  
+  margin-bottom: 3rpx;
+  margin-left: 10rpx;
+  width: auto;
+  height: auto;
+  font-family: PingFangSC-Semibold;
+  font-size: 24rpx;
+}
+
+.comment_limit_info {
+  text-align: right;
+  display: inline-block;    
+  width: calc(100% - 360rpx);
+  height:100rpx;
+  vertical-align:middle;
+}
+.comment_pay_type {  
+  margin-bottom:16rpx;
+  width:auto;
+  height:auto;
+  font-family:PingFangSC-Semibold;
+  font-size:24rpx;
+  margin-top:9rpx;
+}
+
+.comment_pay_amount {  
+  margin-bottom: 3rpx;  
+  width: auto;
+  height: auto;
+  font-family: PingFangSC-Semibold;
+  font-size: 24rpx;
+}
+
+
+.cls_user_comment_info {
+  padding-top: 10rpx;  
+  width: 65%;
+  height: auto;
+  display:inline-block;
+}
+
+.cls_user_photo {
+  float: left;
+  margin-left: 30rpx;
+  width: 80rpx;
+  height: 80rpx;
   border-radius: 50%;
 }
 
-.applicant-name {
-  display: inline-block;
-  width: 150rpx;
+.cls_comment_content {
+  display: block;
+  margin-left: 130rpx;
+  word-break: break-all;
+  width: 78%;
+  margin-top: 10rpx;
+  height: auto;
+  font-family: PingFangSC-Regular;
   font-size: 24rpx;
-  text-align: center;
+  color: #333;
+  letter-spacing: 1.8rpx;
+  line-height: 40rpx;
 }
 
-.btn-footer {
-  position:fixed;
-  bottom: 0rpx;
-  width: 100%;
-  height: 98rpx;
-  margin-bottom: 0rpx;
+.cls_comment_date {
+  display: block;
+  margin-bottom: 3rpx;
+  margin-left: 130rpx;
+  width: auto;
+  height: auto;
   font-family: PingFangSC-Semibold;
-  letter-spacing: 1.63rpx;
+  font-size: 24rpx;
+  font-weight:bold;
 }
 
-.btn-gym-info {
-  display: inline-block;
-  width: 50%;
-  height: 98rpx;
-  background-color: white;
-  font-size: 34rpx;
-  color: #e6b53c;
-  overflow: visible;
+.cls_comment_time {
+  display:block;
+margin-bottom:3rpx;
+margin-left:130rpx;
+width:auto;
+height:auto;
+font-family:PingFangSC-Semibold;
+font-size:22rpx;
+color:#777;
 }
 
-.btn-final-participate {
-  display: inline-block;
-  width: 50%;
-  height: 98rpx;
-  background-color: #e6b53c;
-  font-size: 34rpx;
-  color: white;
-  overflow: visible;
+button::after {
+  border: none;
 }
-.btn-personal-participate{
-  width: 100%;
-  height: 98rpx;
-  background-color: #e6b53c;
-  font-size: 34rpx;
-  color: white;
-  line-height: 98rpx;
-  overflow: visible;
+
+.cls_user_comment_rating {
+  padding-top: 10rpx;  
+  width: 35%;
+  height: auto;
+  display:inline-block;
+  vertical-align:top;
+}
+.cls-score-star-view1 {
+  display: inline;
+  margin-left: 10rpx;
+}
+
+.cls-score-star-view2 {
+  display: inline;
+  margin-left: 5rpx;
+}
+
+.cls_score_star {
+  width: 30rpx;
+  height: 30rpx;
 }

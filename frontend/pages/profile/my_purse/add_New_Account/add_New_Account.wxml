@@ -7,7 +7,7 @@
   </view> 
   <view class="cls_bank_card_number">
     <text class="cls_bank_card_number_txt">银行卡号 : </text>
-    <input bindinput="input_Bankcardnumber" class="cls_bank_card_number_input" type="digit" placeholder="请填写正确卡号" />
+    <input bindinput="input_Bankcardnumber" class="cls_bank_card_number_input" type="digit" placeholder="请填写正确卡号" value="{{userInputCardNo}}"/>
   </view> 
   <view class="cls_id_card_number">
     <text class="cls_id_card_number_txt">身份证号 : </text>

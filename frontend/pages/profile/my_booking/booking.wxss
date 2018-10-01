@@ -84,4 +84,4 @@
   font-family: "PingFangSC-Semibold";
   color: white;
 }
-@import "../template/booking_template.wxss"
+@import "template/book_template.wxss"

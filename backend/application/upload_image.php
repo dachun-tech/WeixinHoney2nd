@@ -29,7 +29,7 @@ move_uploaded_file($_FILES["file"]["tmp_name"], getcwd() . "/uploads/" . $name);
 
 // Generate response.
 $response = new StdClass;
-$response->link = "https://www.fengteam.cn/backend/uploads/" . $name;
+$response->link = "localhost/honey/uploads/" . $name;
 echo stripslashes(json_encode($response));
 //}
 ?>

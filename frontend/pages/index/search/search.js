@@ -87,8 +87,8 @@ Page({
     this.setData({ favorinput: this.data.favorinput })
     console.log(this.data.favorinput);
     var that = this
-    wx.getLocation({
-      type: 'wgs84',
+    wx.getLocation({ 
+      type: 'gcj02',
       success: function (res) {
         var longitude = res.longitude;
         var latitude = res.latitude;

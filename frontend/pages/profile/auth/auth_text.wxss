@@ -16,8 +16,7 @@
 }
 
 .auth-text {
-  width: calc(100%-33rpx);
-  height: 88rpx;
+  width: calc(100%-33rpx); 
   line-height: 88rpx;
   padding-left: 30rpx;
   font-family: PingFangSC-Regular;
@@ -45,9 +44,9 @@
   width: 170rpx;
 }
 .text-auto2{
-  vertical-align: middle;
+  vertical-align: top;
   display: inline-block;
-  width: 530rpx;
+  width: 500rpx;
 }
 .auth-image-view {
   width: calc(100%-33rpx);

@@ -33,6 +33,7 @@ class eventmanage extends basecontroller
         $searchStatus = null;
         $searchStart = '';
         $searchEnd = '';
+        $is_train = 0;
         $fromTime = '';
         $toTime = '';
         if ($sData) {
@@ -43,29 +44,32 @@ class eventmanage extends basecontroller
             $searchStatus = $sData['searchStatus'];
             $searchStart = $sData['searchStart'];
             $searchEnd = $sData['searchEnd'];
+            $is_train = $sData['is_train'];
         }
         $this->eventCollectListing($searchStatus, $searchName, $searchType,
-            $searchRole, $searchState, $searchStart, $searchEnd, $type);
+            $searchRole, $searchState, $searchStart, $searchEnd, $type, $is_train);
     }
 
     /**
      * This function is used to load the event list
      */
     function eventCollectListing($searchStatus = null, $searchName = '', $searchType = 100,
-                                 $searchRole = 10, $searchState = 10, $searchStart = '', $searchEnd = '', $type = 1)
+                                 $searchRole = 10, $searchState = 10, $searchStart = '', $searchEnd = '', $type = 1, $is_train=0)
     {
         $this->global['pageTitle'] = "活动管理";
         $this->global['pageType'] = 'event';
+        $prefix = '';
         if (intval($type) == 0) {
             $this->global['pageTitle'] = "赛事管理";
             $this->global['pageType'] = 'news';
+            $prefix = 'news';
         }
         if ($searchName == 'ALL') $searchName = '';
         $count = $this->event_model->eventListingCount($searchStatus, $searchName, $searchType,
-            $searchRole, $searchState, $searchStart, $searchEnd, $type);
-        $returns = $this->paginationCompress("eventmanage/", $count, 10);
+            $searchRole, $searchState, $searchStart, $searchEnd, $type, $is_train);
+        $returns = $this->paginationCompress($prefix."eventmanage/", $count, 10);
         $data['eventList'] = $this->event_model->eventListing($searchStatus, $searchName, $searchType,
-            $searchRole, $searchState, $searchStart, $searchEnd, $returns['page'], $returns['segment'], $type);
+            $searchRole, $searchState, $searchStart, $searchEnd, $returns['page'], $returns['segment'], $type, $is_train);
         $this->global['searchStatus'] = $searchStatus;
         $this->global['searchText'] = $searchName;
         $this->global['searchRole'] = $searchRole;
@@ -73,6 +77,7 @@ class eventmanage extends basecontroller
         $this->global['searchType'] = $searchType;
         $this->global['searchStart'] = $searchStart;
         $this->global['searchEnd'] = $searchEnd;
+        $this->global['is_train'] = $is_train;
         $this->loadViews("eventmanage", $this->global, $data, NULL);
     }
 
@@ -88,6 +93,7 @@ class eventmanage extends basecontroller
         $searchType = $this->input->post('searchType');
         $searchStart = $this->input->post('searchStart');
         $searchEnd = $this->input->post('searchEnd');
+        $is_train = $this->input->post('is_train');
         $this->session->set_userdata('event_infos', array(
             'searchType' => $searchType,
             'searchName' => $searchName,
@@ -96,8 +102,9 @@ class eventmanage extends basecontroller
             'searchStatus' => $searchStatus,
             'searchStart' => $searchStart,
             'searchEnd' => $searchEnd,
+            'is_train' => $is_train,
         ));
-        $this->eventCollectListing($searchStatus, $searchName, $searchType, $searchRole, $searchState, $searchStart, $searchEnd, $type);
+        $this->eventCollectListing($searchStatus, $searchName, $searchType, $searchRole, $searchState, $searchStart, $searchEnd, $type, $is_train);
     }
 
     /**
@@ -130,30 +137,60 @@ class eventmanage extends basecontroller
      */
     function addEvent()
     {
+        $province = $this->db->query("select id from provinces where province = '".$this->input->post('province')."'")->row();
+        $city = $this->db->query("select id from cities where city = '".$this->input->post('city')."'")->row();
+        $area = $this->db->query("select id from areas where AREA = '".$this->input->post('area')."'")->row();
         $info['name'] = $this->input->post('name');
         $info['type'] = $this->input->post('eventtype');
         $info['cost'] = $this->input->post('cost');
-        $info['detail_address'] = $this->input->post('address');
+        $info['detail_address'] = $this->input->post('address').$this->input->post('detail_addr');
+        $info['province'] = $province->id;
+        $info['city'] = $city->id;
+        $info['area'] = $area->id;
+        $info['latitude'] = $this->input->post('latitude');
+        $info['longitude'] = $this->input->post('longitude');
+//        $info['detail_address'] = $this->input->post('address');
         $info['start_time'] = $this->input->post('fromTime');
         $info['end_time'] = $this->input->post('toTime');
-        $info['pay_type'] = $this->input->post('payMode');
-        $info['limit'] = $this->input->post('limit1');
-        $info['person_limit'] = $this->input->post('limit2');
-        $info['comment'] = $this->input->post('comment');
+
+        $info['limit'] = $this->input->post('limit');
+//        $info['comment'] = $this->input->post('comment');
         $info['pic'] = $this->input->post('item_pics');
         $info['reg_time'] = date("Y-m-d H:i:s");
+        $info['agent_phone'] = $this->input->post('agent_phone');
+        $info['condition'] = $this->input->post('condition');
+        $info['comment'] = $this->input->post('contents');
+        $info['is_train'] = $this->input->post('is_train');
+
+
+//        $info['condition'] .= ','. $this->input->post('limit2');
+
+//        $pay1 = $this->input->post('payOption1');
+//        $pay2 = $this->input->post('payOption2');
+//        if($pay1!=false && $pay2!=false) $pay1 = 2;
+//        else if($pay1!=false) $pay1 = 1;
+//        else if($pay2!=false) $pay1 = 0;
+//        else $pay1 = -1;
+
+        $info['pay_type'] = $this->input->post('payMode');
+//        $info['pay_type'] = $this->input->post('payOption1');
+
         $error = 0;
+        $type = '赛事';
+        if($info['is_train']=='1')
+            $type = '培训';
+        else $info['is_train'] = '0';
 
         $id = $this->input->post('id');
         if ($id == '') {
             $good = $this->db->query("select count(id) as amount from event where name='" . $info['name'] . "'")->result();
             if ($good[0]->amount > 0) {
-                $this->global['error_name'] = "赛事名称重复";
+                $this->global['error_name'] = $type."名称重复";
                 $error++;
             }
         }
         if ($info['name'] == '') {
-            $this->global['error_name'] = "请填写赛事名称";
+            $this->global['error_name'] = "请填写".$type."名称";
             $error++;
         }
         if ($info['cost'] == '') {
@@ -161,7 +198,7 @@ class eventmanage extends basecontroller
             $error++;
         }
         $cost = $info['cost'];
-        if ($cost != floor($info['cost']) || $cost < 0) {
+        if ($cost < 0) {
             $this->global['error_cost'] = "消耗蜂蜜必须是整数";
             $error++;
         }
@@ -177,14 +214,27 @@ class eventmanage extends basecontroller
             $this->global['error_toTime'] = "请选择报名截止时间";
             $error++;
         }
-        if ($info['pay_type'] == '') {
+        if ($info['pay_type'] == '-1' || $info['pay_type'] == '') {
             $this->global['error_payMode'] = "请选择支付方式";
             $error++;
         }
-        if ($info['limit'] == '') {
+        if ($info['agent_phone'] == '') {
+            $this->global['error_phone'] = "请输入联系电话";
+            $error++;
+        }
+        if ($info['limit'] == '0' || $info['limit'] == '') {
+            $this->global['error_limit'] = "请输入人数上限";
+            $error++;
+        }
+        if ($info['condition'] == '') {
             $this->global['error_limit1'] = "请选择报名限制";
             $error++;
         }
+        if ($info['comment'] == '') {
+            $this->global['error_comment'] = "请输入".$type."介绍";
+            $error++;
+        }
+        var_dump($info);
         $id = $this->event_model->add($info, $id);
         $upload_root = "uploads/events/";
         $db_root = 'events/';
@@ -244,6 +294,9 @@ class eventmanage extends basecontroller
             $this->global['item_toTime'] = $info['end_time'];
             $this->global['item_payMode'] = $info['pay_type'];
             $this->global['comment'] = $info['comment'];
+            $this->global['item_phone'] = $info['agent_phone'];
+            $this->global['item_limit'] = $info['limit'];
+            $this->global['item_limit1'] = explode(',', $info['condition']);
             $this->addItem();
         }
     }
@@ -256,6 +309,7 @@ class eventmanage extends basecontroller
     {
         $eventDetail = $this->event_model->getEventDetailById($eventId);
         $data['eventDetail'] = $eventDetail;
+        $result = $eventDetail;
 
         $userId = $this->event_model->getOrganizerId($eventId);
         $this->load->model('user_model');
@@ -268,6 +322,7 @@ class eventmanage extends basecontroller
         $data['booking'] = $this->booking_model->getBookingDetailByEvent($eventId);
         $favourite = $this->db->query("select count(no) as favourite_amount from favourite_event where event_id=" . $eventId)->result();
         $data['favourite_amount'] = $favourite[0]->favourite_amount;
+        $data['shared_amount'] = $this->db->query('select sum(count) as count from event_share where event_id = ' . $eventId)->row()->count;
         $this->global['pageTitle'] = '活动详情';
         $this->loadViews("eventdetail", $this->global, $data, NULL);
     }
@@ -277,7 +332,7 @@ class eventmanage extends basecontroller
      */
     function showNewsEventDetail($eventId)
     {
-        $eventDetail = $this->event_model->getEventDetailById($eventId);
+        $eventDetail = $this->event_model->getNewEventDetailById($eventId);
         $data['eventDetail'] = $eventDetail;
 
         $userId = $this->event_model->getOrganizerId($eventId);
@@ -291,6 +346,7 @@ class eventmanage extends basecontroller
         $data['booking'] = $this->booking_model->getBookingDetailByEvent($eventId);
         $favourite = $this->db->query("select count(no) as favourite_amount from favourite_event where event_id=" . $eventId)->result();
         $data['favourite_amount'] = $favourite[0]->favourite_amount;
+        $data['shared_amount'] = $this->db->query('select sum(count) as count from event_share where event_id = ' . $eventId)->row()->count;
         $this->global['pageTitle'] = '赛事详情';
         $this->loadViews("newseventdetail", $this->global, $data, NULL);
     }

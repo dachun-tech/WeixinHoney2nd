@@ -1,6 +1,6 @@
 <!--pages/profile/my_member_ship/my_member_ship.wxml-->
 <view class='user-info'>
-  <image class='user-info-bkimage' src='../../../image/card.png'></image>
+  <image class='user-info-bkimage' src='../../../image/card@2x.png'></image>
   <image class='user-info-image' src="{{userInfo.avatar}}"></image>
   <image class="touxiang-image" src="../../../image/card_touxiang@2x.png" />
   <image wx:if="{{state==1}}" class='user-is-vip' src='../../../image/card_vip@2x.png'></image>

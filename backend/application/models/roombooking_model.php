@@ -2,6 +2,51 @@
 
 class roombooking_model extends CI_Model
 {
+    /**
+     * This function is used to change event state with now()
+     * @return array $event : This is event changed state
+     */
+    function checkStateByTime()
+    {
+
+        //update state from 0 to 1
+        $this->db->select("id");
+        $this->db->from("room_booking");
+        $this->db->where("TIME_TO_SEC(TIMEDIFF(room_booking.start_time, now()))<0");
+        $this->db->where("state", 0);
+        $query = $this->db->get();
+        $result = $query->result();
+        $state['state'] = 1;
+        foreach ($result as $eventId) {
+            $this->updateStateById($eventId->id, $state);
+        }
+
+        //update state from 1 to 2
+        $this->db->select("id");
+        $this->db->from("room_booking");
+        $this->db->where("TIME_TO_SEC(TIMEDIFF(room_booking.end_time, now()))<0");
+        $this->db->where("state", 1);
+        $query = $this->db->get();
+        $result = $query->result();
+        $state['state'] = 2;
+        foreach ($result as $eventId) {
+            $this->updateStateById($eventId->id, $state);
+        }
+    }
+
+    /**
+     * This function is used to change event state
+     * @param number $eventId : This is event id
+     * @param number $state : This is event state
+     */
+    function updateStateById($id, $state)
+    {
+        $this->db->where('id', $id);
+        $this->db->update('room_booking', $state);
+        return $this->db->affected_rows();
+    }
+
+
 
     /**
      * This function is used to get some information of booking
@@ -25,9 +70,15 @@ class roombooking_model extends CI_Model
      */
     function getBookingDetailById($bookingId)
     {
-        $this->db->select("user.avatar,user.nickname, booking.*");
+        $this->db->select("booking.*, room.room_name, room.cost, boss.site_name, 
+                    booking.start_time, booking.end_time, avg(rating.point) as point, rating.comment,
+                    user.name as name, user.phone as phone, boss.site_type as type");
         $this->db->from("room_booking as booking");
-        $this->db->join("user", "booking.user_id = user.no");
+        $this->db->join("room", "booking.room_id = room.id", 'left');
+        $this->db->join("boss", "room.boss_id = boss.boss_id", 'left');
+        $this->db->join("user", "booking.user_id = user.no", 'left');
+        $this->db->join("rating", "rating.room_booking_id = booking.id", 'left');
+        $this->db->group_by('booking.id');
         $this->db->where("booking.id", $bookingId);
         $query = $this->db->get();
         return $query->result();
@@ -129,10 +180,12 @@ class roombooking_model extends CI_Model
      */
     function bookingListingCount($searchStatus = null, $searchName = '', $searchType = 100, $searchState = 10, $searchPay = 10, $searchStart = '', $searchEnd = '')
     {
-        $query = "select booking.*, 
-                    user.name as name, user.phone as phone, boss.site_type as type
-                    from room_booking as booking, user, boss
-                    where booking.boss_id = boss.no and booking.user_id = user.no";
+        $query = "select booking.id
+                    from room_booking as booking
+                    left join room on booking.room_id = room.id
+                    left join boss on room.boss_id = boss.boss_id
+                    left join `user` on booking.user_id = `user`.no
+                    where booking.user_id = `user`.no ";
         if ($searchState != 10) {
             $query = $query . " and booking.state = " . $searchState;
         }
@@ -147,7 +200,7 @@ class roombooking_model extends CI_Model
                             $searchText = ltrim($searchText, '0');
                         }
                     }
-                    $query = $query . " and (booking.reg_num LIKE '%" . $searchText . "%')";
+                    $query = $query . " and (booking.id LIKE '%" . $searchText . "%')";
                 } else if ($searchStatus == '1') {
                     $query = $query . " and (user.name LIKE '%" . $searchText . "%')";
                 } else if ($searchStatus == '2') {
@@ -168,10 +221,14 @@ class roombooking_model extends CI_Model
      */
     function bookingListing($searchStatus = null, $searchText = '', $searchType = 100, $searchState = 10, $searchPay = 10, $searchStart = '', $searchEnd = '', $page, $segment)
     {
-        $query = "select booking.*, 
+        $query = "select booking.*, room.room_name, room.cost, boss.site_name, 
+                    booking.start_time, booking.end_time,
                     user.name as name, user.phone as phone, boss.site_type as type
-                    from room_booking as booking, user, boss
-                    where booking.boss_id = boss.no and booking.user_id = user.no";
+                    from room_booking as booking
+                    left join room on booking.room_id = room.id
+                    left join boss on room.boss_id = boss.boss_id
+                    left join `user` on booking.user_id = `user`.no
+                    where booking.user_id = `user`.no ";
         if ($searchState != 10) {
             $query = $query . " and booking.state = " . $searchState;
         }
@@ -186,7 +243,7 @@ class roombooking_model extends CI_Model
                             $searchText = ltrim($searchText, '0');
                         }
                     }
-                    $query = $query . " and (booking.reg_num LIKE '%" . $searchText . "%')";
+                    $query = $query . " and (booking.id LIKE '%" . $searchText . "%')";
                 } else if ($searchStatus == '1') {
                     $query = $query . " and (user.name LIKE '%" . $searchText . "%')";
                 } else if ($searchStatus == '2') {
@@ -195,6 +252,12 @@ class roombooking_model extends CI_Model
                     $query = $query . " and (boss.site_name LIKE '%" . $searchText . "%')";
                 }
             }
+        }
+        if ($searchStart != '') {
+            $query = $query . " and date(booking.start_time) >= date('" . $searchStart . "')";
+        }
+        if ($searchEnd != '') {
+            $query = $query . " and date(booking.start_time) <= date('" . $searchEnd . "')";
         }
         $query = $query . " order by booking.submit_time desc";
         if ($segment != "") {
@@ -266,27 +329,80 @@ class roombooking_model extends CI_Model
     }
 
     /**
-     * This function is used to get the information of booking by nickname and state
+     * This function is used to get the information of room booking by nickname and state
      * @param number $user_id : This is id of member
      * @return array $result : This is information of booking found
      */
-    function getBookingByUser($user_id)
+
+    function getRoomBookingByUser($user_id)
     {
-        $this->db->select("booking.id, booking.state, booking.pay_type,sum(booking.reg_num) as reg_num, booking.out_trade_no, booking.out_refund_no");
-        $this->db->select("event.id as event_id,event.name, event.type, event.cost, provinces.province,cities.city,areas.area, event.detail_address,event.pic, event.start_time, event.end_time");
-        $this->db->select("user.avatar, user.role");
-        $this->db->select("sum(rating.id)>0 as favor_state");
-        $this->db->from("user,  provinces, cities, areas, room_booking as booking");
-        $this->db->join("event", "event.id = booking.event_id");
-        $this->db->join("rating", "booking.user_id = rating.user_id and booking.event_id = rating.event_id", "left");
-        $this->db->where("booking.user_id", $user_id);
-        $this->db->where("event.state = booking.state");
-        $this->db->where("user.no = event.organizer_id");
-//        $this->db->where("event.publicity", 1);
-        $this->db->where("event.province = provinces.id");
-        $this->db->where("event.city = cities.id");
-        $this->db->where("event.area = areas.id");
-        $this->db->group_by("event.id");
+        $this->db->select("room_booking.*");
+        $this->db->select("room.boss_id, room.room_name, room.cost");
+        $this->db->select("boss.site_name, boss.detail_address");
+        $this->db->select("provinces.province,cities.city,areas.area");
+        $this->db->select("sum(rating.id)>0 as is_rating");
+        $this->db->from("boss,  provinces, cities, areas, room_booking");
+        $this->db->join("room","room.id = room_booking.room_id");
+        $this->db->join("rating","room_booking.user_id = rating.user_id and room_booking.id = rating.room_booking_id","left");
+        $this->db->where("room_booking.user_id", $user_id);
+        $this->db->where("boss.boss_id = room.boss_id");
+        $this->db->where("boss.province = provinces.id");
+        $this->db->where("boss.city = cities.id");
+        $this->db->where("boss.area = areas.id");
+        $this->db->group_by("room_booking.id");
+        $query = $this->db->get();
+        return $query->result();
+    }
+
+    /**
+     * This function is used to get the information of room booking by nickname and state
+     * @param number $user_id : This is id of member
+     * @return array $result : This is information of booking found
+     */
+
+    function getRoomBookingByBossID($boss_id)
+    {
+        $this->db->select("room_booking.*");
+        $this->db->select("room.boss_id, room.room_name, room.cost");
+        $this->db->select("boss.site_name, boss.detail_address");
+        $this->db->select("provinces.province,cities.city,areas.area");
+        $this->db->select("sum(rating.id)>0 as is_rating");
+        $this->db->from("boss,  provinces, cities, areas, room_booking");
+        $this->db->join("room","room.id = room_booking.room_id");
+        $this->db->join("rating","room_booking.user_id = rating.user_id and room_booking.id = rating.room_booking_id","left");
+        $this->db->where("room.boss_id", $boss_id);
+        $this->db->where("boss.boss_id = room.boss_id");
+        $this->db->where("boss.province = provinces.id");
+        $this->db->where("boss.city = cities.id");
+        $this->db->where("boss.area = areas.id");
+        $this->db->group_by("room_booking.id");
+        $query = $this->db->get();
+        return $query->result();
+    }
+
+    /**
+     * This function is used to get some information of room booking
+     * @param number $bookingId : This is id of booking
+     * @return number $count : This is information of booking found
+     */
+    function getRoomBookingById($bookingId)
+    {
+        $this->db->select("room_booking.*");
+        $this->db->select("room.boss_id, room.room_name, room.cost, boss.latitude, boss.longitude");
+        $this->db->select("boss.site_name, boss.detail_address, boss.cancel_time, boss.site_type");
+        $this->db->select("provinces.province,cities.city,areas.area");
+        $this->db->select("rating.point, rating.comment as rating_comment");
+        $this->db->select("user.nickname,user.phone as user_phone");
+        $this->db->from("boss,  provinces, cities, areas, room_booking");
+        $this->db->join("room","room.id = room_booking.room_id");
+        $this->db->join("user","room_booking.user_id = user.no");
+        $this->db->join("rating","room_booking.user_id = rating.user_id and room_booking.id = rating.room_booking_id","left");
+        $this->db->where("room_booking.id", $bookingId);
+        $this->db->where("boss.boss_id = room.boss_id");
+        $this->db->where("boss.province = provinces.id");
+        $this->db->where("boss.city = cities.id");
+        $this->db->where("boss.area = areas.id");
+        $this->db->group_by("room_booking.id");
         $query = $this->db->get();
         return $query->result();
     }
@@ -350,8 +466,20 @@ class roombooking_model extends CI_Model
      */
     function addBooking($booking)
     {
-        $this->db->insert("room_booking", $booking);
-        return true;
+        $result = $this->db->query('select * from room_booking '
+            .' where user_id = '.$booking['user_id']
+            .' and room_id = '.$booking['room_id']
+            .' and start_time = \''.$booking['start_time'].'\'')->row();
+        $id = 0;
+        if(count($result)>0){
+            $id = $result->id;
+            $this->db->where('id', $result->id);
+            $this->db->update('room_booking', $booking);
+        }else {
+            $this->db->insert("room_booking", $booking);
+            $id = $this->db->insert_id();
+        }
+        return $id;
     }
 	
     function updateBookInfo($arr, $id)
@@ -376,6 +504,9 @@ class roombooking_model extends CI_Model
             $this->updateStateByBookingId($id, $arr);
         }
     }
+
+
+
 }
 
 /* End of file booking_model.php */

@@ -43,7 +43,7 @@ class rating_model extends CI_Model
     function getRatingByEvent($eventId)
     {
         $this->db->select("rating.point, rating.comment, rating.submit_time");
-        $this->db->select("user.name, user.avatar");
+        $this->db->select("user.name, user.avatar, user.nickname, user.no as user_id");
         $this->db->from("rating");
         $this->db->join('user', 'user.no = rating.user_id');
         $this->db->where("rating.event_id", $eventId);
@@ -58,6 +58,7 @@ class rating_model extends CI_Model
      */
     function getRatingByBoss($bossId)
     {
+        $eventRatingArray = array();
         $this->db->select("rating.point, rating.comment, rating.submit_time");
         $this->db->select("user.name, user.avatar");
         $this->db->from("rating");
@@ -65,7 +66,23 @@ class rating_model extends CI_Model
         $this->db->join('event', 'event.id = rating.event_id');
         $this->db->where("event.organizer_id", $bossId);
         $query = $this->db->get();
-        return $query->result();
+        $eventRatingArray = $query->result();
+
+        $roomRatingArray = array();
+        $this->db->select("rating.point, rating.comment, rating.submit_time");
+        $this->db->select("user.name, user.avatar");
+        $this->db->from("rating");
+        $this->db->join('user', 'user.no = rating.user_id');
+        $this->db->join('room_booking', 'room_booking.id = rating.room_booking_id');
+        $this->db->join('room', 'room.id = room_booking.room_id');
+        $this->db->where("room.boss_id", $bossId);
+        $query = $this->db->get();
+        $roomRatingArray = $query->result();
+
+        foreach($roomRatingArray as $key=>$item){
+            array_push($eventRatingArray,$item);
+        }
+		return $eventRatingArray;
     }
 
     /**

@@ -42,36 +42,9 @@
   display: inline-block;
 }
 
-.address-view {
-  width: 100%;
-  line-height: 88rpx;
-  border-bottom: solid 3rpx #f4f4f4;
-  font-family: PingFangSC-Regular;
-  font-size: 30rpx;
-  color: #333;
-  letter-spacing: 0.64rpx;
-}
-
-.address-text {
-  margin-left: 30rpx;
-}
-
-.address-input {
-  margin-left: 30rpx;
-  vertical-align: middle;
-  display: inline-block;
-}
-
-.address-image {
-  float: right;
-  margin-right: 30rpx;
-  width: 15rpx;
-  height: 26rpx;
-}
 
 .detail-address {
-  width: calc(100%-180rpx);
-  margin-left: 180rpx;
+  width: calc(100%-180rpx); 
   height: 85rpx;
   vertical-align: middle;
   padding-left: 30rpx;
@@ -80,6 +53,7 @@
   color: #888;
   letter-spacing: 0.64rpx;
   border-bottom: solid 3rpx #f4f4f4;
+  margin-right:30rpx;
 }
 
 .mail-view {
@@ -115,20 +89,6 @@
   letter-spacing: 1.54rpx;
 }
 
-.picker-view {
-  width: calc(100 - 30rpx);
-  height: 200px;
-  background-color: white;
-  margin-left: 30rpx;
-  margin-top: 50rpx;
-  text-align: center;
-}
-
-.picker-column {
-  font-family: PingFangSC-Regular;
-  line-height: 50px;
-}
-
 .event-view {
   padding-left: 30rpx;
   line-height: 88rpx;
@@ -138,7 +98,9 @@
   letter-spacing: 0.64rpx;
   border-bottom: solid 3rpx #f4f4f4;
 }
-
+.stadiumaddress-text {
+  margin-left: 30rpx;
+}
 .stadiumaddress-input {
   margin-left: 30rpx;
   width: 500rpx;
@@ -148,12 +110,16 @@
   overflow: visible;
 }
 
-.stadiumaddress-input picker {
-  font-size: 25rpx;
-  vertical-align: middle;
-  height: 60rpx;
-  line-height: 60rpx;
-  border: solid 3rpx #f4f4f4;
+.map-next-image {
+  float: right;
+  margin-right: 30rpx;
+  width: 15rpx;
+  height: 26rpx;
+  padding-top: 32rpx;
+}
+.map-input {
   display: inline-block;
-  margin-right: 10rpx;
+  vertical-align: middle;
+  margin-left: 10rpx;
+  width: 65%;
 }

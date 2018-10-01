@@ -8,6 +8,7 @@
   height: 75rpx;
   padding-top:8px;
   background:#e6b53c;
+  position:fixed;
 }
 
 .input-box {

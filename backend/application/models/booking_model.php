@@ -8,11 +8,10 @@ class booking_model extends CI_Model
      * @param number $bookingId : This is id of booking
      * @return number $count : This is information of booking found
      */
-    function getBookingById($bookingId)
+     function getBookingById($bookingId)
     {
-        $this->db->select("booking.reg_num as reg_num, booking.name as userName, booking.phone, booking.description,
-            booking.state,booking.id, booking.pay_type, booking.out_trade_no, booking.out_refund_no");
-        $this->db->select("event.id as event_id, event.name,event.agent_name, event.agent_phone, event.type, event.limit, event.cost, 
+        $this->db->select("booking.reg_num as reg_num, booking.name as userName, booking.*, event.latitude, event.longitude");
+        $this->db->select("event.id as event_id, event.name,event.agent_name, event.agent_phone, event.type, event.limit, event.cost, event.owner, 
             event.start_time, event.end_time,  provinces.province,cities.city,areas.area, event.detail_address, event.pic");
         $this->db->select("user.role, user.avatar, user.nickname");
         $this->db->from("user, event, provinces, cities, areas");
@@ -76,8 +75,8 @@ class booking_model extends CI_Model
      */
     function getBookingDetailByEvent($eventId)
     {
-        $this->db->select("user.avatar,user.nickname,user.no as user_id,booking.name,booking.phone, booking.reg_num, booking.pay_honey,
-            booking.pay_type, booking.state, event.cost,event.agent_name, event.agent_phone, sum(booking.reg_num) as register_num");
+        $this->db->select("user.avatar,user.nickname,user.no as user_id,booking.*, user.open_id, 
+            event.cost,event.agent_name, event.agent_phone, sum(booking.reg_num) as register_num");
         $this->db->from("booking");
         $this->db->join("user", "booking.user_id = user.no");
         $this->db->join("event", "booking.event_id = event.id");
@@ -94,7 +93,8 @@ class booking_model extends CI_Model
      */
     function getBookingDetailByEvent1($eventId)
     {
-        $this->db->select("user.avatar,user.nickname,user.no as user_id,  booking.name,booking.phone, booking.reg_num, booking.pay_type, booking.state, event.cost,event.agent_name, event.agent_phone, sum(booking.reg_num) as register_num");
+        $this->db->select("user.avatar,user.nickname,user.no as user_id,  booking.name,booking.phone, booking.reg_num, 
+            booking.pay_type, booking.state, event.cost,event.agent_name, event.agent_phone, sum(booking.reg_num) as register_num");
         $this->db->from("booking");
         $this->db->join("user", "booking.user_id = user.no");
         $this->db->join("event", "booking.event_id = event.id and booking.state = event.state");
@@ -139,8 +139,7 @@ class booking_model extends CI_Model
      */
     function bookingListingCount($searchStatus = null, $searchName = '', $searchType = 100,  $searchState = 10, $searchPay = 10)
     {
-         $query = "select booking.id, booking.reg_num, booking.state, booking.submit_time, booking.pay_type,
-                    event.cost, event.name as event_name, event.type, booking.name, booking.phone 
+         $query = "select booking.id 
                     from booking, user, event
                     where booking.event_id = event.id and booking.user_id = user.no";
         if($searchPay != 10){
@@ -170,6 +169,7 @@ class booking_model extends CI_Model
                 }
             }
         }
+        $query=$query." order by booking.submit_time desc";
         $result = $this->db->query($query);
         return count($result->result());
     }
@@ -181,8 +181,8 @@ class booking_model extends CI_Model
      */
     function bookingListing($searchStatus = null, $searchText = '', $searchType = 100,  $searchState = 10, $searchPay = 10, $page, $segment)
     {
-        $query = "select booking.id, booking.reg_num, booking.state, booking.submit_time, booking.pay_type,
-                    event.cost, event.name as event_name, event.type, booking.name, booking.phone, event.organizer_id 
+        $query = "select booking.id, booking.reg_num, booking.state, booking.submit_time, booking.pay_type, event.owner, 
+                    event.cost, event.name as event_name, event.type, user.name, user.phone, event.organizer_id 
                     from booking, user, event
                     where booking.event_id = event.id and booking.user_id = user.no";
         if($searchPay != 10){
@@ -289,7 +289,7 @@ class booking_model extends CI_Model
      */
     function getBookingByUser($user_id)
     {
-        $this->db->select("booking.id, booking.state, booking.pay_type,sum(booking.reg_num) as reg_num, booking.out_trade_no, booking.out_refund_no");
+        $this->db->select("booking.id, booking.state, booking.pay_type,sum(booking.reg_num) as reg_num, booking.out_trade_no, booking.out_refund_no, booking.pay_online");
         $this->db->select("event.id as event_id,event.name, event.type, event.cost, provinces.province,cities.city,areas.area, event.detail_address,event.pic, event.start_time, event.end_time");
         $this->db->select("user.avatar, user.role");
         $this->db->select("sum(rating.id)>0 as favor_state");
@@ -311,7 +311,7 @@ class booking_model extends CI_Model
 
     function getBookingByUser1($user_id)
     {
-        $this->db->select("booking.id, booking.state, booking.pay_type,sum(booking.reg_num) as reg_num, booking.out_trade_no, booking.out_refund_no");
+        $this->db->select("booking.id, booking.state, booking.pay_type,sum(booking.reg_num) as reg_num, booking.out_trade_no, booking.out_refund_no, booking.pay_online");
         $this->db->select("event.id as event_id,event.name, event.type, event.cost, event.limit, provinces.province,cities.city,areas.area, event.detail_address,event.pic, event.start_time, event.end_time, event.owner");
         $this->db->select("user.avatar, user.role");
         $this->db->select("count(favourite_event.no) as favor_state");
@@ -391,6 +391,19 @@ class booking_model extends CI_Model
     function addBooking($booking)
     {
         $this->db->insert("booking", $booking);
+        return true;
+    }
+    /**
+     * This function is used to add the booking information of user for a event
+     * @param array $booking : This is information array of booking
+     * @return boolean $result : This is boolean value of add booking
+     */
+    function removeBooking($id)
+    {
+        $this->db->query("update booking set state=2,cancel_user=user_id,user_id='' where id=".$id);
+//        $this->db->where("id", $id);
+//        $this->db->set("state", 2);
+//        $this->db->update("booking");
         return true;
     }
 }

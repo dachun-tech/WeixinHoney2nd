@@ -1,25 +1,49 @@
 <?php
 $type = '活动';
 if ($pageType == 'news') {
-    $type = '赛事';
+    $type = '赛事培训';
+    if ($is_train == 0)
+        $type = '赛事';
+    else if($is_train == 1)
+        $type = '培训';
 }
 ?>
 <div class="content-wrapper">
     <!-- Content Header (Page header) -->
     <section class="content-header">
-        <h1>
-            <?= $type ?>列表
-        </h1>
+        <?php
+        if ($pageType != 'news') {
+            echo '<h1>活动列表</h1>';
+        } else {
+            ?>
+            <h1 style="width: auto; display: inline-block;" class="margin">
+                <input type="checkbox" itemid="0"
+                    <?php if (isset($is_train) && ($is_train == '0' || $is_train == '2')) echo 'checked="checked"'; ?>>
+                赛事列表
+            </h1>
+            <h1 style="width: auto; display: inline-block;" class="margin">
+                <input type="checkbox" itemid="1"
+                    <?php if (isset($is_train) && ($is_train == '1' || $is_train == '2')) echo 'checked="checked"'; ?>>
+                培训列表
+            </h1>
+            <?php
+        }
+        ?>
     </section>
     <section class="content" style="min-height: 800px;">
         <div class="container">
             <div class="row">
                 <div class="col-xs-12">
-                    <form action="<?php echo base_url(); ?>eventListingByFilter" method="POST" id="searchList">
+                    <form action="<?php echo base_url() . ($pageType == 'news' ? 'news' : ''); ?>eventListingByFilter"
+                          method="POST" id="searchList">
                         <div class="col-xs-2 col-sm-4 form-inline">
                             <div class="form-group">
+
+                                <input type="text" name="is_train" hidden class="is_train"
+                                       value="<?= (isset($is_train)) ? $is_train : ''; ?>">
                                 <select class="form-control" id="searchStatus" name="searchStatus">
-                                    <option value="0"<?php if ($searchStatus == 0) echo ' selected'; ?>><?= $type ?>名称
+                                    <option value="0"<?php if ($searchStatus == 0) echo ' selected'; ?>><?php echo $type; ?>
+                                        名称
                                     </option>
                                     <option value="1"<?php if ($searchStatus == 1) echo ' selected'; ?>>发起人</option>
                                     <option value="2"<?php if ($searchStatus == 2) echo ' selected'; ?>>联系方式</option>
@@ -31,10 +55,11 @@ if ($pageType == 'news') {
                                        class="form-control"/>
                             </div>
                         </div>
+
                         <div class="col-xs-2 col-sm-1 form-inline">
                             <div class="form-group">
                                 <select class="form-control" id="searchType" name="searchType">
-                                    <option value="100" <?php if ($searchType == 100) echo ' selected'; ?>><?= $type ?>
+                                    <option value="100" <?php if ($searchType == 100) echo ' selected'; ?>><?php echo $type; ?>
                                         类型
                                     </option>
                                     <?php
@@ -53,7 +78,7 @@ if ($pageType == 'news') {
                             <div class="col-xs-2 col-sm-1 form-inline">
                                 <div class="form-group">
                                     <select class="form-control" id="searchState" name="searchState">
-                                        <option value="10"<?php if ($searchState == 10) echo ' selected'; ?>><?= $type ?>
+                                        <option value="10"<?php if ($searchState == 10) echo ' selected'; ?>><?php echo $type; ?>
                                             状态
                                         </option>
                                         <option value="0"<?php if ($searchState == 0) echo ' selected'; ?>>进行中</option>
@@ -87,7 +112,7 @@ if ($pageType == 'news') {
                             <div class="col-xs-2 col-sm-1 form-inline">
                                 <div class="form-group">
                                     <select class="form-control" id="searchState" name="searchState">
-                                        <option value="10"<?php if ($searchState == 10) echo ' selected'; ?>><?= $type ?>
+                                        <option value="10"<?php if ($searchState == 10) echo ' selected'; ?>><?php echo $type; ?>
                                             状态
                                         </option>
                                         <option value="0"<?php if ($searchState == 0) echo ' selected'; ?>>进行中</option>
@@ -102,7 +127,7 @@ if ($pageType == 'news') {
                         ?>
                         <div class="col-xs-12 col-sm-6 form-inline" style="margin-top: 10px;">
                             <div class="form-group">
-                                <span> <?= ($pageType != 'news') ? '新增' : $type ?>时间 </span>
+                                <span> <?php echo(($pageType != 'news') ? '新增' : $type); ?>时间 </span>
                                 <input id="fromTime" name="searchStart" class="datepicker-inline form-control" size="16"
                                        type="text" value="<?php echo $searchStart; ?>" readonly="">
 
@@ -122,11 +147,11 @@ if ($pageType == 'news') {
                             </div>
                         </div>
                         <?php
-                        if($pageType=='news'){
+                        if ($pageType == 'news') {
                             ?>
                             <div class="col-xs-1 col-sm-1 form-inline">
                                 <div class="form-group area-search-control-view">
-                                    <a class="btn btn-primary" href="<?= base_url('newseventmanage/add') ?>"
+                                    <a class="btn btn-primary" href="<?php echo base_url('newseventmanage/add'); ?>"
                                        onclick="">新增
                                     </a>
                                 </div>
@@ -145,13 +170,13 @@ if ($pageType == 'news') {
                             ?>
                             <tr style="background-color: lightslategrey;">
                                 <th>序号</th>
-                                <th style="width: 200px;">赛事名称</th>
+                                <th style="width: 200px;"><?=$type?>名称</th>
                                 <th>比赛时间</th>
                                 <th>类型</th>
                                 <th>报名截止时间</th>
                                 <th>报名费</th>
                                 <th>已报名人数</th>
-                                <th>赛事状态</th>
+                                <th><?=$type?>状态</th>
                                 <th>操作</th>
                             </tr>
                             <?php
@@ -190,11 +215,11 @@ if ($pageType == 'news') {
                                         <td><?php echo $eventType[($record->type)]; ?></td>
                                         <td><?php echo $record->end_time; ?></td>
                                         <td><?php echo $record->cost; ?></td>
-                                        <td><?php echo 50; ?></td>
+                                        <td><?php echo($record->current_member == '' ? '0' : $record->current_member); ?></td>
                                         <td><?php echo $newsState[$record->state]; ?></td>
                                         <td class="text-center">
                                             <a href="<?php echo base_url() . 'newseventDetail/' . $record->id; ?>">
-                                                赛事详情
+                                                <?=$type?>详情
                                             </a>
                                             <a data-eventid="<?php echo $record->id; ?>"
                                                onclick="confirmDelete('<?php echo $record->id; ?>')">
@@ -266,4 +291,18 @@ if ($pageType == 'news') {
         console.log("here");
         $("#toTime").val("");
     }
+
+    $('input[type="checkbox"]').on('click', function () {
+        var is_train1 = $('input[type="checkbox"]')[0].checked;
+        var is_train2 = $('input[type="checkbox"]')[1].checked;
+        var res = 3;
+        if (is_train1 && is_train2)
+            res = 2;
+        else if (is_train1)
+            res = 0
+        else if (is_train2)
+            res = 1
+        $('input[name="is_train"]').val(res);
+        $('form').submit();
+    })
 </script>

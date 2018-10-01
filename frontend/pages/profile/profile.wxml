@@ -11,10 +11,10 @@
                 <image class="img_profile" src="{{userInfo.avatar}}" />
                 <view class="user_name">{{userInfo.name}}</view>
                 <view class="user_age" wx:if="{{userInfo.age!=0}}">
-                    <image class="img_sex" src="{{sex_images[1]}}" />
+                    <image class="img_sex" src="{{sex_images[userInfo.gender]}}" />
                     <view class="age_text">{{userInfo.age}}岁</view>
                 </view>
-                <view class="user_phone">{{userInfo.phone}}</view>            
+                <view class="user_phone" bindtap="phone_call" data-id="{{userInfo.phone}}">{{userInfo.phone}}</view>            
             </view>
             <view class="user_detail">{{userInfo.person_sign}}</view>
             <scroll-view scroll-x class="type_content">                

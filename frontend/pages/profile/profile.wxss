@@ -8,27 +8,32 @@
 }
 
 .edit_btn {
-  float:left;
+  position:absolute;
+  left:40rpx;
   padding-top:30rpx;
   padding-left:30rpx;
 
 }
 .img_edit {
-  width: 50rpx;
-  height: 50rpx;
+  width:38rpx;
+height:33rpx;
+
 }
 
 .share_btn {
-  float:right;
-  padding-top:30rpx;
-  padding-right:30rpx;
+  position:absolute;
+  right:40rpx;
+  padding-top:5rpx;
+padding-right:30rpx;
+
   background:transparent;  
   border:none;
   outline: none;
 }
 .img_share {
-  width: 50rpx;
-  height: 40rpx;
+  width:38rpx;
+height:34rpx;
+
 }
 
 .user_info_basic {
@@ -111,4 +116,7 @@ display:inline-block;
   width:45rpx;
   height:45rpx;
   padding-bottom:15rpx;
+}
+button::after {
+  border: none;
 }

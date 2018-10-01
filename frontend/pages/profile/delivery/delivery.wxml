@@ -8,7 +8,7 @@
             <text class='postman-name' style="font-weight: bold;">{{receiver.name}}</text>
             <text class='postman-phonenumber' style="font-weight: bold;">{{receiver.showphone}}</text>
           </view>
-          <text class='postman-address' selectable='true'>{{receiver.province+receiver.city+receiver.area+receiver.detail_address}}</text>
+          <text class='postman-address' selectable='true'>{{receiver.detail_address}}</text>
         </view>
         <view class='postman-operation'>
           <view wx:if="{{receiver.state==1}}" class="font-size" style='display: inline-block'>

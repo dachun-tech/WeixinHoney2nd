@@ -106,7 +106,7 @@
                                     <td><?php echo $eventType[($record->type)]; ?></td>
                                     <td><?php echo $record->end_time; ?></td>
                                     <td><?php echo $record->cost; ?></td>
-                                    <td><?php echo $record->reg_count; ?></td>
+                                    <td><?php echo count($this->booking_model->getBookingDetailByEvent($record->id)); ?></td>
                                     <td><?php echo $eventState[$record->state]; ?></td>
                                     <td class="text-center">
                                         <a href="<?php echo base_url() . 'newseventDetail/' . $record->id; ?>">

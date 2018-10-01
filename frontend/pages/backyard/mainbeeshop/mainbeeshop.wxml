@@ -1,7 +1,7 @@
 <!--pages/backyard/mainbeeshop/mainbeeshop.wxml-->
 <view class='container'>
   <view class='current-total-honey'>
-    <image class='current-honey-image' src='../../../image/garden_fm@2x.png'></image>
+    <image class='current-honey-image' src='../../../image/garden_sc_fm02@2x.png'></image>
     <view class='current-honey-text'>
       <text>蜂蜜量：</text>
       <text style="font-weight: bold;">{{total_honey}}ml</text>
@@ -15,7 +15,7 @@
       <image class='product-list-image' src='{{upload_url + item.avatar}}'></image>
       <text class='product-list-text' style="font-weight: bold;">{{item.name}}</text>
       <view class='product-list-image-footer'>
-        <image class='prduct-list-honeyimage' src='../../../image/garden_fm@2x.png'></image>
+        <image class='prduct-list-honeyimage' src='../../../image/garden_sc_fm02@2x.png'></image>
         <text class='product-list-honeytext'>{{item.cost}}ml兑换</text>
       </view>
     </view>

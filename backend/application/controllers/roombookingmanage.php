@@ -42,8 +42,8 @@ class roombookingmanage extends basecontroller
             $searchPay = $sData['searchPay'];
             $searchState = $sData['searchState'];
             $searchStatus = $sData['searchStatus'];
-            $searchStart = $sData['startTime'];
-            $searchEnd = $sData['endTime'];
+            $searchStart = $sData['searchStart'];
+            $searchEnd = $sData['searchEnd'];
         }
         $this->bookingCollectListing($searchStatus, $searchName, $searchType,  $searchState, $searchPay, $searchStart, $searchEnd);
     }
@@ -56,7 +56,7 @@ class roombookingmanage extends basecontroller
         $this->global['pageTitle'] = "预订订单";
         if ($searchName == 'ALL') $searchName = '';
         $count = $this->roombooking_model->bookingListingCount($searchStatus, $searchName, $searchType, $searchState, $searchPay, $searchStart, $searchEnd);
-        $returns = $this->paginationCompress("bookingmanage/", $count, 10);
+        $returns = $this->paginationCompress("roombookingmanage/", $count, 10);
         $data['bookingList'] = $this->roombooking_model->bookingListing($searchStatus, $searchName, $searchType, $searchState, $searchPay, $searchStart, $searchEnd, $returns['page'], $returns['segment']);
         $data['creation_name'] = $this->roombooking_model->getCreationName($searchStatus, $searchName, $searchType, $searchState, $searchPay, $searchStart, $searchEnd, $returns['page'], $returns['segment']);
         $this->global['searchStatus'] = $searchStatus;
@@ -77,11 +77,11 @@ class roombookingmanage extends basecontroller
     {
         $searchStatus = $this->input->post('searchStatus');
         $searchName = $this->input->post('searchName');
-        $searchPay = $this->input->post('searchPay');
+        $searchPay = 10;//$this->input->post('searchPay');
         $searchState = $this->input->post('searchState');
         $searchType = $this->input->post('searchType');
-        $searchStart = $this->input->post('fromTime');
-        $searchEnd = $this->input->post('toTime');
+        $searchStart = $this->input->post('searchStart');
+        $searchEnd = $this->input->post('searchEnd');
         $this->session->set_userdata('booking_infos', array(
         'searchType'=>$searchType,
         'searchName'=>$searchName,
@@ -114,14 +114,14 @@ class roombookingmanage extends basecontroller
      */
     function showBookingDetail($bookingId)
     {
-        $data['bookingDetail'] = $this->roombooking_model->getBookingById($bookingId);
-        $eventId = $this->roombooking_model->getEventId($bookingId);
-        $data['eventDetail'] = $this->event_model->getEventById($eventId->event_id);
-        $boss = $this->event_model->getOrganizerId($eventId->event_id);
-        $user = $this->roombooking_model->getUserId($bookingId);
-        $data['rating'] = $this->rating_model->getRatingContentById($user->user_id, $boss[0]->organizer_id);
+        $data['bookingDetail'] = $this->roombooking_model->getBookingDetailById($bookingId);
+//        $eventId = $this->roombooking_model->getEventId($bookingId);
+//        $data['eventDetail'] = $this->event_model->getEventById($eventId->event_id);
+//        $boss = $this->event_model->getOrganizerId($eventId->event_id);
+//        $user = $this->roombooking_model->getUserId($bookingId);
+//        $data['rating'] = $this->rating_model->getRatingContentById($user->user_id, $boss[0]->organizer_id);
         $this->global['pageTitle'] = '活动详情';
-        $this->loadViews("bookingdetail", $this->global, $data, NULL);
+        $this->loadViews("roombookingdetail", $this->global, $data, NULL);
     }
     function pageNotFound()
     {

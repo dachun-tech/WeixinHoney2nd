@@ -31,9 +31,11 @@ class datamanage extends CI_Controller
         $this->load->model('template_model');
         $this->load->model('room_model');
         $this->load->model('roombooking_model');
+        $this->load->model('honey_friend_model');
 
         $this->checkEventState();
     }
+
 
     /*
     * this function is used to add new user who entered into the fengti,
@@ -43,11 +45,13 @@ class datamanage extends CI_Controller
     {
         $book = json_decode(file_get_contents("php://input"));
         $user['nickname'] = $this->filter($book->{"nickname"});
+        $user['name'] = $this->filter($book->{"nickname"});
         $user['avatar'] = $book->{'avatar'};
         $user['open_id'] = $book->{'open_id'};
         $user['reg_time'] = date("Y-m-d H:i:s");
-        $this->binding_model->addNewUser($user['nickname']);
+
         $result = $this->user_model->addNewUser($user);
+        $this->binding_model->addNewUser($user['nickname']);
         if (count($result) > 0) {
             echo json_encode(array('status' => true, 'result' => $result), 200);
         } else {
@@ -114,16 +118,19 @@ class datamanage extends CI_Controller
         $book = json_decode(file_get_contents("php://input"));
         $user_id = $book->{'user_id'};
         $result = $this->user_model->getUserDetailById($user_id);
+        $honeyFriend = $this->getFriendList('old', $user_id);
+        $honeyNewFriend = $this->getFriendList('new', $user_id);
+//        $reu = $this->getHoneyFriend();
         if (count($result) > 0) {
-            echo json_encode(array('status' => true, 'result' => $result), 200);
+            echo json_encode(array('status' => true, 'result' => $result, 'honeyFriend' => $honeyFriend, 'honeyNewFriend' => $honeyNewFriend), 200);
         } else {
             echo json_encode(array('status' => false), 200);
         }
     }
 
-/*
-    * this function is used to get detail information of the user by using user_id
-    */
+    /*
+        * this function is used to get detail information of the user by using user_id
+        */
     public function getUserDetail1()
     {
         $book = json_decode(file_get_contents("php://input"));
@@ -144,7 +151,7 @@ class datamanage extends CI_Controller
         if (count($result) > 0) {
             echo json_encode(array('status' => true, 'result' => $result), 200);
         } else {
-            echo json_encode(array('status' => false), 200);
+            echo json_encode(array('status' => false, 'result' => array()), 200);
         }
     }
 
@@ -160,7 +167,6 @@ class datamanage extends CI_Controller
             echo json_encode(array('status' => false), 200);
         }
     }
-
 
 
     /*
@@ -190,6 +196,30 @@ class datamanage extends CI_Controller
         $register_num = $this->event_model->getRegisterNum($result);
         if (count($result) > 0) {
             echo json_encode(array('status' => true, 'result' => $result, 'register_num' => $register_num, 'favor' => $favor), 200);
+        } else {
+            echo json_encode(array('status' => false), 200);
+        }
+    }
+
+    public function getMyRoomBooking()
+    {
+        $book = json_decode(file_get_contents("php://input"));
+        $user_id = $book->{"user_id"};
+        $result = $this->roombooking_model->getRoomBookingByUser($user_id);
+        if (count($result) > 0) {
+            echo json_encode(array('status' => true, 'result' => $result), 200);
+        } else {
+            echo json_encode(array('status' => false), 200);
+        }
+    }
+
+    public function getRoomBookingByBossID()
+    {
+        $book = json_decode(file_get_contents("php://input"));
+        $user_id = $book->{"user_id"};
+        $result = $this->roombooking_model->getRoomBookingByBossID($user_id);
+        if (count($result) > 0) {
+            echo json_encode(array('status' => true, 'result' => $result), 200);
         } else {
             echo json_encode(array('status' => false), 200);
         }
@@ -236,6 +266,38 @@ where event.state =booking.state and booking.event_id = event.id and event.id = 
         $rating = $this->rating_model->getRatingByBooking($bookingId, $userId);
         if (count($result) > 0) {
             echo json_encode(array('status' => true, 'result' => $result, 'rating' => $rating, 'register_num' => $register_num), 200);
+        } else {
+            echo json_encode(array('status' => false), 200);
+        }
+    }
+
+    /*
+    * this function is used to get rating by event
+    */
+    public function getRatingByEvent()
+    {
+        $book = json_decode(file_get_contents("php://input"));
+        $event_id = $book->{'event_id'};
+        $result = $this->rating_model->getRatingByEvent($event_id);
+        if (count($result) > 0) {
+            echo json_encode(array('status' => true, 'result' => $result), 200);
+        } else {
+            echo json_encode(array('status' => false), 200);
+        }
+    }
+
+
+    /*
+    * this function is used to get detail of the room booking information
+    which the user want to see by id of booking
+    */
+    public function getRoomBookingDetail()
+    {
+        $book = json_decode(file_get_contents("php://input"));
+        $bookingId = $book->{'booking_id'};
+        $result = $this->roombooking_model->getRoomBookingById($bookingId);
+        if (count($result) > 0) {
+            echo json_encode(array('status' => true, 'result' => $result), 200);
         } else {
             echo json_encode(array('status' => false), 200);
         }
@@ -290,11 +352,13 @@ where event.state =booking.state and booking.event_id = event.id and event.id = 
     function checkEventState()
     {
         $endedEvents = $this->event_model->checkStateByTime();
+
         $this->booking_model->changeStateByEvent($endedEvents);
         $this->event_model->checkStateByAlarm();
         $this->honey_model->addHoney($endedEvents);
         $this->honey_model->checkHoney();
         $this->exchange_model->setAutoEndExchange();
+        $this->roombooking_model->checkStateByTime();
     }
 
     /*
@@ -308,23 +372,69 @@ where event.state =booking.state and booking.event_id = event.id and event.id = 
         if ($result[0]->pay_type == 1) {
             $state['out_refund_no'] = $book->{'out_refund_no'};
         }
-        $result = $this->db->query("select event.organizer_id, booking.user_id, booking.pay_type, event.name from event, booking where booking.event_id = event.id and booking.id=" . $booking_id)->result();
+        $result = $this->db->query("select event.organizer_id, booking.user_id, booking.pay_type, event.name, event.owner
+              from event, booking where booking.event_id = event.id and booking.id=" . $booking_id)->result();
+
         $alarm['user_id'] = $result[0]->organizer_id;
-        $alarm['type'] = 4;
+        if ($result[0]->owner == '0') {
+            $alarm['type'] = 12;
+        } else {
+            $alarm['type'] = 4;
+        }
         $alarm['alarm_org_id'] = $result[0]->user_id;
         $alarm['event_type'] = $result[0]->name;
         $alarm['submit_time'] = date("Y-m-d H:i:s");
         $this->alarm_user_model->addAlarm($alarm);
+
         if ($result[0]->pay_type == 1) {
-            $alarm1['user_id'] = $alarm['alarm_org_id'];
-            $alarm1['type'] = 8;
-            $alarm1['event_type'] = $alarm['event_type'];
-            $alarm1['submit_time'] = $alarm['submit_time'];
-            $this->alarm_user_model->addAlarm($alarm1);
+            if ($result[0]->owner != '0') {
+                $alarm1['user_id'] = $alarm['alarm_org_id'];
+                $alarm1['type'] = 8;
+                $alarm1['event_type'] = $alarm['event_type'];
+                $alarm1['submit_time'] = $alarm['submit_time'];
+                $this->alarm_user_model->addAlarm($alarm1);
+            }
             $this->binding_model->cancelBooking($booking_id);
         }
         $state['state'] = 2;
-        $result = $this->booking_model->updateStateByBookingId($booking_id, $state);
+        $result = $this->booking_model->removeBooking($booking_id);
+//        $result = $this->booking_model->updateStateByBookingId($booking_id, $state);
+        if ($result) {
+            echo json_encode(array('status' => true), 200);
+        } else {
+            echo json_encode(array('status' => false), 200);
+        }
+    }
+
+    /*
+    * this function is used to cancel the room booking of the user
+    */
+    public function cancelRoomBooking()
+    {
+        $book = json_decode(file_get_contents("php://input"));
+        $booking_id = $book->{"booking_id"};
+        $state['out_refund_no'] = $book->{'out_refund_no'};
+        $result = $this->db->query("select room.boss_id, room_booking.user_id, room.room_name, boss.site_name, room_booking.paid_price, room_booking.id,
+              room_booking.pay_honey, room_booking.pay_cost
+              from room, room_booking, boss 
+              where room_booking.room_id = room.id and room.boss_id = boss.boss_id and room_booking.id=" . $booking_id)->result();
+
+        $online_pay = $result[0]->cost - $result[0]->pay_honey;
+        $this->binding_model->removeRoomBooking($result[0]->boss_id, $result[0]->pay_cost, $online_pay, $result[0]->user_id, $booking_id);
+
+        $alarm['user_id'] = $result[0]->boss_id;
+        $alarm['alarm_org_id'] = $result[0]->user_id;
+        $alarm['event_type'] = $result[0]->site_name . '场馆' . $result[0]->room_name . '场地';
+        $alarm['submit_time'] = date("Y-m-d H:i:s");
+        $alarm['type'] = 18;
+        $this->alarm_user_model->addAlarm($alarm);
+        $alarm['user_id'] = $result[0]->user_id;
+        $alarm['alarm_org_id'] = $result[0]->boss_id;
+        $alarm['type'] = 17;
+        $this->alarm_user_model->addAlarm($alarm);
+
+        $state['state'] = 3;
+        $result = $this->roombooking_model->updateStateByBookingId($booking_id, $state);
         if ($result) {
             echo json_encode(array('status' => true), 200);
         } else {
@@ -358,6 +468,34 @@ where event.state =booking.state and booking.event_id = event.id and event.id = 
             echo json_encode(array('status' => false), 200);
         }
     }
+
+
+    /*
+    * this function is used to add the rating to the site which its' room that the user entered is finished.
+    */
+    public function addRoomRating()
+    {
+        $book = json_decode(file_get_contents("php://input"));
+        $info['point'] = $book->{"point"};
+        $info['comment'] = $book->{"comment"};
+        $booking_id = $book->{'booking_id'};
+        $result = $this->db->query("select room.boss_id, room_booking.user_id, room.room_name from room, room_booking where room_booking.room_id = room.id and room_booking.id=" . $booking_id)->result();
+        $info['user_id'] = $result[0]->user_id;
+        $info['room_booking_id'] = $booking_id;
+        $info['submit_time'] = date("Y-m-d H:i:s");
+        $alarm['user_id'] = $result[0]->boss_id;
+        $alarm['alarm_org_id'] = $info['user_id'];
+        $alarm['submit_time'] = $info['submit_time'];
+        $alarm['type'] = 0;
+        $this->alarm_user_model->addAlarm($alarm);
+        $result = $this->rating_model->addRating($info);
+        if ($result > 0) {
+            echo json_encode(array('status' => true), 200);
+        } else {
+            echo json_encode(array('status' => false), 200);
+        }
+    }
+
 
     /*
     * this function is used to get information of all events that user created
@@ -406,6 +544,7 @@ where event.state =booking.state and booking.event_id = event.id and event.id = 
         }
         return $fav_amount;
     }
+
     public function getFavouriteAmount1($result)
     {
         $fav_amount = array();
@@ -435,11 +574,78 @@ where event.state =booking.state and booking.event_id = event.id and event.id = 
         $register_num = $this->booking_model->getRegisterNum($event_id);
         $is_rating = $this->favourite_event_model->is_rating($user_id);
         $favor = $this->getFavouriteAmount($result);
-        $feedbacks = $this->feedback_model->getFeedbacks($event_id);
+        $feedbacks = $this->feedback_model->getFeedbacks($event_id, $user_id);
         if (count($result) > 0) {
             echo json_encode(array('status' => true, 'result' => $result, 'booking' => $booking, 'rating' => $rating, 'rating_detail' => $rating_detail, 'register_num' => $register_num, 'favor' => $favor, 'feedbacks' => $feedbacks), 200);
         } else {
             echo json_encode(array('status' => false), 200);
+        }
+    }
+
+    /*
+    * this function is used to get detail information of events which created by backend that user selected
+    */
+    public function getNewEventDetail()
+    {
+        $book = json_decode(file_get_contents("php://input"));
+        $event_id = $book->{"event_id"};
+        $user_id = $book->{'user_id'};
+        $result = $this->event_model->getNewEventDetailById($event_id, $user_id);
+        $booking = $this->booking_model->getBookingDetailByEvent($event_id);
+        $rating = $this->favourite_event_model->getFavouriteDetailByUser($user_id, $event_id);
+        $rating_detail = $this->rating_model->getRatingByEvent($event_id);
+        $register_num = $this->booking_model->getRegisterNum($event_id);
+        $is_rating = $this->favourite_event_model->is_rating($user_id);
+        $favor = $this->getFavouriteAmount($result);
+        $feedbacks = $this->feedback_model->getFeedbacks($event_id, $user_id);
+        if (count($result) > 0) {
+            echo json_encode(array('status' => true, 'result' => $result, 'booking' => $booking, 'rating' => $rating, 'rating_detail' => $rating_detail, 'register_num' => $register_num, 'favor' => $favor, 'feedbacks' => $feedbacks), 200);
+        } else {
+            echo json_encode(array('status' => false), 200);
+        }
+    }
+
+    /*
+    * this function is used to add read count of events
+    */
+    public function addReadCount()
+    {
+        $book = json_decode(file_get_contents("php://input"));
+        $event_id = $book->{"event_id"};
+        $result = $this->event_model->addReadCount($event_id);
+        if (count($result) > 0) {
+            echo json_encode(array('status' => true));
+        } else {
+            echo json_encode(array('status' => false), 200);
+        }
+    }
+
+    /*
+    * this function is used to add read count of events
+    */
+    public function addShareCount()
+    {
+        $book = json_decode(file_get_contents("php://input"));
+        $user_id = $book->{"user_id"};
+        $event_id = $book->{"event_id"};
+        if ($user_id != '') {
+            $result = $this->db->query('select no, count from event_share where user_id = ' . $user_id . ' and event_id = ' . $event_id)->row();
+            if (count($result) > 0) {
+                $this->db->set(array('count' => ($result->count + 1)))
+                    ->where('no', $result->no)
+                    ->update('event_share');
+
+            } else {
+                $this->db->insert('event_share', array(
+                    'user_id' => $user_id, 'event_id' => $event_id, 'count' => '1'
+                ));
+            }
+        }
+        $result = $this->db->query('select sum(count) as count from event_share where event_id = ' . $event_id)->row();
+        if (count($result) > 0) {
+            echo json_encode(array('status' => true, 'result' => $result->count));
+        } else {
+            echo json_encode(array('status' => false, 'result' => '0'), 200);
         }
     }
 
@@ -459,6 +665,22 @@ where event.state =booking.state and booking.event_id = event.id and event.id = 
 
 
     /*
+    * this function is used to add feedback to event
+    */
+    public function addChildFeedback()
+    {
+        $book = json_decode(file_get_contents("php://input"));
+        $info['event_id'] = $book->{"event_id"};
+        $info['user_id'] = $book->{'user_id'};
+        $info['comment'] = $book->{'comment'};
+        $info['parent_no'] = $book->{'parent_no'};
+        $info['type'] = 1;
+        $info['submit_time'] = date("Y-m-d H:i:s");
+        $this->feedback_model->addFeedback($info);
+        echo json_encode(array('status' => true), 200);
+    }
+
+    /*
     * this function is used to set favourite state of event
     */
     public function setFavouriteEvent()
@@ -467,6 +689,22 @@ where event.state =booking.state and booking.event_id = event.id and event.id = 
         $event_id = $book->{"event_id"};
         $user_id = $book->{"user_id"};
         $result = $this->favourite_event_model->setFavouriteEvent($user_id, $event_id);
+        if ($result) {
+            echo json_encode(array('status' => true), 200);
+        } else {
+            echo json_encode(array('status' => false), 200);
+        }
+    }
+
+    /*
+    * this function is used to set favourite state of event
+    */
+    public function setFavouriteFeedback()
+    {
+        $book = json_decode(file_get_contents("php://input"));
+        $feedback_id = $book->{"feedback_id"};
+        $user_id = $book->{"user_id"};
+        $result = $this->feedback_model->setFavouriteFeedback($user_id, $feedback_id);
         if ($result) {
             echo json_encode(array('status' => true), 200);
         } else {
@@ -486,24 +724,178 @@ where event.state =booking.state and booking.event_id = event.id and event.id = 
         $info['reg_num'] = $book->{"reg_num"};
         $info['name'] = $book->{"name"};
         $info['phone'] = $book->{'phone'};
+        $info['book_info'] = json_encode($book->{'val_opt'});
         $info['pay_type'] = $book->{"pay_type"};
-        if ($role == 1) {
-            if ($info['pay_type'] == 1) {
-                $info['out_trade_no'] = $book->{'out_trade_no'};
-                $this->binding_model->addBooking($info['event_id'], $info['reg_num'], $info['user_id']);
-            }
+        $info['pay_honey'] = $book->{"pay_honey"};
+        $info['pay_cost'] = $book->{"pay_cost"};
+        $info['pay_online'] = $book->{"pay_online"};
+        $info['description'] = $book->{"description"};
+
+        if ($info['pay_type'] == 1) { // if online payment
+            $info['out_trade_no'] = $book->{'out_trade_no'};
+            $this->binding_model->addBooking($info['event_id'], $info['reg_num'], $info['user_id'], $book->{"wallet"});
+            $this->user_model->removeHoney($info['user_id'], $info['pay_honey']);
         }
+
         $info['submit_time'] = date("Y-m-d H:i:s");
-        $result = $this->db->query("select organizer_id, name from event where id=" . $info['event_id'])->result();
+        $result = $this->db->query("select organizer_id, name, owner from event where id=" . $info['event_id'])->result();
+
+        $alarm = array();
         $alarm['user_id'] = $result[0]->organizer_id;
-        $alarm['type'] = 3;
+        if ($result[0]->owner == '0') {
+            $alarm['type'] = 13;
+            $alarm['user_id'] = $info['user_id'];
+        } else {
+            $alarm['type'] = 3;
+        }
         $alarm['event_type'] = $result[0]->name;
         $alarm['alarm_org_id'] = $info['user_id'];
         $alarm['submit_time'] = date("Y-m-d H:i:s");
         $alarm1 = $this->alarm_user_model->addAlarm($alarm);
+        if ($result[0]->owner == '1') {
+            $alarm = array();
+            $alarm['type'] = 9;
+            $alarm['user_id'] = $info['user_id'];
+            $alarm['alarm_org_id'] = $result[0]->organizer_id;
+            $alarm['event_type'] = $result[0]->name;
+            $alarm['submit_time'] = date("Y-m-d H:i:s");
+            $alarm1 = $this->alarm_user_model->addAlarm($alarm);
+        }
         $result = $this->booking_model->addBooking($info);
         if ($result) {
             echo json_encode(array('status' => true, 's' => $alarm1, 'ss' => $alarm), 200);
+        } else {
+            echo json_encode(array('status' => false), 200);
+        }
+    }
+
+    /*
+    * this function is used to add booking information of user for a event
+    */
+    public function addRoomBooking()
+    {
+        $book = json_decode(file_get_contents("php://input"));
+        $role = $book->{'role'};
+        $bookInfo = $book->{"book_info"};
+        $bookDate = $book->{"book_date"};
+        $bossId = $book->{"boss_id"};
+
+        $info['user_id'] = $book->{"user_id"};
+        $info['pay_type'] = $book->{"pay_type"};
+        $info['pay_honey'] = $book->{"pay_honey"};
+        $info['pay_cost'] = $book->{"pay_cost"};
+        $info['pay_online'] = $book->{"pay_online"};
+
+        // get previous booked list
+        $query = "select * from room_booking where user_id = '" . $info['user_id']
+            . "' and date( start_time ) = date( '" . $bookDate . "' )";
+        $bookedList = $this->db->query($query)->result();
+//        foreach ($bookedList as $old) {
+//            $isExist = false;
+//            $old_time = strtotime($old->start_time);
+//            foreach ($bookInfo as $new) {
+//                if ($new->room_id == $old->room_id && ($new->start_time / 1000) == $old_time) {
+//                    $isExist = true;
+//                    break;
+//                }
+//            }
+//            if (!$isExist) {
+//                // cancel old roombook info
+//                $this->binding_model->removeRoomBooking($bossId, $old->pay_cost, $info['user_id']);
+//                $this->roombooking_model->updateStateByBookingId($old->id, array('state' => 3));
+//            }
+//        }
+        $roomBooking_id = 0;
+        foreach ($bookInfo as $new) {
+            $new->cost = abs($new->cost);
+            $honey = $new->cost;
+            if ($info['pay_honey'] >= $honey) {
+                $info['pay_honey'] -= $honey;
+            } else if ($info['pay_honey'] < $honey) {
+                $honey -= $info['pay_honey'];
+            } else {
+                $honey = 0;
+            }
+            $roomBooking_id = $this->roombooking_model->addBooking(array(
+                'user_id' => $info['user_id'],
+                'room_id' => $new->room_id,
+                'start_time' => date("Y-m-d H:i:s", $new->start_time / 1000),
+                'end_time' => date("Y-m-d H:i:s", $new->end_time / 1000),
+                'paid_price' => $new->cost,
+                'pay_cost' => $new->cost,
+                'pay_online' => $info['pay_online'],
+                'out_trade_no' => $book->{"out_trade_no"},
+                'pay_honey' => $honey,
+                'submit_time' => date('Y-m-d H:i:s'),
+                'state' => '0',
+            ));
+
+        }
+        $result = $this->db->query("select boss_id, site_name from boss where boss_id=" . $bossId)->row();
+        $alarm['user_id'] = $info['user_id'];
+        $alarm['type'] = 14;
+        $nameList = '';
+        $j = 0;
+        foreach ($bookInfo as $item) {
+            if ($j > 0) $nameList .= ',';
+            $roomName = $this->db->query('select * from room where id = ' . $item->room_id)->row()->room_name;
+            if (strpos($nameList, $roomName) >= 0) {
+                $nameList .= $roomName;
+                $j++;
+            }
+        }
+        $alarm['event_type'] = $result->site_name . '场馆' . $nameList . '场地';
+        $alarm['alarm_org_id'] = $info['user_id'];
+        $alarm['submit_time'] = date("Y-m-d H:i:s");
+        $alarm1 = $this->alarm_user_model->addAlarm($alarm);
+        $alarm['user_id'] = $bossId;
+        $alarm['type'] = 16;
+        $alarm1 = $this->alarm_user_model->addAlarm($alarm);
+
+        if ($info['pay_type'] == 1) { // if online payment
+            $info['out_trade_no'] = $book->{'out_trade_no'};
+            $this->binding_model->addRoomBooking($bossId, $info['pay_cost'], $info['user_id'], $book->{"wallet"}, $roomBooking_id);
+            $this->user_model->removeHoney($info['user_id'], $info['pay_honey']);
+        }
+
+        $share_day = $book->{"share_day"};
+        $share_info = $this->db->query('select no from share_data where user_id = ' . $info['user_id']
+            . ' and boss_id = ' . $bossId . ' and share_day = ' . $share_day)->row();
+        if (count($share_info) == 0) {
+            $this->db->insert('share_data', array(
+                'user_id' => $info['user_id'],
+                'boss_id' => $bossId,
+                'share_day' => $share_day,
+                'content' => json_encode(array('book_date' => $bookDate, 'book_info' => $bookInfo))
+            ));
+        } else {
+            $this->db->set(array(
+                'user_id' => $info['user_id'],
+                'boss_id' => $bossId,
+                'share_day' => $share_day,
+                'content' => json_encode(array('book_date' => $bookDate, 'book_info' => $bookInfo))
+            ));
+            $this->db->where('no', $share_info->no);
+            $this->db->update('share_data');
+        }
+
+        if (count($result) > 0) {
+            echo json_encode(array('status' => true, 's' => $alarm1, 'ss' => $alarm), 200);
+        } else {
+            echo json_encode(array('status' => false), 200);
+        }
+    }
+
+    public function getSharedData()
+    {
+        $book = json_decode(file_get_contents("php://input"));
+        $bossId = $book->{"boss_id"};
+        $userId = $book->{"user_id"};
+        $shareDay = $book->{"share_day"};
+        $result = $this->db->query('select * from share_data where user_id = ' . $userId
+            . ' and boss_id = ' . $bossId . ' and share_day = ' . $shareDay)->row();
+        if (count($result) > 0) {
+            echo json_encode(array('status' => true, 'result' => $result), 200);
         } else {
             echo json_encode(array('status' => false), 200);
         }
@@ -540,20 +932,21 @@ where event.state =booking.state and booking.event_id = event.id and event.id = 
         $user_open_id = $this->db->query("select user.open_id 
             from user left join event on event.organizer_id = user.no 
                         where event.id=" . $event_id)->row();
-        $booking = $this->db->query("select user.open_id, event.cost,booking.id, booking.reg_num, booking.out_trade_no, booking.pay_type 
-from user, event left join booking on booking.event_id=event.id and booking.state=0 
-where user.no=booking.user_id and event.id=" . $event_id . " group by booking.id")->result();
-//$booking = $this->db->query("select user.open_id, event.cost,booking.id, booking.reg_num, booking.out_trade_no, booking.pay_type 
-//from user, event left join booking on booking.event_id=event.id 
-//where user.no=booking.user_id group by booking.id")->result(); 
+        $booking = $this->db->query("select user.open_id, event.cost,booking.id, booking.reg_num, booking.out_trade_no, booking.pay_type, booking.pay_online
+            from user, event left join booking on booking.event_id=event.id and booking.state=0 
+            where user.no=booking.user_id and event.id=" . $event_id . " group by booking.id")->result();
+
+        //$booking = $this->db->query("select user.open_id, event.cost,booking.id, booking.reg_num, booking.out_trade_no, booking.pay_type
+        //from user, event left join booking on booking.event_id=event.id
+        //where user.no=booking.user_id group by booking.id")->result();
 
         if (count($booking) > 0) {
             foreach ($booking as $book) {
                 if ($book->pay_type == 1) {
                     $openid = $book->open_id;
                     $out_trade_no = $book->out_trade_no;
-                    $total_fee = $book->cost * $book->reg_num;
-                    $total_fee = $book->cost * $book->reg_num;
+//                    $total_fee = $book->cost * $book->reg_num;
+                    $total_fee = $book->pay_online;
                     if (empty($total_fee)) //押金
                     {
                         $body = "退款押金";
@@ -567,7 +960,7 @@ where user.no=booking.user_id and event.id=" . $event_id . " group by booking.id
                     $out_refund_no = $mch_id . $sec;
                     $weixinpay = new WinXinRefund($appid, $mch_id, $user_open_id, $out_trade_no, $total_fee, $out_refund_no, $refund_fee, $key);
                     $return = true;
-//if($refund_fee == 1)
+                    //if($refund_fee == 1)
                     $return = $weixinpay->refund();
                     echo json_encode(array('status' => json_encode($return), 'value' => ($appid . ',' . $mch_id . ',' . $openid . ',' . $out_trade_no . ',' . $total_fee . ',' . $refund_fee . ',' . $key)), 200);
                     $weixinpay = null;
@@ -655,14 +1048,15 @@ where user.no=booking.user_id and event.id=" . $event_id . " group by booking.id
         if ($site != null) {
             echo json_encode(array('status' => true,
                 'site' => $site, 'picture' => $picture, 'isFavourite' => $isFavourite,
-                'site_room' => $roomData, 'site_booking'=>$bookingData,
+                'site_room' => $roomData, 'site_booking' => $bookingData,
                 'event' => $event, 'favor' => $favor), 200);
         } else {
             echo json_encode(array('status' => false), 200);
         }
     }
-	
-    public function setBookData(){
+
+    public function setBookData()
+    {
         $book = json_decode(file_get_contents("php://input"));
         $user_id = $book->{'user_id'};
         $booking = $book->{'bookData'};
@@ -673,15 +1067,15 @@ where user.no=booking.user_id and event.id=" . $event_id . " group by booking.id
                     'room_id' => $item->room_id,
                     'user_id' => $item->user_id,
                     'state' => $item->state,
-                    'start_time' => date('Y-m-d H:i:s', $item->start_time/1000),
-                    'end_time' => date('Y-m-d H:i:s', $item->end_time/1000),
+                    'start_time' => date('Y-m-d H:i:s', $item->start_time / 1000),
+                    'end_time' => date('Y-m-d H:i:s', $item->end_time / 1000),
                     'submit_time' => date('Y-m-d H:i:s'),
                 );
                 $this->roombooking_model->updateBookInfo($arr, $item->book_id);
             }
-            echo json_encode(array('status' => true, 'data'=>$user_id), 200);
-        }catch (Exception $e){
-            echo json_encode(array('status' => false, 'data'=>$e->getMessage()), 200);
+            echo json_encode(array('status' => true, 'data' => $user_id), 200);
+        } catch (Exception $e) {
+            echo json_encode(array('status' => false, 'data' => $e->getMessage()), 200);
         }
     }
 
@@ -716,7 +1110,6 @@ where user.no=booking.user_id and event.id=" . $event_id . " group by booking.id
     }
 
 
-
     /*
     * this function is used to get rating of the site
     */
@@ -732,20 +1125,6 @@ where user.no=booking.user_id and event.id=" . $event_id . " group by booking.id
         }
     }
 
-    /*
-    * this function is used to get rating of the site
-    */
-    public function getRatingByEvent()
-    {
-        $book = json_decode(file_get_contents("php://input"));
-        $event_id = $book->{'event_id'};
-        $result = $this->rating_model->getRatingByEvent($event_id);
-        if ($result != null) {
-            echo json_encode(array('status' => true, 'result' => $result), 200);
-        } else {
-            echo json_encode(array('status' => false), 200);
-        }
-    }
 
     /*
     * this function is used to get rating of the site
@@ -755,8 +1134,10 @@ where user.no=booking.user_id and event.id=" . $event_id . " group by booking.id
         $book = json_decode(file_get_contents("php://input"));
         $boss_id = $book->{'boss_id'};
         $result = $this->rating_model->getRatingByBoss($boss_id);
+        $site = $this->boss_model->getSiteDetail($boss_id, 0);
+
         if ($result != null) {
-            echo json_encode(array('status' => true, 'result' => $result), 200);
+            echo json_encode(array('status' => true, 'result' => $result, 'site' => $site), 200);
         } else {
             echo json_encode(array('status' => false), 200);
         }
@@ -776,7 +1157,7 @@ where user.no=booking.user_id and event.id=" . $event_id . " group by booking.id
         if ($info['role'] == 1) {
             $info['state'] = 1;
         } else {
-            $info['state'] = 2;
+            $info['state'] = 1;
         }
         $alarm['type'] = 0;
         $alarm['user_id'] = $user_id;
@@ -989,21 +1370,6 @@ where user.no=booking.user_id and event.id=" . $event_id . " group by booking.id
         }
     }
 
-    /*
-    * this function is used to add the information of site which tells other users introduction and the service of the site
-    */
-    public function addSitePicture()
-    {
-        $user_id = $this->input->post('user_id');
-        $imageUrl = $this->image_upload();
-        $result = $this->boss_model->addSitePicture($user_id, $imageUrl);
-        if ($result == true) {
-            echo json_encode(array('status' => true), 200);
-        } else {
-            echo json_encode(array('status' => false), 200);
-        }
-    }
-
 // get templates
     public function getTemplates()
     {
@@ -1046,9 +1412,26 @@ where user.no=booking.user_id and event.id=" . $event_id . " group by booking.id
         $book = json_decode(file_get_contents("php://input"));
         $user_id = $book->{'user_id'};
         $imageUrl = $book->{'image'};
-        $result = $this->db->query("insert site_picture(picture, boss_id) value('" . $imageUrl . "'," . $user_id . ")");
+        $id = $book->{'id'};
+        $result = $this->boss_model->addSitePicture($user_id, $imageUrl, $id);
         if ($result != null) {
             echo json_encode(array('status' => true, 'user_id' => $user_id, 'imageUrl' => $imageUrl), 200);
+        } else {
+            echo json_encode(array('status' => false), 200);
+        }
+    }
+
+    /*
+    * this function is used to add the information of site which tells other users introduction and the service of the site
+    */
+    public function addSitePicture()
+    {
+        $user_id = $this->input->post('user_id');
+        $id = $this->input->post('id');
+        $imageUrl = $this->image_upload();
+        $result = $this->boss_model->addSitePicture($user_id, $imageUrl, $id);
+        if ($result == true) {
+            echo json_encode(array('status' => true), 200);
         } else {
             echo json_encode(array('status' => false), 200);
         }
@@ -1153,7 +1536,11 @@ where user.no=booking.user_id and event.id=" . $event_id . " group by booking.id
         $jsondecode = json_decode($weixin); //对JSON格式的字符串进行编码
         $array = get_object_vars($jsondecode);//转换成数组
         $openid = $array['openid'];//输出openid
-        echo json_encode(array('status' => true, 'openid' => $openid, 'session_key' => $array['session_key']), 200);
+        $weixin = file_get_contents("https://api.weixin.qq.com/cgi-bin/token?appid=wxea381fb0ca7c2a24&secret=a6209bae994c009eaad5f8da083617af&js_code=" . $code . "&grant_type=client_credential");//通过code换取网页授权access_token
+        $jsondecode = json_decode($weixin); //对JSON格式的字符串进行编码
+        $arr = get_object_vars($jsondecode);//转换成数组
+        $token = $arr['access_token'];//输出openid
+        echo json_encode(array('status' => true, 'openid' => $openid, 'session_key' => $array['session_key'], 'token' => $token), 200);
     }
 
     /*
@@ -1177,9 +1564,16 @@ where user.no=booking.user_id and event.id=" . $event_id . " group by booking.id
         $book = json_decode(file_get_contents("php://input"));
         $today_first = $book->{'todayfirst'};
         $user_id = $book->{'user_id'};
-        $honey = $book->{'honey'};
-        $this->db->query('update user set todayfirst=' . $today_first . ', daily_honey="[0,0]" where no=' . $user_id);
-        $this->honey_model->addBackyard($user_id, $honey);
+        $userInfo = $this->db->query('select * from user where no=' . $user_id)->row();
+        if ($userInfo->todayfirst != $today_first) {
+            $honey = $book->{'honey'};
+            $this->db->query('update user set todayfirst=' . $today_first . ', daily_honey="[0,0]" where no=' . $user_id);
+            $this->honey_model->addBackyard($user_id, $honey);
+            echo json_encode(array('status' => true, 'result' => $today_first), 200);
+        } else {
+            echo json_encode(array('status' => false, 'result' => 'Already added.'), 200);
+
+        }
         return;
     }
 
@@ -1382,7 +1776,7 @@ where provinces.provinceid = cities.provinceid and cities.cityid=areas.cityid an
         $userId = $book->{'user_id'};
         $site = $this->boss_model->getSiteByDistanceApi($longitude, $latitude, $userId);
         $event = $this->event_model->getEventByDistance($longitude, $latitude);
-        $honey = $this->honey_model->getHoneyByDistance($longitude, $latitude);
+        $honey = $this->honey_model->getHoneyByDistance($longitude, $latitude, $userId);
         if (count($site) > 0 || count($event) > 0 || count($honey) > 0) {
             echo json_encode(array('status' => true, 'site' => $site, 'event' => $event, 'honey' => $honey), 200);
         } else {
@@ -1401,12 +1795,12 @@ where provinces.provinceid = cities.provinceid and cities.cityid=areas.cityid an
         $user_id = $book->{'user_id'};
         $honey = $book->{'honey'};
         $daily_honey = $book->{'daily_honey'};
-        if ($no != 0) {
-            $result = $this->honey_model->catchHoney($no, $honey);
-            $result = $this->user_model->catchHoney($amount, $user_id, $daily_honey);
+        if ($no != '0') {
+            $result = $this->honey_model->catchHoney($no, $honey, $user_id); // remove honey item from honey table
+            $result = $this->user_model->catchHoney($amount, $user_id, $daily_honey); // update user table
         } else {
             $backyard_no = $book->{'backyard_no'};
-            $this->honey_model->catchBackyardHoney($backyard_no, $honey);
+            $this->honey_model->catchBackyardHoney($backyard_no, $honey, $user_id);
             $result = $this->user_model->catchHoney($amount, $user_id, $daily_honey);
         }
         if ($result) {
@@ -1660,6 +2054,154 @@ where provinces.provinceid = cities.provinceid and cities.cityid=areas.cityid an
         }
     }
 
+    /*
+    * this function is used to get information for honey friends
+    */
+    public function getHoneyFriend($user_id = 0)
+    {
+//        $book = json_decode(file_get_contents("php://input"));
+//        $userId = $book->{'user_id'};
+        $list = $this->getFriendList('old', $user_id);
+        if (count($list) > 0) {
+            echo json_encode(array('status' => true, 'data' => $list), 200);
+        } else {
+            echo json_encode(array('status' => false), 200);
+        }
+    }
+
+    /*
+    * this function is used to get information for honey friends
+    */
+    public function getNewHoneyFriend($user_id = 0)
+    {
+        $book = json_decode(file_get_contents("php://input"));
+        $userId = $book->{'user_id'};
+        $list = $this->getFriendList('new', $userId);
+        if (count($list) > 0) {
+            echo json_encode(array('status' => true, 'data' => $list), 200);
+        } else {
+            echo json_encode(array('status' => false), 200);
+        }
+    }
+
+    public function getFriendList($type = 'old', $user_id = 0)
+    {
+        $list = array();
+        $list = $this->honey_friend_model->getItems($type, $user_id);
+        $sports = $this->event_model->getEventType();
+        if (count($list) > 0) {
+            foreach ($list as $item) {
+                $ids = $item->sport_type;
+                if ($ids == '') continue;
+                if ($item->role == 1) $ids = $item->site_type_detail;
+                $ids = explode(',', $ids);
+                $spt = '';
+                $j = 0;
+                if ((count($ids) > 0) && ((count($sports) > 0))) {
+                    foreach ($ids as $id) {
+                        if ($id == '') continue;
+                        if ($j != 0) $spt .= ' ';
+                        $spt .= $sports[$id];
+                        $j++;
+                    }
+                    $item->sport_name = $spt;
+                }
+            }
+        }
+        return $list;
+    }
+
+    /*
+    * this function is used to get information for honey friends
+    */
+    public function addFriend()
+    {
+        $book = json_decode(file_get_contents("php://input"));
+        $userId = $book->{'user_id'};
+        $friendId = $book->{'friend_id'};
+
+        $arr = array(
+            'user_id' => $friendId,
+            'friend_id' => $userId
+        );
+        $this->honey_friend_model->addItem($arr);
+
+
+        $alarm['user_id'] = $friendId;
+        $alarm['type'] = 20;
+        $alarm['alarm_org_id'] = $userId;
+        $alarm['submit_time'] = date("Y-m-d H:i:s");
+        $alarm1 = $this->alarm_user_model->addAlarm($alarm);
+
+
+        $list = $this->getFriendList('old', $userId);
+        if (count($list) > 0) {
+            echo json_encode(array('status' => true, 'data' => $list), 200);
+        } else {
+            echo json_encode(array('status' => false), 200);
+        }
+    }
+
+    /*
+    * this function is used to get information for honey friends
+    */
+    public function removeFriend()
+    {
+        $book = json_decode(file_get_contents("php://input"));
+        $userId = $book->{'user_id'};
+        $friendId = $book->{'friend_id'};
+        $arr = array(
+            'user_id' => $friendId,
+            'friend_id' => $userId,
+        );
+        $this->honey_friend_model->removeItem($arr);
+        $arr = array(
+            'user_id' => $userId,
+            'friend_id' => $friendId,
+        );
+        $this->honey_friend_model->removeItem($arr);
+
+        $alarm['user_id'] = $friendId;
+        $alarm['type'] = 19;
+        $alarm['alarm_org_id'] = $userId;
+        $alarm['submit_time'] = date("Y-m-d H:i:s");
+        $alarm1 = $this->alarm_user_model->addAlarm($alarm);
+
+        $list = $this->getFriendList();
+        if (count($list) > 0) {
+            echo json_encode(array('status' => true, 'data' => $list), 200);
+        } else {
+            echo json_encode(array('status' => false), 200);
+        }
+    }
+
+    /*
+    * this function is used to get information for honey friends
+    */
+    public function confirmFriend()
+    {
+        $book = json_decode(file_get_contents("php://input"));
+        $userId = $book->{'user_id'};
+        $friendId = $book->{'friend_id'};
+        $arr = array(
+            'user_id' => $userId,
+            'friend_id' => $friendId
+        );
+        $this->honey_friend_model->updateItem(array('status' => 1), $arr);
+        $arr = array(
+            'user_id' => $friendId,
+            'friend_id' => $userId
+        );
+        $this->honey_friend_model->addItem($arr);
+        $this->honey_friend_model->updateItem(array('status' => 1), $arr);
+
+        $list = $this->getFriendList();
+        if (count($list) > 0) {
+            echo json_encode(array('status' => true, 'data' => $list), 200);
+        } else {
+            echo json_encode(array('status' => false), 200);
+        }
+    }
 
     /*
     * this function is used to get distance between two points
@@ -1682,7 +2224,7 @@ where provinces.provinceid = cities.provinceid and cities.cityid=areas.cityid an
             $name = $str;
             $name = preg_replace('/\xEE[\x80-\xBF][\x80-\xBF]|\xEF[\x81-\x83][\x80-\xBF]/', '', $name);
             $name = preg_replace('/xE0[x80-x9F][x80-xBF]‘.‘|xED[xA0-xBF][x80-xBF]/S', '?', $name);
-            $return = json_decode(preg_replace("#(\\\ud[0-9a-f]{3})#ie", "", json_encode($name)));
+            $return = json_decode(preg_replace_callback("#(\\\ud[0-9a-f]{3})#ie", "", json_encode($name)));
             if (!$return) {
                 return $this->jsonName($return);
             }
@@ -1756,6 +2298,128 @@ where provinces.provinceid = cities.provinceid and cities.cityid=areas.cityid an
         return $im_dest;
     }
 
+    public function uploadBase64Img()
+    {
+        $book = json_decode(file_get_contents("php://input"));
+        //$userId = $book->{'user_id'};
+        $imgdata = $book->{'imageData'};
+        //if(!isset($imgdata) {
+        //    echo json_encode(array('status' => false, 'data' => 'Image Data is none.'), 200);
+        //    return;
+        //}
+        $imgdata = base64_decode(preg_replace('#^data:image/\w+;base64,#i', '', $imgdata));
+
+        //$imgdata = base64_decode($data);
+
+        $imageName = 'fqb' . rand(1000, 9999) . '.png';
+        if (file_put_contents('uploads/qr/' . $imageName, $imgdata))
+            echo json_encode(array('status' => true, 'data' => 'qr/' . $imageName), 200);
+        else
+            echo json_encode(array('status' => false, 'data' => 'Image uploading failed.'), 200);
+    }
+
+    public function getQR()
+    {
+        $book = json_decode(file_get_contents("php://input"));
+        $token = $book->{'access_token'};
+        $path = $book->{'path'};
+        $user_id = $book->{'user_id'};
+        //if(!isset($imgdata) {
+        //    echo json_encode(array('status' => false, 'data' => 'Image Data is none.'), 200);
+        //    return;
+        //}
+        //$url = 'https://api.weixin.qq.com/cgi-bin/wxaapp/createwxaqrcode?access_token='.$token;
+
+        $url = 'https://api.weixin.qq.com/wxa/getwxacode?access_token=' . $token;
+        $param = '{"path":"' . $path . '","width":300,"auto_color":false,"line_color":{"r":"0","g":"0","b":"0"}}';
+        $header = array(
+            'Content-Type' => 'application/json'
+        );
+        $result = $this->http($url, 'POST', $param, $header, $user_id);
+        if (true)
+            echo json_encode(array('status' => true, 'data' => $result), 200);
+        else
+            echo json_encode(array('status' => false, 'data' => 'Image uploading failed.'), 200);
+    }
+
+    public function http($url, $method = '', $postfields = null, $headers = array(), $user_id, $debug = false)
+    {
+        $ci = curl_init();
+
+        $fileUrl = $url;
+
+        $destFile = 'uploads/qr/fqb' . $user_id;
+        exec('rm ' . $destFile . '.*');
+        $saveTo = $destFile . '.png';   //The path & filename to save to.
+
+        $fp = fopen($saveTo, 'w+'); //Open file handler.
+
+        if ($fp === false) {    //If $fp is FALSE, something went wrong.
+            return ('Could not open: ' . $saveTo);
+        }
+
+        /* Curl settings */
+        curl_setopt($ci, CURLOPT_CONNECTTIMEOUT, 30);
+        curl_setopt($ci, CURLOPT_TIMEOUT, 30);
+//        curl_setopt($ci, CURLOPT_RETURNTRANSFER, true);
+        curl_setopt($ci, CURLOPT_FILE, $fp);    //Pass our file handle to cURL.
+
+        switch ($method) {
+            case 'POST':
+                curl_setopt($ci, CURLOPT_POST, true);
+                if (!empty($postfields)) {
+                    curl_setopt($ci, CURLOPT_POSTFIELDS, $postfields);
+                    $this->postdata = $postfields;
+                }
+                break;
+        }
+        curl_setopt($ci, CURLOPT_URL, $url);
+        curl_setopt($ci, CURLOPT_HTTPHEADER, $headers);
+        curl_setopt($ci, CURLINFO_HEADER_OUT, true);
+
+        $response = curl_exec($ci);
+        $http_code = curl_getinfo($ci, CURLINFO_HTTP_CODE);
+
+        if ($debug) {
+            echo "=====post data======\r\n";
+            var_dump($postfields);
+
+            echo '=====info=====' . "\r\n";
+            print_r(curl_getinfo($ci));
+
+            echo '=====$response=====' . "\r\n";
+            print_r($response);
+        }
+        curl_close($ci);
+        return $saveTo;
+    }
+
+    public function getQR1()
+    {
+        $book = json_decode(file_get_contents("php://input"));
+        $access_token = $book->{'access_token'};
+        $page_path = $book->{'page_path'};
+        $url = 'https://api.weixin.qq.com/wxa/getwxacode?access_token=' . $access_token;
+        $postData = array(
+            'path' => 'pages/index/index',
+            'width' => 'pages/index/index'
+        );
+
+        // Setup cURL
+        $ch = curl_init($url);
+        curl_setopt_array($ch, array(
+            CURLOPT_POST => TRUE,
+            CURLOPT_RETURNTRANSFER => TRUE,
+            CURLOPT_HTTPHEADER => array(
+                'Content-Type: application/json'
+            ),
+            CURLOPT_POSTFIELDS => json_encode($postData)
+        ));
+
+        // Send the request
+        $response = curl_exec($ch);
+        var_dump($response);
+    }
 
 }
 

@@ -8,7 +8,12 @@
     <section class="content">
         <div class="container">
             <div class="row custom-info-row">
-                <img class="col-sm-4" id="avatar" src="<?php echo base_url() . "uploads/" . $eventDetail[0]->pic; ?>"/>
+                <?php
+                    $imgs =explode(',',$eventDetail[0]->pic);
+                    foreach($imgs as $pic){
+                ?>
+                <img class="col-sm-4" id="avatar" src="<?php echo base_url() . "uploads/" . $pic; ?>"/>
+                <?php }?>
             </div>
             <?php
             if ($eventDetail[0]->role == 1) {
@@ -48,29 +53,29 @@
                 <label class="col-sm-2">活动类型:</label>
                 <label class="col-sm-6" id="nickname"><?php echo $eventType[$eventDetail[0]->type]; ?></label>
                 <label class="col-sm-1">阅读量:</label>
-                <label class="col-sm-2" id="nickname"><?php echo $favourite_amount; ?></label>
+                <label class="col-sm-2" id="nickname"><?php echo $eventDetail[0]->read_count; ?></label>
             </div>
             <div class="row custom-info-row">
                 <label class="col-sm-2">活动时间:</label>
                 <label class="col-sm-6"
-                       id="nickname"><?php echo $eventDetail[0]->start_time . "-" . $eventDetail[0]->end_time; ?></label>
+                       id="nickname"><?php echo $eventDetail[0]->start_time . " - " . $eventDetail[0]->end_time; ?></label>
                 <label class="col-sm-1">点赞数:</label>
                 <label class="col-sm-2" id="nickname"><?php echo $favourite_amount; ?></label>
             </div>
             <div class="row custom-info-row">
                 <label class="col-sm-2">活动地点:</label>
                 <label class="col-sm-6"
-                       id="site_name"><?php echo $eventDetail[0]->province . $eventDetail[0]->city . $eventDetail[0]->area . $eventDetail[0]->detail_address; ?></label>
-                <label class="col-sm-1">转发量:</label>
-                <label class="col-sm-2" id="nickname"><?php echo $favourite_amount; ?></label>
+                       id="site_name"><?php echo  $eventDetail[0]->detail_address; ?></label>
+                <!--<label class="col-sm-1">转发量:</label>
+                <label class="col-sm-2" id="nickname"><?php echo (($shared_amount==null)?'0':$shared_amount); ?></label>-->
             </div>
             <div class="row custom-info-row">
                 <label class="col-sm-2">人数上限:</label>
-                <label class="col-sm-4" id="nickname"><?php echo $eventDetail[0]->limit; ?>人</label>
+                <label class="col-sm-4" id="nickname"><?php echo intval($eventDetail[0]->limit); ?>人</label>
             </div>
             <div class="row custom-info-row">
                 <label class="col-sm-2">每个用户最多报名人数:</label>
-                <label class="col-sm-4" id="nickname"><?php echo $eventDetail[0]->person_limit; ?>人</label>
+                <label class="col-sm-4" id="nickname"><?php echo intval($eventDetail[0]->person_limit); ?>人</label>
             </div>
             <?php
             if ($eventDetail[0]->role == 1) {
@@ -89,7 +94,7 @@
             <div class="row custom-info-row">
                 <label class="col-sm-2">报名人数:</label>
                 <label class="col-sm-4"
-                       id="nickname"> <?php echo (count($booking) > 0) ? $eventDetail[0]->current_member . "人" : "无"; ?></label>
+                       id="nickname"> <?php echo (count($booking) > 0) ? intval($eventDetail[0]->current_member) . "人" : "无"; ?></label>
             </div>
             <div class="row custom-info-row">
                 <div class="col-sm-6">
