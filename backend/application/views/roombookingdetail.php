@@ -34,7 +34,26 @@
             </div>
             <div class="row custom-info-row">
                 <label class="col-sm-2">预定信息:</label>
-                <label class="col-sm-4" id="nickname"><?php echo $item->site_name.' - '.$item->room_name; ?></label>
+                <div class="col-sm-4" id="nickname">
+                    <?php
+                        $book_info = json_decode($item->book_info);
+                        echo '<div>'.$item->site_name.'场馆</div>';
+                        $old_room_id = 0;
+                        foreach($book_info as $book){
+                            $room_name = '';
+                            foreach ($rooms as $room){
+                                if($book->room_id == $room->id){
+                                    $room_name = $room->room_name;
+                                    break;
+                                }
+                            }
+                            echo '<div style="width:50px;display:inline-block; text-align: center;">'.$room_name.'</div>';
+                            echo $book->start_time.' ~ '.(explode(' ',$book->end_time)[1]);
+                            $old_room_id = $book->room_id;
+                            echo '<br>';
+                        }
+                    ?>
+                </div>
             </div>
             <div class="row custom-info-row">
                 <label class="col-sm-2">预定时间:</label>
@@ -42,15 +61,15 @@
             </div>
             <div class="row custom-info-row">
                 <label class="col-sm-2">应付金额:</label>
-                <label class="col-sm-4" id="site_name"><?php echo $item->cost; ?>元</label>
+                <label class="col-sm-4" id="site_name"><?php echo $item->pay_cost +0; ?>元</label>
             </div>
             <div class="row custom-info-row">
                 <label class="col-sm-2">优惠金额:</label>
-                <label class="col-sm-4" id="site_name"><?php echo $item->cost - $item->paid_price; ?>元</label>
+                <label class="col-sm-4" id="site_name"><?php echo $item->pay_honey+0; ?>元</label>
             </div>
             <div class="row custom-info-row">
                 <label class="col-sm-2">实付金额:</label>
-                <label class="col-sm-4" id="site_name"><?php echo $item->paid_price; ?>元</label>
+                <label class="col-sm-4" id="site_name"><?php echo $item->pay_cost - $item->pay_honey; ?>元</label>
             </div>
             <div class="row custom-info-row">
                 <label class="col-sm-2">订单状态:</label>
@@ -85,7 +104,7 @@
         <div class="container">
             <div class="row">
                 <div class="col-sm-offset-2 custom-course-control-view">
-                    <input type="button" class="btn btn-primary" onclick="location.href=baseURL+'roombookingmanage';"
+                    <input type="button" class="btn btn-primary" onclick="history.back();"
                            value="返回"/>
                 </div>
             </div>

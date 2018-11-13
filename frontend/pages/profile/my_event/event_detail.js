@@ -16,6 +16,8 @@ Page({
         bookingState: [],
         register_num: 0,
         bookingcanceltime: 1,
+        field_opt: ["姓名", "电话", "球队", "俱乐部", "性别", "身份证号", "所在城市", "所在大学院系", "职业", "微信号", "邮箱"],
+        val_opt: ["", "", "", "", "", "", "", "", "", "", ""],
     },
 
     /**
@@ -55,14 +57,28 @@ Page({
                     time = book.end_time.split(':')
                     book.end_time = time[0] + ':' + time[1]
 
-                    if (book.name.length > 12) {
-                        var name = book.name
-                        name = name.slice(0, 12) + '..'
-                        book.name = name
-                    }
+                    // if (book.name.length > 15) {
+                    //     var name = book.name
+                    //     name = name.slice(0, 15) + '...'
+                    //     book.name = name
+                    // }
                     that.data.booking = book;
+                    var condition = book.condition.split(',');
+                    var book_info = JSON.parse(book.book_info);
+                    var customer_info = [];
+                    for (var i = 0; i < condition.length; i++) {
+                        if (parseInt(condition[i]) > -1) {
+                            if (i == 4) book_info[i] = (book_info[i] == '2' ? '女' : '男');
+                            if (book_info[i] == '') book_info[i] = '无';
+                            customer_info.push({
+                                name: that.data.field_opt[i],
+                                value: book_info[i]
+                            })
+                        }
+                    }
                     that.setData({
                         booking: book,
+                        customer_info: customer_info,
                         rating: res.data.rating,
                         register_num: register
                     })

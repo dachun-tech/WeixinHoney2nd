@@ -37,7 +37,6 @@ Page({
             getUserInfoDisabled: false
         })
         this.data.isFirstInit = false;
-        app.globalData.initDisabled = false;
         this.onShow();
         // setTimeout(function() {
 
@@ -46,6 +45,7 @@ Page({
     onShow: function(option) {
         var that = app;
         var _this = this;
+        app.globalData.initDisabled = false;
         wx.getSetting({
             success: function(res) {
                 var perm = res;
@@ -72,21 +72,21 @@ Page({
                             that.globalData.initDisabled = true;
                         },
                         complete: function() {
-                            wx.authorize({
-                                scope: 'scope.werun',
-                                fail: function() {
-                                    that.globalData.initDisabled = true;
-                                },
-                                complete: function() {
-                                    if (that.globalData.initDisabled)
-                                        that.go2Setting();
-                                    else {
-                                        that.globalData.getUserInfoDisabled = false;
-                                        _this.onPrepare();
-                                        isFirstLaunch = false;
-                                    }
-                                }
-                            })
+                            if (that.globalData.initDisabled)
+                                that.go2Setting();
+                            else {
+                                that.globalData.getUserInfoDisabled = false;
+                                _this.onPrepare();
+                                app.globalData.isFirstLaunch = false;
+                            }
+                            // wx.authorize({
+                            //     scope: 'scope.werun',
+                            //     fail: function() {
+                            //         that.globalData.initDisabled = true;
+                            //     },
+                            //     complete: function() {
+                            //     }
+                            // })
                         }
                     });
                 }

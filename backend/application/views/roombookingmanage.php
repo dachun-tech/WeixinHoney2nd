@@ -100,27 +100,52 @@
                         <?php
                         if (true || !empty($creation_name)) {
                             $pay = array('线下支付', '线上支付');
-                            $bookingState = array('已预订','进行中', '已完成', '已取消');
+                            $bookingState = array('已预订', '进行中', '已完成', '已取消');
                             foreach ($bookingList as $record) {
                                 $no = "";
                                 for ($index = 0; $index < (10 - strlen($record->id . "")); $index++)
                                     $no = $no . "0";
                                 $no = $no . $record->id;
+                                $roomName = '';
+                                $book = json_decode($record->book_info);
+                                $old_room_id = 0;
+                                $j = 0;
+                                foreach ($book as $it) {
+                                    if ($old_room_id == $it->room_id) continue;
+                                    $old_room_id = $it->room_id;
+                                    if ($j > 0) $roomName .= ',';
+                                    foreach ($rooms as $room) {
+                                        if ($it->room_id == $room->id) {
+                                            $roomName .= $room->room_name;
+                                            break;
+                                        }
+                                    }
+                                    $j++;
+                                }
                                 ?>
                                 <tr>
                                     <td><?php echo $no; ?></td>
                                     <td><?php echo $record->name; ?></td>
                                     <td><?php echo $record->phone; ?></td>
-                                    <td><?php echo $record->site_name.' - '.$record->room_name; ?><br>
-                                        <?php echo $record->start_time.' - '.(explode(' ',$record->end_time)[1]); ?>
+                                    <td><?php echo $record->site_name . ' - ' . $roomName; ?><br>
+                                        <?php echo $record->start_time . ' - ' . (explode(' ', $record->end_time)[1]); ?>
                                     </td>
-                                    <td><?php echo '￥'.($record->cost); ?></td>
+                                    <td><?php echo '￥' . ($record->pay_cost); ?></td>
                                     <td><?php echo $bookingState[$record->state]; ?></td>
                                     <td><?php echo $record->end_time; ?></td>
                                     <td class="text-center">
                                         <a href="<?php echo base_url() . 'roombookingDetail/' . $record->id; ?>">
                                             查看 &nbsp;
                                         </a>
+                                        <?php
+                                        if ($record->state == 0)
+                                            echo '<a href="#" onclick="cancel_booking(\'' . $record->id . '\','
+                                                . '\'' . $record->user_id . '\','
+                                                . '\'' . $record->open_id . '\','
+                                                . '\'' . $record->out_trade_no . '\','
+                                                . '\'' . $record->pay_online . '\','
+                                                . ')">取消预订</a>';
+                                        ?>
                                     </td>
                                 </tr>
                                 <?php
@@ -151,6 +176,49 @@
         $("#fromTime").val("");
         console.log("here");
         $("#toTime").val("");
+    }
+    function cancel_booking(id, user_id, open_id, trade_no, fee){
+        var refund_no = '1500220062' + Date.now()
+        if (confirm('是否取消此预订?')) {
+            if (parseFloat(fee) > 0) {
+                $.ajax({
+                    type: 'post',
+                    url: baseURL + 'api/refund',
+                    contentType: 'application/json',
+                    dataType: 'application/json',
+                    data: JSON.stringify({
+                        id: open_id,
+                        user_id: user_id,
+                        fee: fee,
+                        out_trade_no: trade_no,
+                        out_refund_no: refund_no
+                    }),
+                    complete: function (res) {
+                        $.ajax({
+                            type: 'post',
+                            url: baseURL + 'api/datamanage/cancelRoomBooking',
+                            contentType: 'application/json',
+                            dataType: 'application/json',
+                            data: JSON.stringify({booking_id: id, out_refund_no: refund_no}),
+                            complete: function (res) {
+                                location.reload();
+                            }
+                        });
+                    }
+                });
+            } else {
+                $.ajax({
+                    type: 'post',
+                    url: baseURL + 'api/datamanage/cancelRoomBooking',
+                    contentType: 'application/json',
+                    dataType: 'application/json',
+                    data: JSON.stringify({booking_id: id, out_refund_no: refund_no}),
+                    complete: function (res) {
+                        location.reload();
+                    }
+                });
+            }
+        }
     }
 </script>
 

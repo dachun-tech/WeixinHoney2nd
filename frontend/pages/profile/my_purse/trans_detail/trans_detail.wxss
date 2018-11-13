@@ -3,7 +3,7 @@
 .cls_bind_bank_card_info{
   width: 100%; 
   height: 140rpx;
-  border-bottom: solid 1rpx #f4f4f4;
+  border-bottom: solid 1rpx #eaeaea;
 }
 .cls_cost_m{
   height: auto;

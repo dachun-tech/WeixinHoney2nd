@@ -39,7 +39,6 @@ Page({
             getUserInfoDisabled: false
         })
         this.data.isFirstInit = false;
-        app.globalData.initDisabled = false;
         this.onShow();
         // setTimeout(function() {
 
@@ -48,6 +47,7 @@ Page({
     onShow: function(option) {
         var that = app;
         var _this = this;
+        that.globalData.initDisabled = false;
         wx.getSetting({
             success: function(res) {
                 var perm = res;
@@ -74,21 +74,21 @@ Page({
                             that.globalData.initDisabled = true;
                         },
                         complete: function() {
-                            wx.authorize({
-                                scope: 'scope.werun',
-                                fail: function() {
-                                    that.globalData.initDisabled = true;
-                                },
-                                complete: function() {
-                                    if (that.globalData.initDisabled)
-                                        that.go2Setting();
-                                    else {
-                                        that.globalData.getUserInfoDisabled = false;
-                                        _this.onPrepare();
-                                        isFirstLaunch = false;
-                                    }
-                                }
-                            })
+                            if (that.globalData.initDisabled)
+                                that.go2Setting();
+                            else {
+                                that.globalData.getUserInfoDisabled = false;
+                                _this.onPrepare();
+                                app.globalData.isFirstLaunch = false;
+                            }
+                            // wx.authorize({
+                            //     scope: 'scope.werun',
+                            //     fail: function() {
+                            //         that.globalData.initDisabled = true;
+                            //     },
+                            //     complete: function() {
+                            //     }
+                            // })
                         }
                     });
                 }
@@ -127,14 +127,8 @@ Page({
             success: function(res) {
                 console.log(res);
                 var book = res.data.result[0];
+                var rooms = res.data.rooms;
                 if (book != null) {
-                    var tempdate;
-                    tempdate = book.end_time.split(" ")
-                    book.end_time = tempdate[1];
-                    var time = book.start_time.split(':');
-
-                    book.start_time = time[0] + ':' + time[1];
-
                     var cur_date = new Date();
                     var start_date = new Date(book.start_time.replace(/-/g, '/'));
                     var timeDiff = start_date.getTime() - cur_date.getTime();
@@ -155,17 +149,48 @@ Page({
                         }
                     }
 
+                    // if (book.site_name.length > 25) {
+                    //     var site_name = book.site_name
+                    //     site_name = site_name.slice(0, 25) + '...'
+                    //     book.site_name = site_name
+                    // }
 
-
-                    time = book.end_time.split(':')
-                    book.end_time = time[0] + ':' + time[1]
-
-                    if (book.site_name.length > 14) {
-                        var site_name = book.site_name
-                        site_name = site_name.slice(0, 14) + '..'
-                        book.site_name = site_name
+                    if (book.is_rating == null) {
+                        book.is_rating = 0;
                     }
+                    book.roll_state = 0; //my room booked state
+                    var book_info = JSON.parse(book.book_info);
+                    book_info.sort(function(a, b) { return (parseInt(a.room_id) > parseInt(b.room_id)) ? 1 : -1; });
+                    book_info.sort(function(a, b) {
+                        if (parseInt(a.room_id) > parseInt(b.room_id)) return 1;
+                        else if (parseInt(a.room_id) < parseInt(b.room_id)) return -1;
+                        else
+                            return ((new Date(a.start_time.replace(/-/g, '/'))) > (new Date(b.start_time.replace(/-/g, '/')))) ? 1 : -1;
+                    });
+                    for (var j = 0; j < book_info.length; j++) {
+                        var tempdate;
+                        tempdate = book_info[j].end_time.split(" ")
+                        book_info[j].end_time = tempdate[1];
 
+                        var time = book_info[j].start_time.split(':');
+                        book_info[j].start_time = time[0] + ':' + time[1];
+
+                        var time1 = book_info[j].end_time.split(':');
+                        book_info[j].end_time = time1[0] + ':' + time1[1];
+
+                        for (var kk = 0; kk < rooms.length; kk++) {
+                            if (book_info[j].room_id == rooms[kk].id) {
+                                book_info[j].room_name = rooms[kk].room_name + '';
+                                if (j > 0 && book_info[j].room_id == book_info[j - 1].room_id)
+                                    book_info[j].room_name = '';
+                                book_info[j].pay_cost = rooms[kk].cost + '';
+                                break;
+                            }
+                        }
+                    }
+                    book.book_info = book_info;
+
+                    console.log(book);
                     that.setData({
                         booking: book
                     })
@@ -174,7 +199,6 @@ Page({
         })
     },
 
-
     //called when user clicked cancel booking button
     onclick_cancel_booking: function() {
 
@@ -182,81 +206,17 @@ Page({
         if (that.data.cancel_state == '') {
             return;
         }
-        wx.showModal({
-            content: '是否取消预订？',
-            success: function(res) {
-                if (res.confirm) {
-                    var ordercode = that.data.booking.paid_price;
-                    var out_refund_no = app.globalData.mch_id + Date.now()
-                    if (false && that.data.booking.paid_price > 0.0) {
-                        wx.login({
-                            success: function(res) {
-                                if (res.code) {
-                                    wx.request({
-                                        url: app.globalData.mainURL + 'api/refund',
-                                        data: {
-                                            id: wx.getStorageSync('openid'), //要去换取openid的登录凭证
-                                            fee: ordercode,
-                                            user_id: app.globalData.userInfo.user_id,
-                                            out_trade_no: that.data.booking.out_trade_no,
-                                            out_refund_no: out_refund_no
-                                        },
-                                        method: 'POST',
-                                        header: {
-                                            'content-type': 'application/json'
-                                        },
-                                        success: function(res) {
-
-                                            wx.request({
-                                                url: app.globalData.mainURL + 'api/datamanage/cancelRoomBooking',
-                                                method: 'POST',
-                                                header: {
-                                                    'content-type': 'application/json'
-                                                },
-                                                data: {
-                                                    booking_id: that.data.booking.id,
-                                                    out_refund_no: out_refund_no
-                                                },
-                                                success: function(res) {
-
-                                                    if (res.data.status == true) {
-                                                        app.globalData.selected_booking_tab = 2;
-                                                        wx.navigateBack({
-                                                            delta: 1
-                                                        })
-                                                    }
-                                                }
-                                            })
-                                        }
-                                    })
-                                }
-                            }
-                        });
-                    } else {
-                        wx.request({
-                            url: app.globalData.mainURL + 'api/datamanage/cancelRoomBooking',
-                            method: 'POST',
-                            header: {
-                                'content-type': 'application/json'
-                            },
-                            data: {
-                                booking_id: that.data.booking.id,
-                                out_refund_no: out_refund_no
-                            },
-                            success: function(res) {
-
-                                if (res.data.status == true) {
-                                    app.globalData.selected_booking_tab = 2;
-                                    wx.navigateBack({
-                                        delta: 1
-                                    })
-                                }
-                            }
-                        })
-                    }
-                } else if (res.cancel) {}
-            }
-        })
+        var pay_info = {
+            pay_cost: that.data.booking.pay_cost,
+            pay_online: that.data.booking.pay_online,
+            user_id: app.globalData.userInfo.user_id,
+            out_trade_no: that.data.booking.out_trade_no,
+            booking_id: that.data.id,
+        }
+        wx.setStorageSync('pay_info', JSON.stringify(pay_info));
+        wx.redirectTo({
+            url: 'booking_cancel'
+        });
     },
 
     goto_mapView: function() {
@@ -269,8 +229,6 @@ Page({
             // wx.navigateTo({
             //     url: "view_map?latitude=" + that.data.booking.latitude + "&longitude=" + that.data.booking.longitude
             // })
-
-
     },
 
     phone_call: function() {

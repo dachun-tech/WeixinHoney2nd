@@ -14,7 +14,27 @@ Page({
         rank_icon: ['../../image/leader-1st@2x.png', '../../image/leader-2nd@2x.png', '../../image/leader-3rd@2x.png', '../../image/blank.png'],
         honey_icon: ['../../image/garden_sc_fm02@2x.png', '../../image/blank.png']
     },
-    onLoad() {},
+    onLoad() {
+        var that = app;
+        wx.getSetting({
+            success: function(res) {
+                var perm = res;
+                that.globalData.getWerunDataDisabled = !perm.authSetting['scope.werun'];
+
+                if (that.globalData.getWerunDataDisabled)
+                    wx.authorize({
+                        scope: 'scope.werun',
+                        success: function() {
+                            that.globalData.getWerunDataDisabled = false;
+                        },
+                        complete: function() {
+                            if (that.globalData.getWerunDataDisabled)
+                                that.go2Setting();
+                        }
+                    })
+            }
+        });
+    },
     getUserModalHide: function() {
         this.setData({
             getUserInfoDisabled: false
@@ -55,21 +75,22 @@ Page({
                             that.globalData.initDisabled = true;
                         },
                         complete: function() {
-                            wx.authorize({
-                                scope: 'scope.werun',
-                                fail: function() {
-                                    that.globalData.initDisabled = true;
-                                },
-                                complete: function() {
-                                    if (that.globalData.initDisabled)
-                                        that.go2Setting();
-                                    else {
-                                        that.globalData.getUserInfoDisabled = false;
-                                        _this.onPrepare();
-                                        isFirstLaunch = false;
-                                    }
-                                }
-                            })
+                            if (that.globalData.initDisabled)
+                                that.go2Setting();
+                            else {
+                                that.globalData.getUserInfoDisabled = false;
+                                _this.onPrepare();
+                                app.globalData.isFirstLaunch = false;
+                            }
+                            // wx.authorize({
+                            //     scope: 'scope.werun',
+                            //     fail: function() {
+                            //         //that.globalData.initDisabled = true;
+                            //     },
+                            //     complete: function() {
+
+                            //     }
+                            // })
                         }
                     });
                 }
@@ -237,7 +258,7 @@ Page({
         mineList = mineList[0];
         allList.push(that.data.friendList1);
         allList = allList[0];
-        if (allList.length == 0) return;
+        if (mineList.length == 0) return;
         console.log(allList);
         var filtered = new Array();
         var j = 0;
@@ -265,7 +286,7 @@ Page({
             }
         }
 
-        filtered.sort(function(a, b) { return a.honey < b.honey });
+        filtered.sort(function(a, b) { return (a.honey < b.honey ? 1 : -1); });
 
         that.setData({
             mine: that.data.mine,

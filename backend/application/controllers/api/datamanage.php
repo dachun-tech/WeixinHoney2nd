@@ -205,9 +205,10 @@ class datamanage extends CI_Controller
     {
         $book = json_decode(file_get_contents("php://input"));
         $user_id = $book->{"user_id"};
+        $roomData = $this->room_model->getRoomsByBossId();
         $result = $this->roombooking_model->getRoomBookingByUser($user_id);
         if (count($result) > 0) {
-            echo json_encode(array('status' => true, 'result' => $result), 200);
+            echo json_encode(array('status' => true, 'result' => $result, 'rooms' => $roomData), 200);
         } else {
             echo json_encode(array('status' => false), 200);
         }
@@ -218,8 +219,9 @@ class datamanage extends CI_Controller
         $book = json_decode(file_get_contents("php://input"));
         $user_id = $book->{"user_id"};
         $result = $this->roombooking_model->getRoomBookingByBossID($user_id);
+        $roomData = $this->room_model->getRoomsByBossId();
         if (count($result) > 0) {
-            echo json_encode(array('status' => true, 'result' => $result), 200);
+            echo json_encode(array('status' => true, 'result' => $result, 'rooms' => $roomData), 200);
         } else {
             echo json_encode(array('status' => false), 200);
         }
@@ -262,7 +264,7 @@ class datamanage extends CI_Controller
         $userId = $book->{'user_id'};
         $result = $this->booking_model->getBookingById($bookingId);
         $register_num = $this->db->query("select sum(booking.reg_num) as register_num from event, booking 
-where event.state =booking.state and booking.event_id = event.id and event.id = " . $result[0]->event_id)->result();
+              where event.state =booking.state and booking.event_id = event.id and event.id = " . $result[0]->event_id)->result();
         $rating = $this->rating_model->getRatingByBooking($bookingId, $userId);
         if (count($result) > 0) {
             echo json_encode(array('status' => true, 'result' => $result, 'rating' => $rating, 'register_num' => $register_num), 200);
@@ -296,8 +298,9 @@ where event.state =booking.state and booking.event_id = event.id and event.id = 
         $book = json_decode(file_get_contents("php://input"));
         $bookingId = $book->{'booking_id'};
         $result = $this->roombooking_model->getRoomBookingById($bookingId);
+        $roomData = $this->room_model->getRoomsByBossId();
         if (count($result) > 0) {
-            echo json_encode(array('status' => true, 'result' => $result), 200);
+            echo json_encode(array('status' => true, 'result' => $result, 'rooms' => $roomData), 200);
         } else {
             echo json_encode(array('status' => false), 200);
         }
@@ -414,17 +417,38 @@ where event.state =booking.state and booking.event_id = event.id and event.id = 
         $book = json_decode(file_get_contents("php://input"));
         $booking_id = $book->{"booking_id"};
         $state['out_refund_no'] = $book->{'out_refund_no'};
-        $result = $this->db->query("select room.boss_id, room_booking.user_id, room.room_name, boss.site_name, room_booking.paid_price, room_booking.id,
-              room_booking.pay_honey, room_booking.pay_cost
-              from room, room_booking, boss 
-              where room_booking.room_id = room.id and room.boss_id = boss.boss_id and room_booking.id=" . $booking_id)->result();
+        $result = $this->db->query("select room_booking.*, boss.site_name
+              from room_booking, boss 
+              where room_booking.boss_id = boss.boss_id and room_booking.id=" . $booking_id)->result();
 
-        $online_pay = $result[0]->cost - $result[0]->pay_honey;
-        $this->binding_model->removeRoomBooking($result[0]->boss_id, $result[0]->pay_cost, $online_pay, $result[0]->user_id, $booking_id);
+        $wallet_pay = $result[0]->pay_cost - $result[0]->pay_honey - $result[0]->pay_online;
+//        $online_pay = $result[0]->pay_cost;
+        $this->binding_model->removeRoomBooking($result[0]->boss_id, $result[0]->pay_cost, $wallet_pay, $result[0]->user_id, $booking_id);
 
+        if ($result[0]->pay_honey > 0) {
+            $isMember = $this->member_state_model->getStateById($result[0]->user_id);
+            $rules = $this->db->query("select value from rule ")->result();
+            $honey_rate = $rules[8]->value / $rules[9]->value;
+            if (!is_null($isMember))
+                $honey_rate = $rules[10]->value / $rules[11]->value;
+            $pay_honey_amount = intval($result[0]->pay_honey * $honey_rate);
+
+            $this->db->query('update user set honey = honey + ' . $pay_honey_amount . ' where no = ' . $result[0]->user_id);
+        }
+        $booking = json_decode($result[0]->book_info);
+        $roomName = '';
+        $old_roomid = 0;
+        $j = 0;
+        foreach ($booking as $it) {
+            if ($old_roomid == $it->room_id) continue;
+            $old_roomid = $it->room_id;
+            if ($j > 0) $roomName .= ',';
+            $roomName .= $this->db->query('select room_name from room where id =' . $it->room_id)->row()->room_name;
+            $j++;
+        }
         $alarm['user_id'] = $result[0]->boss_id;
         $alarm['alarm_org_id'] = $result[0]->user_id;
-        $alarm['event_type'] = $result[0]->site_name . '场馆' . $result[0]->room_name . '场地';
+        $alarm['event_type'] = $result[0]->site_name . '场馆' . $roomName . '场地';
         $alarm['submit_time'] = date("Y-m-d H:i:s");
         $alarm['type'] = 18;
         $this->alarm_user_model->addAlarm($alarm);
@@ -479,7 +503,9 @@ where event.state =booking.state and booking.event_id = event.id and event.id = 
         $info['point'] = $book->{"point"};
         $info['comment'] = $book->{"comment"};
         $booking_id = $book->{'booking_id'};
-        $result = $this->db->query("select room.boss_id, room_booking.user_id, room.room_name from room, room_booking where room_booking.room_id = room.id and room_booking.id=" . $booking_id)->result();
+        $result = $this->db->query("select boss_id, user_id 
+                    from room_booking 
+                    where id=" . $booking_id)->result();
         $info['user_id'] = $result[0]->user_id;
         $info['room_booking_id'] = $booking_id;
         $info['submit_time'] = date("Y-m-d H:i:s");
@@ -738,12 +764,14 @@ where event.state =booking.state and booking.event_id = event.id and event.id = 
         }
 
         $info['submit_time'] = date("Y-m-d H:i:s");
-        $result = $this->db->query("select organizer_id, name, owner from event where id=" . $info['event_id'])->result();
+        $result = $this->db->query("select organizer_id, name, owner, is_train from event where id=" . $info['event_id'])->result();
 
         $alarm = array();
         $alarm['user_id'] = $result[0]->organizer_id;
         if ($result[0]->owner == '0') {
             $alarm['type'] = 13;
+            if ($result[0]->is_train == '1')
+                $alarm['type'] = 15;
             $alarm['user_id'] = $info['user_id'];
         } else {
             $alarm['type'] = 3;
@@ -790,53 +818,47 @@ where event.state =booking.state and booking.event_id = event.id and event.id = 
         $query = "select * from room_booking where user_id = '" . $info['user_id']
             . "' and date( start_time ) = date( '" . $bookDate . "' )";
         $bookedList = $this->db->query($query)->result();
-//        foreach ($bookedList as $old) {
-//            $isExist = false;
-//            $old_time = strtotime($old->start_time);
-//            foreach ($bookInfo as $new) {
-//                if ($new->room_id == $old->room_id && ($new->start_time / 1000) == $old_time) {
-//                    $isExist = true;
-//                    break;
-//                }
-//            }
-//            if (!$isExist) {
-//                // cancel old roombook info
-//                $this->binding_model->removeRoomBooking($bossId, $old->pay_cost, $info['user_id']);
-//                $this->roombooking_model->updateStateByBookingId($old->id, array('state' => 3));
-//            }
-//        }
+
         $roomBooking_id = 0;
+        $book_record = array();
+        $start_total = date("Y-m-d H:i:s", strtotime('+8 days'));
+        $end_total = date("Y-m-d H:i:s");
         foreach ($bookInfo as $new) {
-            $new->cost = abs($new->cost);
-            $honey = $new->cost;
-            if ($info['pay_honey'] >= $honey) {
-                $info['pay_honey'] -= $honey;
-            } else if ($info['pay_honey'] < $honey) {
-                $honey -= $info['pay_honey'];
-            } else {
-                $honey = 0;
-            }
-            $roomBooking_id = $this->roombooking_model->addBooking(array(
+            $start_local = date("Y-m-d H:i:s", $new->start_time / 1000);
+            $end_local = date("Y-m-d H:i:s", $new->end_time / 1000);
+            if ($start_local < $start_total) $start_total = $start_local;
+            if ($end_local > $end_total) $end_total = $end_local;
+            array_push($book_record, array(
                 'user_id' => $info['user_id'],
                 'room_id' => $new->room_id,
-                'start_time' => date("Y-m-d H:i:s", $new->start_time / 1000),
-                'end_time' => date("Y-m-d H:i:s", $new->end_time / 1000),
-                'paid_price' => $new->cost,
-                'pay_cost' => $new->cost,
-                'pay_online' => $info['pay_online'],
-                'out_trade_no' => $book->{"out_trade_no"},
-                'pay_honey' => $honey,
-                'submit_time' => date('Y-m-d H:i:s'),
-                'state' => '0',
+                'start_time' => $start_local,
+                'end_time' => $end_local,
             ));
-
         }
+        $pay_wallet = $info['pay_cost'] - $info['pay_honey'] - $info['pay_online'];
+        $roomBooking_id = $this->roombooking_model->addBooking(array(
+            'user_id' => $info['user_id'],
+            'boss_id' => $bossId,
+            'start_time' => $start_total,
+            'end_time' => $end_total,
+            'pay_cost' => $info['pay_cost'],
+            'pay_wallet' => $pay_wallet,
+            'pay_online' => $info['pay_online'],
+            'pay_honey' => $info['pay_honey'],
+            'out_trade_no' => $book->{"out_trade_no"},
+            'book_info' => json_encode($book_record),
+            'submit_time' => date('Y-m-d H:i:s'),
+            'state' => '0',
+        ));
         $result = $this->db->query("select boss_id, site_name from boss where boss_id=" . $bossId)->row();
         $alarm['user_id'] = $info['user_id'];
         $alarm['type'] = 14;
         $nameList = '';
+        $old_room_id = 0;
         $j = 0;
         foreach ($bookInfo as $item) {
+            if ($old_room_id == $item->room_id) continue;
+            $old_room_id = $item->room_id;
             if ($j > 0) $nameList .= ',';
             $roomName = $this->db->query('select * from room where id = ' . $item->room_id)->row()->room_name;
             if (strpos($nameList, $roomName) >= 0) {
@@ -1157,7 +1179,7 @@ where event.state =booking.state and booking.event_id = event.id and event.id = 
         if ($info['role'] == 1) {
             $info['state'] = 1;
         } else {
-            $info['state'] = 1;
+            $info['state'] = 2;
         }
         $alarm['type'] = 0;
         $alarm['user_id'] = $user_id;
@@ -1634,6 +1656,42 @@ where event.state =booking.state and booking.event_id = event.id and event.id = 
         echo json_encode($return);
     }
 
+    /*
+    * this function is used for refund
+    */
+    public function withdraw()
+    {
+        $submit_time = date('Y-m-d H:i:s');
+        include 'WxWithdraw.php';
+        $book = json_decode(file_get_contents("php://input"));
+        $appid = 'wxea381fb0ca7c2a24';
+        $mch_id = '1500220062';
+        $key = 'fengtiWeixin17642518820android12';
+        $openid = $book->{'id'};
+        $partner_trade_no = $book->{'partner_trade_no'};
+        $total_fee = floatval($book->{'fee'});
+        if (empty($total_fee)) //押金
+        {
+            $body = "退款押金";
+            $total_fee = floatval(99 * 100);
+        } else {
+            $body = "退款余额";
+            $total_fee = floatval($total_fee * 100);
+        }
+        $refund_fee = $total_fee;
+        $weixinpay = new WxWithdraw($appid, $key, $mch_id, $key, $openid, $partner_trade_no, $total_fee, $key);
+        $return = $weixinpay->withdraw();
+//        $return = [
+//            'status' => true,
+//            'payment_no' => '123',
+//            'payment_time' => date('Y-m-d H:i:s'),
+//            'errmsg' => 'Success'
+//        ];
+        $return->submit_time = $submit_time;
+
+        echo json_encode($return);
+    }
+
     public function notify()
     {
         function post_data()
@@ -1774,11 +1832,19 @@ where provinces.provinceid = cities.provinceid and cities.cityid=areas.cityid an
         $longitude = $book->{'longitude'};
         $latitude = $book->{'latitude'};
         $userId = $book->{'user_id'};
-        $site = $this->boss_model->getSiteByDistanceApi($longitude, $latitude, $userId);
+        $current_city = '';
+        if (isset($book->{'current_city'}))
+            $current_city = $book->{'current_city'};
+
+        $city_id = 0;
+        if ($current_city != '') {
+            $city_id = $this->db->query('select id from cities where city = \'' . $current_city . '\'')->row()->id;
+        }
+        $site = $this->boss_model->getSiteByDistanceApi($longitude, $latitude, $userId, $city_id);
         $event = $this->event_model->getEventByDistance($longitude, $latitude);
         $honey = $this->honey_model->getHoneyByDistance($longitude, $latitude, $userId);
         if (count($site) > 0 || count($event) > 0 || count($honey) > 0) {
-            echo json_encode(array('status' => true, 'site' => $site, 'event' => $event, 'honey' => $honey), 200);
+            echo json_encode(array('status' => true, 'site' => $site, 'event' => $event, 'honey' => $honey, 'city_id' => $city_id), 200);
         } else {
             echo json_encode(array('status' => false), 200);
         }
@@ -1934,6 +2000,22 @@ where provinces.provinceid = cities.provinceid and cities.cityid=areas.cityid an
         $book = json_decode(file_get_contents("php://input"));
         $user_id = $book->{'user_id'};
         $result = $this->binding_model->getBinding($user_id);
+        $count = $this->binding_model->getCntToday($user_id);
+        if (count($result) > 0) {
+            echo json_encode(array('status' => true, 'result' => $result, 'count' => $count), 200);
+        } else {
+            echo json_encode(array('status' => false), 200);
+        }
+    }
+
+    /*
+    * this function is used to get binding information of user
+    */
+    public function getBindingHistory()
+    {
+        $book = json_decode(file_get_contents("php://input"));
+        $user_id = $book->{'user_id'};
+        $result = $this->binding_model->getBindingHistory($user_id);
         if (count($result) > 0) {
             echo json_encode(array('status' => true, 'result' => $result), 200);
         } else {
@@ -1971,11 +2053,20 @@ where provinces.provinceid = cities.provinceid and cities.cityid=areas.cityid an
     public function addBindingHistory()
     {
         $book = json_decode(file_get_contents("php://input"));
-        $userId = $book->{'user_id'};
-        $info = $book->{'amount'};
-        $result = $this->binding_model->addBindingHistory($userId, $info);
+        $info = array(
+            'user_id' => $book->{'user_id'},
+            'partner_trade_no' => $book->{'partner_trade_no'},
+            'amount' => $book->{'amount'},
+            'binding_no' => $book->{'binding_no'},
+            'submit_time' => $book->{'submit_time'},
+            'binding_time' => $book->{'binding_time'},
+            'state' => 1,
+        );
+        $result = $this->binding_model->addBindingHistory($info['user_id'], $info);
+        $wallet = $this->binding_model->getBinding($info['user_id']);
+        $wallet = $wallet[0]->amount;
         if ($result > 0) {
-            echo json_encode(array('status' => true), 200);
+            echo json_encode(array('status' => true, 'result'=>$wallet), 200);
         } else {
             echo json_encode(array('status' => false), 200);
         }
@@ -1989,8 +2080,9 @@ where provinces.provinceid = cities.provinceid and cities.cityid=areas.cityid an
         $book = json_decode(file_get_contents("php://input"));
         $userId = $book->{'user_id'};
         $payment = $this->binding_model->getPaymentHistory($userId);
+        $roomData = $this->room_model->getRoomsByBossId();
         if (count($payment) > 0) {
-            echo json_encode(array('status' => true, 'payment' => $payment), 200);
+            echo json_encode(array('status' => true, 'payment' => $payment, 'rooms' => $roomData), 200);
         } else {
             echo json_encode(array('status' => false), 200);
         }
@@ -2077,10 +2169,10 @@ where provinces.provinceid = cities.provinceid and cities.cityid=areas.cityid an
         $book = json_decode(file_get_contents("php://input"));
         $userId = $book->{'user_id'};
         $list = $this->getFriendList('new', $userId);
-        if (count($list) > 0) {
+        if (true || count($list) > 0) {
             echo json_encode(array('status' => true, 'data' => $list), 200);
         } else {
-            echo json_encode(array('status' => false), 200);
+            echo json_encode(array('status' => false, 'data' => array()), 200);
         }
     }
 
@@ -2091,6 +2183,7 @@ where provinces.provinceid = cities.provinceid and cities.cityid=areas.cityid an
         $sports = $this->event_model->getEventType();
         if (count($list) > 0) {
             foreach ($list as $item) {
+                $item->filter_character = $this->Getzimu($item->name);
                 $ids = $item->sport_type;
                 if ($ids == '') continue;
                 if ($item->role == 1) $ids = $item->site_type_detail;
@@ -2109,6 +2202,49 @@ where provinces.provinceid = cities.provinceid and cities.cityid=areas.cityid an
             }
         }
         return $list;
+    }
+
+    function Getzimu($str)
+    {
+        $str = trim($str, ' ');
+        //var_dump($str);
+        return ' ';
+        $str = iconv("UTF-8", "gb2312", $str);//如果程序是gbk的，此行就要注释掉
+        if (preg_match("/^[\x7f-\xff]/", $str)) {
+            $fchar = ord($str{0});
+            if ($fchar >= ord("A") and $fchar <= ord("z")) return strtoupper($str{0});
+            $a = $str;
+            $val = ord($a{0}) * 256 + ord($a{1}) - 65536;
+            if ($val >= -20319 and $val <= -20284) return "A";
+            if ($val >= -20283 and $val <= -19776) return "B";
+            if ($val >= -19775 and $val <= -19219) return "C";
+            if ($val >= -19218 and $val <= -18711) return "D";
+            if ($val >= -18710 and $val <= -18527) return "E";
+            if ($val >= -18526 and $val <= -18240) return "F";
+            if ($val >= -18239 and $val <= -17923) return "G";
+            if ($val >= -17922 and $val <= -17418) return "H";
+            if ($val >= -17417 and $val <= -16475) return "J";
+            if ($val >= -16474 and $val <= -16213) return "K";
+            if ($val >= -16212 and $val <= -15641) return "L";
+            if ($val >= -15640 and $val <= -15166) return "M";
+            if ($val >= -15165 and $val <= -14923) return "N";
+            if ($val >= -14922 and $val <= -14915) return "O";
+            if ($val >= -14914 and $val <= -14631) return "P";
+            if ($val >= -14630 and $val <= -14150) return "Q";
+            if ($val >= -14149 and $val <= -14091) return "R";
+            if ($val >= -14090 and $val <= -13319) return "S";
+            if ($val >= -13318 and $val <= -12839) return "T";
+            if ($val >= -12838 and $val <= -12557) return "W";
+            if ($val >= -12556 and $val <= -11848) return "X";
+            if ($val >= -11847 and $val <= -11056) return "Y";
+            if ($val >= -11055 and $val <= -10247) return "Z";
+        } else if (is_numeric(substr($str, 0, 1))) {
+            return " ";
+        } else if (ctype_alnum(substr($str, 0, 1))) {
+            return ucwords(substr($str, 0, 1));
+        } else {
+            return false;
+        }
     }
 
     /*
@@ -2208,6 +2344,7 @@ where provinces.provinceid = cities.provinceid and cities.cityid=areas.cityid an
     */
     function distance($lat1, $lon1, $lat2, $lon2)
     {
+        if ($lat1 == $lat2 && $lon1 == $lon2) return 0;
         $theta = $lon1 - $lon2;
         $dist = sin(deg2rad($lat1)) * sin(deg2rad($lat2)) + cos(deg2rad($lat1)) * cos(deg2rad($lat2)) * cos(deg2rad($theta));
         $dist = acos($dist);

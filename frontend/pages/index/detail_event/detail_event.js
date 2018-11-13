@@ -39,6 +39,7 @@ Page({
         tmrID: 0,
         delta: 0,
         isFirstInit: true,
+        isProcessing: false,
     },
     onLoad: function(option) {
         var that = this;
@@ -49,7 +50,6 @@ Page({
             getUserInfoDisabled: false
         })
         this.data.isFirstInit = false;
-        app.globalData.initDisabled = false;
         this.onShow();
         // setTimeout(function() {
 
@@ -58,6 +58,7 @@ Page({
     onShow: function(option) {
         var that = app;
         var _this = this;
+        that.globalData.initDisabled = false;
         wx.getSetting({
             success: function(res) {
                 var perm = res;
@@ -84,21 +85,21 @@ Page({
                             that.globalData.initDisabled = true;
                         },
                         complete: function() {
-                            wx.authorize({
-                                scope: 'scope.werun',
-                                fail: function() {
-                                    that.globalData.initDisabled = true;
-                                },
-                                complete: function() {
-                                    if (that.globalData.initDisabled)
-                                        that.go2Setting();
-                                    else {
-                                        that.globalData.getUserInfoDisabled = false;
-                                        _this.onPrepare();
-                                        isFirstLaunch = false;
-                                    }
-                                }
-                            })
+                            if (that.globalData.initDisabled)
+                                that.go2Setting();
+                            else {
+                                that.globalData.getUserInfoDisabled = false;
+                                _this.onPrepare();
+                                app.globalData.isFirstLaunch = false;
+                            }
+                            // wx.authorize({
+                            //     scope: 'scope.werun',
+                            //     fail: function() {
+                            //         that.globalData.initDisabled = true;
+                            //     },
+                            //     complete: function() {
+                            //     }
+                            // })
                         }
                     });
                 }
@@ -122,6 +123,7 @@ Page({
         wx.showLoading({
             title: '加载中',
         })
+        this.data.isProcessing = true;
         setTimeout(function() {
             wx.hideLoading()
         }, 2000)
@@ -212,14 +214,14 @@ Page({
                 var event_buf = res.data.result[0];
                 event_buf.favor_state = 1 * event_buf.favor_state
 
-                if (event_buf.eventName.length > 15) {
-                    var name = event_buf.eventName
-                    name = name.slice(0, 15) + '..'
-                    event_buf.eventName = name
-                }
-                if ((event_buf.role != '2') && (event_buf.site_name.length > 11)) {
+                // if (event_buf.eventName.length > 15) {
+                //     var name = event_buf.eventName
+                //     name = name.slice(0, 15) + '...'
+                //     event_buf.eventName = name
+                // }
+                if ((event_buf.role != '2') && (event_buf.site_name.length > 15)) {
                     var site_name = event_buf.site_name
-                    site_name = site_name.slice(0, 11) + '..'
+                    site_name = site_name.slice(0, 15) + '...'
                     event_buf.site_name = site_name
                 }
 
@@ -288,7 +290,7 @@ Page({
                 for (var index = 0; index < books.length; index++) {
 
                     console.log(books[index].nickname)
-                    if (books[index].nickname == app.globalData.userInfo.nickname && 1 * books[index].state == 0) {
+                    if (books[index].user_id == app.globalData.userInfo.user_id && 1 * books[index].state == 0) {
                         if (that.data.event.isbtn == 1) {
                             that.setData({
                                 is_registered: true,
@@ -299,6 +301,7 @@ Page({
                                 my_booking: books[index]
                             })
                             registered_num += 1 * books[index].reg_num;
+                            isExist = true;
                         } else {
                             that.setData({
                                 is_registered: true,
@@ -306,7 +309,9 @@ Page({
                                 btn_text: '已报名',
                             })
                             registered_num += 1 * books[index].reg_num;
+                            isExist = true;
                         }
+                        that.data.my_booking_state = 1;
                     } else if (1 * books[index].state == 2) {
                         // if (books[index].nickname == app.globalData.userInfo.nickname) {
                         //     that.setData({
@@ -322,9 +327,11 @@ Page({
                         registered_num += 1 * books[index].reg_num;
                     }
                 }
+
                 that.setData({
                     register_amount: registered_num,
                 })
+
                 if (registered_num >= res.data.result[0].limit && that.data.btn_text == '立即报名') {
                     that.setData({
                         is_disabled: true,
@@ -356,6 +363,7 @@ Page({
                 //   title: that.data.event.agent_phone,
                 //   duration: 5000
                 // })
+                that.data.isProcessing = false;
             }
         })
     },
@@ -392,7 +400,7 @@ Page({
                             ctx.setFillStyle('#ffffff')
                             ctx.setFontSize(25)
                             ctx.fillText('我发现了一个很棒的活动，快来和我一起报名,', 50, 90)
-                            ctx.fillText('一起运动把~', 50, 132)
+                            ctx.fillText('一起运动吧~', 50, 132)
 
                             var detail_addr = that.data.event.detail_address;
                             if (detail_addr.length > 20) {
@@ -487,6 +495,9 @@ Page({
 
     btn_Clicked_Personal_Input: function(event) {
         var that = this;
+
+        if (that.data.isProcessing) return;
+
         if (that.data.my_booking_state == 1) {
             wx.showModal({
                 content: '是否取消蜂约？',
@@ -515,7 +526,6 @@ Page({
                                                 'content-type': 'application/json'
                                             },
                                             success: function(res) {
-
                                                 wx.request({
                                                     url: app.globalData.mainURL + 'api/cancelBooking',
                                                     method: 'POST',

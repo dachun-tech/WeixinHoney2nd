@@ -77,15 +77,19 @@
   letter-spacing: 1.04rpx;
   line-height: 50rpx;
   background-color: white;
-  margin-top: 135rpx;
+  margin:0;  
+  padding-top: 135rpx;
+  padding-bottom:100rpx;
 }
 
 .member-treatment view {
-  margin-left: 30rpx;
+  margin-left: 20rpx;
   margin-top: 50rpx;
+  padding-left:5rpx;
+  padding-right:20rpx;
 }
 
 .alert-text {
-  border-left: solid 5rpx #e6b53c;
+  border-left: solid 8rpx #e6b53c;
   padding-left: 10rpx;
 }

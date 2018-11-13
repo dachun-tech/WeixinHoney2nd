@@ -74,9 +74,9 @@ class binding extends basecontroller
     /**
      * This function is used to show the detail of binding with bindingId
      */
-    function showbindingDetail($bindingId)
+    function showbindingDetail($userId)
     {
-        $data['bindingDetail'] = $this->binding_model->getBindingDetailById($bindingId);
+        $data['bindingDetail'] = $this->binding_model->getBindingDetailById($userId);
         $this->global['pageTitle'] = '提现详情';
         $this->loadViews("bindingdetail", $this->global, $data, NULL);
     }

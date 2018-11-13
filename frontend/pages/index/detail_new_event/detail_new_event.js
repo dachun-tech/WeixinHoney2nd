@@ -25,6 +25,8 @@ Page({
 
         condition_array: ["姓名",
             "电话",
+            "球队",
+            "俱乐部",
             "性别",
             "身份证号",
             "所在城市",
@@ -35,7 +37,7 @@ Page({
         ],
         condition_str: "",
         event_comment: '',
-
+        train_type: ["赛事", "培训"],
         pictures: [],
         id: '',
         focus: false,
@@ -58,6 +60,7 @@ Page({
         my_booking: {},
         tmrID: 0,
         isFirstInit: true,
+        isProcessing: false,
     },
     onLoad: function(option) {
         var that = this;
@@ -68,7 +71,6 @@ Page({
             getUserInfoDisabled: false
         })
         this.data.isFirstInit = false;
-        app.globalData.initDisabled = false;
         this.onShow();
         // setTimeout(function() {
 
@@ -77,6 +79,7 @@ Page({
     onShow: function(option) {
         var that = app;
         var _this = this;
+        that.globalData.initDisabled = false;
         wx.getSetting({
             success: function(res) {
                 var perm = res;
@@ -103,21 +106,21 @@ Page({
                             that.globalData.initDisabled = true;
                         },
                         complete: function() {
-                            wx.authorize({
-                                scope: 'scope.werun',
-                                fail: function() {
-                                    that.globalData.initDisabled = true;
-                                },
-                                complete: function() {
-                                    if (that.globalData.initDisabled)
-                                        that.go2Setting();
-                                    else {
-                                        that.globalData.getUserInfoDisabled = false;
-                                        _this.onPrepare();
-                                        isFirstLaunch = false;
-                                    }
-                                }
-                            })
+                            if (that.globalData.initDisabled)
+                                that.go2Setting();
+                            else {
+                                that.globalData.getUserInfoDisabled = false;
+                                _this.onPrepare();
+                                app.globalData.isFirstLaunch = false;
+                            }
+                            // wx.authorize({
+                            //     scope: 'scope.werun',
+                            //     fail: function() {
+                            //         that.globalData.initDisabled = true;
+                            //     },
+                            //     complete: function() {
+                            //     }
+                            // })
                         }
                     });
                 }
@@ -141,6 +144,7 @@ Page({
         wx.showLoading({
             title: '加载中',
         })
+        this.data.isProcessing = true;
         setTimeout(function() {
             wx.hideLoading()
         }, 2000)
@@ -230,11 +234,11 @@ Page({
                 var event_buf = res.data.result[0];
                 event_buf.favor_state = 1 * event_buf.favor_state
 
-                if (event_buf.eventName.length > 15) {
-                    var name = event_buf.eventName
-                    name = name.slice(0, 15) + '..'
-                    event_buf.eventName = name
-                }
+                // if (event_buf.eventName.length > 15) {
+                //     var name = event_buf.eventName
+                //     name = name.slice(0, 15) + '...'
+                //     event_buf.eventName = name
+                // }
 
                 var time = event_buf.start_time.split(':');
                 event_buf.start_time = time[0] + ':' + time[1];
@@ -277,6 +281,7 @@ Page({
 
                 that.setData({
                     event: event_buf,
+                    is_train: event_buf.is_train,
                     id: that.data.id,
                     pictures: images,
                     comment: '',
@@ -285,15 +290,17 @@ Page({
                     end_date: end_date,
                     condition_str: condition_str
                 });
+                wx.setNavigationBarTitle({
+                    title: that.data.train_type[that.data.is_train] + '详情'
+                })
 
                 //get booking
                 var books = res.data.booking;
                 var registered_num = 0;
                 that.setData({ favourite_num: 1 * res.data.result[0].favor_state })
                 for (var index = 0; index < books.length; index++) {
-
                     console.log(books[index].nickname)
-                    if (books[index].nickname == app.globalData.userInfo.nickname) {
+                    if (books[index].user_id == app.globalData.userInfo.user_id && books[index].state == '0') {
                         if (books[index].state == '2')
                             that.setData({
                                 is_registered: true,
@@ -328,6 +335,7 @@ Page({
                 console.log(that.data.booking);
                 console.log(that.data.feedbacks);
                 that.show_canvas();
+                that.data.isProcessing = false;
             }
         })
     },
@@ -365,7 +373,7 @@ Page({
                             ctx.setFillStyle('#ffffff')
                             ctx.setFontSize(25)
                             ctx.fillText('我发现了一个很棒的活动，快来和我一起报名,', 50, 90)
-                            ctx.fillText('一起运动把~', 50, 132)
+                            ctx.fillText('一起运动吧~', 50, 132)
 
 
                             var delta_value = 0;
@@ -486,7 +494,7 @@ Page({
 
     btn_Clicked_Personal_Input: function(event) {
         var that = this;
-
+        if (that.data.isProcessing) return;
         wx.redirectTo({
             url: '../new_event_input/new_event_input?id=' + event.currentTarget.id,
             success: function(res) {},

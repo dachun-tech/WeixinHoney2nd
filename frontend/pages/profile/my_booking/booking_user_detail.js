@@ -23,6 +23,7 @@ Page({
         bookingState: ["已支付", "进行中", "已完成", "已取消"],
         tmrID: 0,
         isFirstInit: true,
+        isPayProcessing: false,
     },
 
     /**
@@ -249,13 +250,16 @@ Page({
         that.data.name = '';
 
         var honey_list = [];
-        var honey_unit = parseInt(app.globalData.rule[8].value);
-        var honey_price_unit = parseFloat(app.globalData.rule[9].value);
+        var honey_unit = 10000;
+        var honey_rule = parseInt(app.globalData.rule[8].value);
+        var honey_price_rule = honey_unit / honey_rule * parseFloat(app.globalData.rule[9].value);
         if (app.globalData.userInfo.isVIP == 1) {
-            honey_unit = parseInt(app.globalData.rule[10].value);
-            honey_price_unit = parseFloat(app.globalData.rule[11].value);
+            honey_rule = parseInt(app.globalData.rule[10].value);
+            honey_price_rule = honey_unit / honey_rule * parseFloat(app.globalData.rule[11].value);
         }
-        for (var i = honey_unit; i <= honey; i += honey_unit) {
+
+        if (honey_rule > honey) honey_rule = honey;
+        for (var i = honey_unit; i <= honey_rule; i += honey_unit) {
             honey_list.push(i);
         }
         that.setData({
@@ -274,7 +278,7 @@ Page({
             chk_imgs: ["../../../image/hook_n@2x.png", "../../../image/hook_s.png"],
             check_honey: 0,
             check_wallet: 0,
-            honey_price_unit: honey_price_unit,
+            honey_price_unit: honey_price_rule,
 
         });
         that.calculate_pay_price();
@@ -319,6 +323,7 @@ Page({
     calculate_pay_price: function() {
         var that = this;
         that.data.price = that.data.total_cost * 1;
+
         that.data.pay_price = that.data.price;
         that.data.wallet = that.data.old_wallet;
         if (that.data.check_honey == 1 && that.data.pay_price * 1 >= (that.data.honey_id * 1 + 1) * that.data.honey_price_unit)
@@ -347,15 +352,16 @@ Page({
             pay_price: that.data.pay_price,
             wallet: that.data.wallet
         })
-        that.data.isProcessing = 0;
+        that.data.isPayProcessing = false;
     },
     perform_pay: function(event) {
         var that = this;
         var type = that.data.pay_type;
         var item_id = that.data.book_id;
         var book_mode = that.data.book_type;
-        if (that.data.isProcessing != 0) return;
-        that.data.isProcessing = 1;
+
+        if (that.data.isPayProcessing) return;
+        that.data.isPayProcessing = true;
 
         if (that.data.pay_type == 1 && that.data.pay_price != 0) {
             console.log(that.data.pay_price)
@@ -392,6 +398,7 @@ Page({
                                     },
                                     fail: function(res) {
                                         // fail
+                                        that.data.isPayProcessing = false;
                                     },
                                     complete: function(res) {
                                         that.data.isfirstbtn = 0
@@ -463,7 +470,7 @@ Page({
                         icon: 'none',
                         duration: 2000
                     })
-                    that.data.isProcessing = 0;
+                    that.data.isPayProcessing = false;
                 } else {
                     wx.request({
                         url: app.globalData.smsURL,
@@ -486,7 +493,7 @@ Page({
                             })
                         },
                         complete: function() {
-                            that.data.isProcessing = 0;
+                            that.data.isPayProcessing = false;
                         }
                     })
                 }

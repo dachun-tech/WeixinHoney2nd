@@ -1,5 +1,5 @@
 <import src="../../profile/my_booking/template/pay_template.wxml" />
-<scroll-view scroll-y class="container" style="height: auto;">
+<scroll-view scroll-y="true" class="container" style="height: auto;">
   <!-- <view class="userinfo">
     <image class="userinfo-avatar" src="{{user_avatar}}"></image>
     <view class="userinfo-nickname">
@@ -8,9 +8,9 @@
   </view> -->
   <view class='event-info-view' style="margin-top:0;">
     <view class='event-info-border-view'>
-      <text class='event-info-border-text' style="font-weight: bold;">活动信息</text>
+      <text class='event-info-border-text' style="font-weight: bold;">{{train_type[is_train]}}信息</text>
     </view>
-    <view style='line-height: 90rpx;font-size:32rpx;font-weight: bold;'>{{event.eventName}}</view>
+    <view style='line-height: 50rpx;padding-top:20rpx;padding-bottom:20rpx;font-size:32rpx;font-weight: bold;'>{{event.eventName}}</view>
     <view >
       <image class="info-icon" src="../../../image/clock@2x.png" />
       {{event.start_time + ' ~ ' + event.end_time}}
@@ -32,7 +32,7 @@
       <text class='real-name-text'>*昵称:</text>
       <input bindinput='on_Input_Realname' value="{{val_realname}}" class='real-name-input' placeholder='请输入您的昵称'></input>
     </view>    
-     <block wx:for="{{field_opt}}" wx:key="id" wx:for-index="id" wx:if="{{id<2}}">
+     <block wx:for="{{field_opt}}" wx:key="id" wx:for-index="id" wx:if="{{id<4}}">
       <view class='cost-view' wx:if="{{condition[id]!='-1'}}">
         <text class='real-phone-text'>{{(condition[id]!='1'?'':'*')}}{{item}}:</text>
         <input  bindinput='on_Input_option' data-type="{{id}}" value="{{val_opt[id]}}" type="text" class='real-phone-input' placeholder='请输入您的{{item}}'></input>
@@ -48,9 +48,9 @@
       <text class='cost-text'>金额：{{total_cost}}</text>
       <input class='cost-input' placeholder='' disabled='true'></input>
     </view>
-    <view class='cost-view'  wx:if="{{condition[2]!='-1'}}">
-      <text class='cost-way-text'>{{(condition[2]!='1'?'':'*')}}性别: </text>
-      <radio-group bindchange="on_Input_option" data-type="2" class="gender-radio">
+    <view class='cost-view'  wx:if="{{condition[4]!='-1'}}">
+      <text class='cost-way-text'>{{(condition[4]!='1'?'':'*')}}性别: </text>
+      <radio-group bindchange="on_Input_option" data-type="4" class="gender-radio">
       <block wx:if="{{gender==0}}">
         <radio value='0' checked='true'></radio>男
         <radio value='1' ></radio>女
@@ -61,7 +61,7 @@
         </block>
       </radio-group>
     </view>
-    <block wx:for="{{field_opt}}" wx:key="id" wx:for-index="id" wx:if="{{id>2}}">
+    <block wx:for="{{field_opt}}" wx:key="id" wx:for-index="id" wx:if="{{id>4}}">
       <view class='cost-view' wx:if="{{condition[id]!='-1'}}">
         <text class='real-phone-text'>{{(condition[id]!='1'?'':'*')}}{{item}}:</text>
         <input  bindinput='on_Input_option' data-type="{{id}}" value="{{val_opt[id]}}" type="text" class='real-phone-input' placeholder='请输入您的{{item}}'></input>

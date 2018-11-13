@@ -74,8 +74,7 @@ class rating_model extends CI_Model
         $this->db->from("rating");
         $this->db->join('user', 'user.no = rating.user_id');
         $this->db->join('room_booking', 'room_booking.id = rating.room_booking_id');
-        $this->db->join('room', 'room.id = room_booking.room_id');
-        $this->db->where("room.boss_id", $bossId);
+        $this->db->where("room_booking.boss_id", $bossId);
         $query = $this->db->get();
         $roomRatingArray = $query->result();
 
@@ -110,8 +109,14 @@ class rating_model extends CI_Model
      */
     function ratingListingCount($searchStatus = null, $searchName = '')
     {
-        $query = "select user.name, user.phone, rating.point, rating.comment, booking.id, rating.id as ratingId, rating.submit_time
-            from rating, user, booking, event where rating.user_id = user.no and booking.user_id = rating.user_id and booking.event_id = event.id and event.id = rating.event_id";
+        $query = "select user.name, user.phone, rating.point, rating.comment, booking.id, rating.id as ratingId, rating.submit_time,
+              room_booking.boss_id
+            from rating
+            left join user on rating.user_id = user.no
+            left join event on event.id = rating.event_id
+            left join booking on booking.event_id = rating.event_id and booking.user_id = rating.user_id 
+            left join room_booking on room_booking.id = rating.room_booking_id
+             where true ";
         if (!empty($searchText)) {
             if(isset($searchStatus)){
                 if ($searchStatus == '0') {
@@ -134,8 +139,14 @@ class rating_model extends CI_Model
      */
     function ratingListing($searchStatus = null, $searchText = '', $page, $segment)
     {
-        $query = "select user.name, user.phone, rating.point, rating.comment, booking.id, rating.id as ratingId, rating.submit_time
-            from rating, user, booking where rating.user_id = user.no and booking.user_id = rating.user_id and booking.event_id = rating.event_id";
+        $query = "select user.name, user.phone, rating.point, rating.comment, (case booking.id WHEN null then rating.room_booking_id else booking.id end) as id, rating.id as ratingId, rating.submit_time,
+              room_booking.boss_id, rating.room_booking_id
+            from rating
+            left join user on rating.user_id = user.no
+            left join event on event.id = rating.event_id
+            left join booking on booking.event_id = rating.event_id and booking.user_id = rating.user_id 
+            left join room_booking on room_booking.id = rating.room_booking_id
+             where true ";
         if (!empty($searchText)) {
             if(isset($searchStatus)){
                 if ($searchStatus == '0') {
@@ -147,7 +158,7 @@ class rating_model extends CI_Model
                 }
             }
         }
-        $query=$query." order by booking.id desc";
+        $query=$query." order by rating.submit_time desc";
         if($segment!=""){
             $query = $query." limit ".$segment.", ".$page;
         }

@@ -90,7 +90,7 @@ Page({
                 if (res.data.status == true) {
                     that.setData({
                         bossInfo: res.data.result[0],
-                        edit_state: res.data.edit_state[0].edit_state
+                        edit_state: 0 //res.data.edit_state[0].edit_state
                     });
                     console.log(res.data);
                     console.log(that.data.edit_state);
@@ -196,7 +196,8 @@ Page({
                         });
                     }
                     that.setData({
-                        room_info_array: room_infos
+                        room_info_array: room_infos,
+                        stadium_time: res.data.room[0].submit_time
                     })
 
                     //get type unit index
@@ -205,7 +206,6 @@ Page({
                     that.setData({
                         type_unit_index: that.data.type_units.indexOf(type_item)
                     });
-
 
                 }
             }

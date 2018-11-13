@@ -56,6 +56,10 @@ Page({
         ],
         menu_filter_array: [{
                 areaId: "000000",
+                areaName: "全部"
+            },
+            {
+                areaId: "000000",
                 areaName: "附近3km"
             },
             {
@@ -135,16 +139,13 @@ Page({
         this.setData({
             getUserInfoDisabled: false
         })
-        app.globalData.initDisabled = false;
         this.data.isFirstInit = false;
         this.onShow();
-        // setTimeout(function() {
-
-        // }, 100);
     },
     onShow: function(option) {
         var that = app;
         var _this = this;
+        that.globalData.initDisabled = false;
         wx.getSetting({
             success: function(res) {
                 var perm = res;
@@ -174,7 +175,7 @@ Page({
                             wx.authorize({
                                 scope: 'scope.werun',
                                 fail: function() {
-                                    that.globalData.initDisabled = true;
+                                    // that.globalData.initDisabled = true;
                                 },
                                 complete: function() {
                                     if (that.globalData.initDisabled)
@@ -182,7 +183,7 @@ Page({
                                     else {
                                         that.globalData.getUserInfoDisabled = false;
                                         _this.onPrepare();
-                                        isFirstLaunch = false;
+                                        app.globalData.isFirstLaunch = false;
                                     }
                                 }
                             })
@@ -291,7 +292,7 @@ Page({
                 app.globalData.searchlat = res.latitude;
                 app.globalData.searchlong = res.longitude;
                 that.updateLocation();
-
+                console.log(res);
                 that.setData({ current_latitude: that.data.current_latitude, current_longitude: that.data.current_longitude, circles: that.data.circles })
                 setTimeout(function() {
                     if (app.globalData.userInfo.user_id != '0') {
@@ -300,7 +301,8 @@ Page({
                             data: {
                                 latitude: that.data.current_latitude,
                                 longitude: that.data.current_longitude,
-                                user_id: app.globalData.userInfo.user_id
+                                user_id: app.globalData.userInfo.user_id,
+                                current_city: app.globalData.currentCityName
                             },
                             method: 'POST',
                             header: {
@@ -362,6 +364,10 @@ Page({
                                             that.data.site_array = [];
                                             iter = 0
                                             var menu_filter_array = [{
+                                                    areaId: res.city_id,
+                                                    areaName: "" + app.globalData.currentCityName
+                                                },
+                                                {
                                                     areaId: "000000",
                                                     areaName: "附近3km"
                                                 },
@@ -370,8 +376,14 @@ Page({
                                                     areaName: "附近5km"
                                                 }
                                             ];
+                                            that.data.current_city_id = res.city_id;
                                             that.data.menu_filter_array = menu_filter_array;
                                             for (var i = 0; i < sites.length; i++) {
+                                                if (sites[i].site_name.length > 12) {
+                                                    var name = sites[i].site_name;
+                                                    name = name.slice(0, 12) + '...'
+                                                    sites[i].site_name = name
+                                                }
                                                 that.data.site_array.push(sites[i])
                                                 that.data.marker.push({
                                                     iconPath: "/image/" + (1 * sites[i].site_type + 1) + ".png",
@@ -407,7 +419,8 @@ Page({
                                 data: {
                                     latitude: that.data.current_latitude,
                                     longitude: that.data.current_longitude,
-                                    user_id: app.globalData.userInfo.user_id
+                                    user_id: app.globalData.userInfo.user_id,
+                                    current_city: app.globalData.currentCityName
                                 },
                                 method: 'POST',
                                 header: {
@@ -470,6 +483,10 @@ Page({
                                                 that.data.site_array = [];
                                                 iter = 0
                                                 that.data.menu_filter_array = [{
+                                                        areaId: res.city_id,
+                                                        areaName: "" + app.globalData.currentCityName
+                                                    },
+                                                    {
                                                         areaId: "000000",
                                                         areaName: "附近3km"
                                                     },
@@ -478,6 +495,7 @@ Page({
                                                         areaName: "附近5km"
                                                     }
                                                 ];
+                                                that.data.current_city_id = res.city_id;
                                                 for (var i = 0; i < sites.length; i++) {
                                                     that.data.site_array.push(sites[i])
                                                     that.data.marker.push({
@@ -560,16 +578,36 @@ Page({
                 }
                 app.globalData.searchlat = res.latitude;
                 app.globalData.searchlong = res.longitude;
-                that.data.circles[0] = {
-                    latitude: that.data.current_latitude,
-                    longitude: that.data.current_longitude,
-                    color: "#e6b53c",
-                    fillColor: "#e6b53c20",
-                    radius: wx.getStorageSync('user_step') / 2,
-                    strokeWidth: 2
-                };
 
-                that.setData({ current_latitude: that.data.current_latitude, current_longitude: that.data.current_longitude, circles: that.data.circles })
+                var url = 'https://restapi.amap.com/v3/geocode/regeo?key=8eb63e36d0b6d7d29a392503a4a80f6c&location=' + res.longitude + ',' + res.latitude + '&poitype=&radius=&extensions=all&batch=false&roadlevel=0';
+
+                //get activity array
+                wx.request({
+                    url: url,
+                    success: function(res) {
+                        //console.log('got location');
+                        //console.log(res.data);
+                        //console.log(res.data.regeocode.addressComponent);
+                        // var province_name = res.data.regeocode.addressComponent.province
+                        app.globalData.currentCityName = res.data.regeocode.addressComponent.city;
+                        // var area_name = res.data.regeocode.addressComponent.district
+                    },
+                    complete: function(res) {
+                        // wx.showModal({ content: app.globalData.currentCityName });
+
+                        that.data.circles[0] = {
+                            latitude: that.data.current_latitude,
+                            longitude: that.data.current_longitude,
+                            color: "#e6b53c",
+                            fillColor: "#e6b53c20",
+                            radius: wx.getStorageSync('user_step') / 2,
+                            strokeWidth: 2
+                        };
+
+                        that.setData({ current_latitude: that.data.current_latitude, current_longitude: that.data.current_longitude, circles: that.data.circles })
+
+                    }
+                });
             },
         });
     },
@@ -1010,8 +1048,11 @@ Page({
         var filter_array = [];
         if (filter_index == 0) {
             // search by nearest 3km from me 
-            filter_array = that.data.site_array.filter(item => item.distance < 3.0);
+            filter_array = that.data.site_array.filter(item => item.cityId == that.data.current_city_id);
         } else if (filter_index == 1) {
+            // search by nearest 5km from me 
+            filter_array = that.data.site_array.filter(item => 1.0 * item.distance < 3.0);
+        } else if (filter_index == 2) {
             // search by nearest 5km from me 
             filter_array = that.data.site_array.filter(item => 1.0 * item.distance < 5.0);
         } else {

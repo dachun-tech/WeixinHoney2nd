@@ -4,7 +4,7 @@
 <view class="container">
 
   <view class="tab">
-    <view class="tab-bar">
+     <view class="tab-bar">
       <view id="btn1" class="tab-item tab-item1 {{active1}}" bindtap='selectTab'>
         进行中
       </view>

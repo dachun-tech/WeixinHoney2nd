@@ -1,4 +1,7 @@
 <import src="../../profile/template/stadium_template.wxml" />
+
+<import src="../../profile/template/get_userinfo.wxml"></import>
+
 <view class='container'>
   <view>
     <swiper class="swiper_box" indicator-dots="true" autoplay="true" interval="3000" duration="300">
@@ -12,8 +15,14 @@
   <view class="focus-event-info">
     <view class="focus-event-place-info">
       <text class="focus-event-place" style="font-weight: bold;">{{site.site_name}}</text>
-    </view>
-    <view class='focus-event-rating'>
+    </view>    
+    <view class="focus-event-favor-btn">
+      <image class="focus-event-favor" bindtap="on_click_favourite" src='{{favourite_image[site.fav_state]}}'></image>
+    </view>     
+    <view>
+      <image class="place-type" src="{{rooturl}}image/my_bee_category@2x.png"></image>
+      <text class="place-type-text">{{site.site_type_detail}}</text>
+      <view class='focus-event-rating'>
       <view wx:for="{{starparam.stars}}" style='display: inline;' wx:key="star">
         <image class="star-image" style="margin-left: 10rpx; padding-top: 20rpx; width:26rpx; height:26rpx " 
           src="{{item-(starparam.score-1) <= 0 ? starparam.srcImage_4 : (item-(starparam.score-1) >= 1 ? starparam.srcImage_0 :(item-(starparam.score-1) < 0.5 ? starparam.srcImage_3 : (item-(starparam.score-1) == 0.5 ? starparam.srcImage_2 : starparam.srcImage_1)))}}">
@@ -21,12 +30,6 @@
       </view>
       <text class='rating-star-text'>{{starparam.score}}分</text>
     </view>
-    <view class="focus-event-favor-btn">
-      <image class="focus-event-favor" bindtap="on_click_favourite" src='{{favourite_image[site.fav_state]}}'></image>
-    </view>     
-    <view>
-      <image class="place-type" src="{{rooturl}}image/my_bee_category@2x.png"></image>
-      <text class="place-type-text">{{site.site_type_detail}}</text>
       <text class="place-favorite-text">已有{{site.favourite_count}}人关注</text>
     </view>
     <view>
@@ -88,3 +91,4 @@
   </view>
    <button wx:if="{{pageType=='1'}}" bindtap="go_home" class="btn_submit">去首页</button>
 </view>
+<template is="get-user-template" wx:if="{{getUserInfoDisabled == true}}"></template>

@@ -40,7 +40,7 @@ Page({
         'content-type': 'application/json'
       },
       data: {
-        'room_id': that.data.room_id        
+        'room_id': that.data.booking_id        
       },
       success: function (res) {
         var site_type = res.data.site.site_type_detail.split(",");

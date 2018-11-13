@@ -35,13 +35,13 @@
 }
 
 .event-type-info {
-    width: calc(100%-26rpx);
-    height: 52rpx;
-    padding-top: 20rpx;
+    width: calc(100%-26rpx);    
+    padding: 40rpx;
+    padding-bottom:0;
+    padding-top:20rpx;
 }
 
-.event-type {
-    padding-left: 30rpx;
+.event-type {    
     font-size: 32rpx;
     color: #333;
     letter-spacing: 0.68rpx;
@@ -56,33 +56,38 @@
 .detail-info-text {
     padding-left: 15rpx;
     font-size: 26rpx;
-    vertical-align: top;
+    vertical-align: middle;
     display: inline-block;
     width: 640rpx;
+    height:40rpx;
+    line-height:40rpx;
 }
 
 .cost_img {
     width: 30rpx;
     height: 32rpx;
-    vertical-align: top;
+    vertical-align: middle;
     display: inline-block;
     padding-left: 20rpx;
+    line-height: 40rpx;
 }
 
 .place_img {
     width: 28rpx;
     height: 40rpx;
-    vertical-align: top;
+    vertical-align: middle;
     display: inline-block;
     padding-left: 20rpx;
+    line-height:40rpx;
 }
 
 .phone_img {
     width: 30rpx;
     height: 32rpx;
-    vertical-align: top;
+    vertical-align: middle;
     display: inline-block;
     padding-left: 20rpx;
+    line-height:40rpx;
 }
 
 .act_date {
@@ -621,3 +626,5 @@ canvas {
     border-radius: 25rpx;
     position: absolute;
 }
+
+@import "../../profile/template/get_userinfo.wxss";

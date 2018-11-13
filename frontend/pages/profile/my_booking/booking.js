@@ -59,6 +59,7 @@ Page({
             default:
                 break;
         }
+        //return;
         wx.request({
             url: app.globalData.mainURL + 'api/datamanage/getMyRoomBooking',
             method: 'POST',
@@ -69,36 +70,57 @@ Page({
                 'user_id': app.globalData.userInfo.user_id
             },
             success: function(res) {
+                that.data.booking = [];
                 if (res.data.status == true) {
                     console.log(res.data)
                     var book = res.data.result;
+                    var rooms = res.data.rooms;
+
                     if (book != null) {
                         for (var index = 0; index < book.length; index++) {
-                            var tempdate;
-                            tempdate = book[index].end_time.split(" ")
-                            book[index].end_time = tempdate[1];
-                            if (book[index].site_name.length > 14) {
+                            if (book[index].site_name.length > 17) {
                                 var site_name = book[index].site_name
-                                site_name = site_name.slice(0, 14) + '..'
+                                site_name = site_name.slice(0, 17) + '...'
                                 book[index].site_name = site_name
                             }
+
                             if (book[index].is_rating == null) {
                                 book[index].is_rating = 0;
                             }
-
-                            var time = book[index].start_time.split(':');
-                            book[index].start_time = time[0] + ':' + time[1];
-
-                            var time1 = book[index].end_time.split(':');
-                            book[index].end_time = time1[0] + ':' + time1[1];
                             book[index].roll_state = 0; //my room booked state
+                            var book_info = JSON.parse(book[index].book_info);
+                            book_info.sort(function(a, b) { return (parseInt(a.room_id) > parseInt(b.room_id)) ? 1 : -1; });
+                            book_info.sort(function(a, b) {
+                                if (parseInt(a.room_id) > parseInt(b.room_id)) return 1;
+                                else if (parseInt(a.room_id) < parseInt(b.room_id)) return -1;
+                                else
+                                    return ((new Date(a.start_time.replace(/-/g, '/'))) > (new Date(b.start_time.replace(/-/g, '/')))) ? 1 : -1;
+                            });
+                            for (var j = 0; j < book_info.length; j++) {
+                                var tempdate;
+                                tempdate = book_info[j].end_time.split(" ")
+                                book_info[j].end_time = tempdate[1];
+
+                                var time = book_info[j].start_time.split(':');
+                                book_info[j].start_time = time[0] + ':' + time[1];
+
+                                var time1 = book_info[j].end_time.split(':');
+                                book_info[j].end_time = time1[0] + ':' + time1[1];
+
+                                for (var kk = 0; kk < rooms.length; kk++) {
+                                    if (book_info[j].room_id == rooms[kk].id) {
+                                        book_info[j].room_name = rooms[kk].room_name + '';
+                                        if (j > 0 && book_info[j].room_id == book_info[j - 1].room_id)
+                                            book_info[j].room_name = '';
+                                        break;
+                                    }
+                                }
+                            }
+                            book[index].book_info = book_info;
                         }
-                        that.setData({
-                            booking: book
-                        })
+                        console.log(book);
+                        that.data.booking = book;
                     }
-                } else {
-                    that.setData({ booking: [] });
                 }
                 wx.request({
                     url: app.globalData.mainURL + 'api/datamanage/getRoomBookingByBossID',
@@ -110,38 +132,70 @@ Page({
                         'user_id': app.globalData.userInfo.user_id
                     },
                     success: function(res1) {
-                        if (res1.data.status == false) return
+                        if (res1.data.status == false) {
+                            that.setData({ booking: that.data.booking });
+                            return;
+                        }
                         var book_order = res1.data.result;
                         if (book_order != null) {
                             for (var index = 0; index < book_order.length; index++) {
                                 var tempdate;
                                 tempdate = book_order[index].end_time.split(" ")
                                 book_order[index].end_time = tempdate[1];
-                                if (book_order[index].site_name.length > 14) {
+                                if (book_order[index].site_name.length > 13) {
                                     var site_name = book_order[index].site_name
-                                    site_name = site_name.slice(0, 14) + '..'
+                                    site_name = site_name.slice(0, 13) + '...'
                                     book_order[index].site_name = site_name
                                 }
                                 if (book_order[index].is_rating == null) {
                                     book_order[index].is_rating = 0;
                                 }
-
+                                book_order[index].site_name += "(场馆主)";
                                 var time = book_order[index].start_time.split(':');
                                 book_order[index].start_time = time[0] + ':' + time[1];
 
                                 var time1 = book_order[index].end_time.split(':');
                                 book_order[index].end_time = time1[0] + ':' + time1[1];
                                 book_order[index].roll_state = 1; //my room booked state
-                                if (!that.data.booking._find(item => item.id == book_order[index].id)) {
-                                    that.data.booking.push(book_order[index])
+
+                                var book_info = JSON.parse(book_order[index].book_info);
+                                book_info.sort(function(a, b) { return (parseInt(a.room_id) > parseInt(b.room_id)) ? 1 : -1; });
+                                book_info.sort(function(a, b) {
+                                    if (parseInt(a.room_id) > parseInt(b.room_id)) return 1;
+                                    else if (parseInt(a.room_id) < parseInt(b.room_id)) return -1;
+                                    else
+                                        return ((new Date(a.start_time.replace(/-/g, '/'))) > (new Date(b.start_time.replace(/-/g, '/')))) ? 1 : -1;
+                                });
+                                for (var j = 0; j < book_info.length; j++) {
+                                    var tempdate;
+                                    tempdate = book_info[j].end_time.split(" ")
+                                    book_info[j].end_time = tempdate[1];
+
+                                    var time = book_info[j].start_time.split(':');
+                                    book_info[j].start_time = time[0] + ':' + time[1];
+
+                                    var time1 = book_info[j].end_time.split(':');
+                                    book_info[j].end_time = time1[0] + ':' + time1[1];
+
+                                    for (var kk = 0; kk < rooms.length; kk++) {
+                                        if (book_info[j].room_id == rooms[kk].id) {
+                                            book_info[j].room_name = rooms[kk].room_name + '';
+                                            if (j > 0 && book_info[j].room_id == book_info[j - 1].room_id)
+                                                book_info[j].room_name = '';
+                                            break;
+                                        }
+                                    }
                                 }
+                                book_order[index].book_info = book_info;
+                                that.data.booking.push(book_order[index]);
+
                             }
-                            that.setData({
-                                booking: that.data.booking
-                            })
-                            console.log(that.data.booking);
-                            that.showevent(0)
                         }
+                        // that.setData({
+                        //     booking: that.data.booking
+                        // })
+                        console.log(that.data.booking);
+                        that.showevent(0)
                     }
                 })
             }
@@ -159,26 +213,32 @@ Page({
         var temp
         console.log(book[0].start_time > book[1].start_time)
         if (tabtype == 0) {
-            for (var i = 0; i < book.length - 1; i++) {
-                for (var j = i + 1; j < book.length; j++) {
-                    if (book[i].start_time < book[j].start_time) {
-                        temp = book[i]
-                        book[i] = book[j]
-                        book[j] = temp
-                    }
-                }
-            }
+            book.sort(function(a, b) {
+                return ((new Date(a.submit_time.replace(/-/g, '/'))) > (new Date(b.submit_time.replace(/-/g, '/')))) ? 1 : -1;
+            });
+            // for (var i = 0; i < book.length - 1; i++) {
+            //     for (var j = i + 1; j < book.length; j++) {
+            //         if (book[i].start_time < book[j].start_time) {
+            //             temp = book[i]
+            //             book[i] = book[j]
+            //             book[j] = temp
+            //         }
+            //     }
+            // }
         }
         if (tabtype == 1) {
-            for (var i = 0; i < book.length - 1; i++) {
-                for (var j = i + 1; j < book.length; j++) {
-                    if (book[i].end_time < book[j].end_time) {
-                        temp = book[i]
-                        book[i] = book[j]
-                        book[j] = temp
-                    }
-                }
-            }
+            book.sort(function(a, b) {
+                return ((new Date(a.submit_time.replace(/-/g, '/'))) > (new Date(b.submit_time.replace(/-/g, '/')))) ? 1 : -1;
+            });
+            // for (var i = 0; i < book.length - 1; i++) {
+            //     for (var j = i + 1; j < book.length; j++) {
+            //         if (book[i].end_time < book[j].end_time) {
+            //             temp = book[i]
+            //             book[i] = book[j]
+            //             book[j] = temp
+            //         }
+            //     }
+            // }
         }
         this.setData({
             booking: book

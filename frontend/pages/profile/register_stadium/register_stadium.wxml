@@ -59,8 +59,7 @@
       <view wx:for="{{booking_units}}" wx:key="{{index}}">
         <view class="unit_item" bindtap="clicked_bookingUnit_item" id="{{index}}" style="color:{{index==booking_unit_index?color_array[1]:color_array[0]}}">{{item.name}}</view>
       </view>       
-    </view>
-    
+    </view>   
 
 
     <view class='stadium-input-text'>*预定设置: </view>
@@ -108,11 +107,8 @@
       <view class="select_unit">
         <view class="select_text">{{booking_units[booking_unit_index].name}}</view>
         <image class="arrow_btn" src="../../../image/btn_updown@2x.png"/>        
-      </view>
-      
+      </view>      
     </view>
-    
-
 
     <view class='stadium-input-text'  style="padding-top: 35rpx;">场地详情: </view>
 
@@ -214,14 +210,6 @@
       </view>            
     </view>    
   </view>
-
-
-
-
-
-
-
-
   <button class='btn-submit' bindtap="on_click_save">完成</button>
 
 </view>

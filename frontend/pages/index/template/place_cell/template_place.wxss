@@ -19,7 +19,8 @@
 .place-picture {
     float: left;
     width: 110rpx;
-    height: 150rpx;
+    height: 86rpx;
+    padding-top:27rpx;
 }
 
 .place-role {

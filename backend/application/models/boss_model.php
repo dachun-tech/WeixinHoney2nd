@@ -78,14 +78,13 @@ class boss_model extends CI_Model
         $rating_result = $this->rating_model->getRatingByBoss($bossId);
         $rating_amount = count($rating_result);
         $point = 0.0;
-        if ($rating_amount > 0)
-        {
+        if ($rating_amount > 0) {
             $sum = 0;
-            foreach($rating_result as $key=>$value){
-                if(isset($value->point))
+            foreach ($rating_result as $key => $value) {
+                if (isset($value->point))
                     $sum += $value->point;
             }
-            $point = $sum/$rating_amount;
+            $point = $sum / $rating_amount;
         }
         $bossItem->rating_amount = $rating_amount;
         $bossItem->point = $point;
@@ -116,11 +115,30 @@ class boss_model extends CI_Model
     function getSiteRoomData($bossId)
     {
         $this->db->select("*");
-        $this->db->from("room");
-        $this->db->where("boss_id", $bossId);
+        $this->db->from('room');
+        $this->db->where('boss_id', $bossId);
+        $this->db->where('submit_time < ', date("Y-m-d H:i:s"));
+        $this->db->order_by('submit_time', 'desc');
         $query = $this->db->get();
-        $result = $query->result();
-        return $result;
+        $result = $query->row();
+        if (count($result) <= 0) {
+            $this->db->select("*");
+            $this->db->from('room');
+            $this->db->where('boss_id', $bossId);
+            $this->db->order_by('submit_time', 'desc');
+            $query = $this->db->get();
+            $result = $query->row();
+        }
+
+        $this->db->select("*");
+        $this->db->from('room');
+        $this->db->where('boss_id', $bossId);
+        if (count($result) > 0)
+            $this->db->where('submit_time', $result->submit_time);
+
+        $query = $this->db->get();
+
+        return $query->result();
     }
 
     /**
@@ -130,11 +148,10 @@ class boss_model extends CI_Model
      */
     function getSiteBookData($bossId, $user_id)
     {
-        $this->db->select("*, room.id as id");
-        $this->db->from("room");
-        $this->db->join("room_booking", "room_booking.room_id = room.id", 'left');
-        $this->db->where("room.boss_id", $bossId);
-        $this->db->where("room_booking.state !=", 2);
+        $this->db->select("*");
+        $this->db->from("room_booking");
+        $this->db->where("boss_id", $bossId);
+        $this->db->where("state !=", 2);
         $query = $this->db->get();
         $result = $query->result();
         return $result;
@@ -152,8 +169,7 @@ class boss_model extends CI_Model
         $result = array();
         $result = $query->result();
         $boss_info = $result[0];
-        if ($boss_info->role == '2')
-        {
+        if ($boss_info->role == '2') {
             $boss_info->boss_id = $boss_info->no;
             $boss_info->site_name = $boss_info->name;
             $boss_info->site_type_detail = $boss_info->sport_type;
@@ -165,13 +181,14 @@ class boss_model extends CI_Model
             'point' => $point);
         return $response_data;
     }
+
     /*this function is for get place detail from event id*/
     function getSiteDetailFromRoomId($roomId)
     {
         $this->db->select("boss.*");
         $this->db->from("boss");
-        $this->db->join("room", 'room.boss_id = boss.boss_id');
-        $this->db->where("room.id", $roomId);
+        $this->db->join("room_booking", 'room_booking.boss_id = boss.boss_id');
+        $this->db->where("room_booking.id", $roomId);
         $query = $this->db->get();
         $result = array();
         $result = $query->result();
@@ -186,18 +203,17 @@ class boss_model extends CI_Model
     function getSiteRatingPoint($bossId)
     {
         $result = $this->rating_model->getRatingByBoss($bossId);
-		if (count($result) > 0)
-		{
-			$sum = 0;
-			foreach($result as $key=>$value){
-				if(isset($value->point))
-					$sum += $value->point;
-			}
-			return $sum/count($result);
-		}else {
-			return 0;
-		}	
-        
+        if (count($result) > 0) {
+            $sum = 0;
+            foreach ($result as $key => $value) {
+                if (isset($value->point))
+                    $sum += $value->point;
+            }
+            return $sum / count($result);
+        } else {
+            return 0;
+        }
+
     }
 
     /**
@@ -333,7 +349,7 @@ class boss_model extends CI_Model
      * @param string $picture : This is the filename of picture
      * @return boolean $result : status of inputing information
      */
-    function addSitePicture($bossId, $picture, $id=0)
+    function addSitePicture($bossId, $picture, $id = 0)
     {
         $info['boss_id'] = $bossId;
         $info['picture'] = $picture;
@@ -366,11 +382,13 @@ class boss_model extends CI_Model
      * @return array $result : information of sites found
      */
 
-    function getSiteByDistanceApi($longitude, $latitude, $userId)
+    function getSiteByDistanceApi($longitude, $latitude, $userId, $city_id = 0)
     {
-        $query = $this->db->query('select boss_id, site_name, longitude, latitude, site_type, area from boss where site_type and ( 6371 * acos( cos( radians('.$latitude.') ) * cos( radians( latitude) )
-   * cos( radians(longitude) - radians('.$longitude.')) + sin(radians('.$latitude.'))
-   * sin( radians(latitude))))<=5 ');
+        $query = $this->db->query('select boss_id, site_name, longitude, latitude, site_type, area 
+            from boss 
+            where site_type > -1 and (( 6371 * acos( cos( radians(' . $latitude . ') ) * cos( radians( latitude) )
+                    * cos( radians(longitude) - radians(' . $longitude . ')) + sin(radians(' . $latitude . '))
+                    * sin( radians(latitude))))<=5 or city = ' . $city_id . ') ');
 
         $response_array = array();
         foreach ($query->result() as $item) {
@@ -412,7 +430,7 @@ class boss_model extends CI_Model
 
     function distance($lat1, $lon1, $lat2, $lon2, $unit)
     {
-
+        if ($lat1 == $lat2 && $lon1 == $lon2) return 0;
         $theta = $lon1 - $lon2;
         $dist = sin(deg2rad($lat1)) * sin(deg2rad($lat2)) + cos(deg2rad($lat1)) * cos(deg2rad($lat2)) * cos(deg2rad($theta));
         $dist = acos($dist);

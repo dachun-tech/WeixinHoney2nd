@@ -39,11 +39,11 @@
     <view class="personal-data">
       <label class="detail-info-label" style="font-weight: bold;">报名信息</label>
     </view>
-    <view class="personal-name">
-      <label class="personal-name-label">昵称: {{booking.userName}}</label>
+    <view class="personal-name" wx:for="{{customer_info}}">
+      <label class="personal-name-label">{{item.name}}: {{item.value}}</label>
     </view>
-    <view class="personal-phone">
-      <label class="personal-phone-label">电话{{booking.phone}}</label>
-    </view>
+    <!-- <view class="personal-phone">
+      <label class="personal-phone-label">电话：{{booking.phone}}</label>
+    </view> -->
   </view>   
 </view>

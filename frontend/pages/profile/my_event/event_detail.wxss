@@ -52,6 +52,7 @@
   letter-spacing: 0.68rpx;
   display: inline-block;
   min-width: 60%;
+  max-width:75%;
 }
 
 

@@ -7,7 +7,8 @@
 <template name="pay-template">
   <view class="pay-bottom" wx:if="{{pay_type==1}}">
     <view class="honey-row" wx:if="{{honey_list.length==0}}">
-      <view class="info-label">使用蜂蜜 - 蜂蜜量不够，多去采集蜂蜜吧！</view>      
+      <view class="info-label" wx:if="{{is_member==true}}">使用蜂蜜 - 蜂蜜量不够，多去采集蜂蜜吧！</view>      
+      <view class="info-label" wx:else>使用蜂蜜 - 开通会员，就可以使用蜂蜜抵扣支付哦！</view>      
     </view>
     <view class="honey-row" wx:if="{{honey_list.length>0}}">
       <view class="info-label">使用蜂蜜</view>
@@ -31,5 +32,6 @@
         <image class="pay-check-status"src="{{chk_imgs[check_wallet]}}" />
       </view>
     </view>
+    <view class="bottom-space"></view>
   </view>
 </template>

@@ -12,7 +12,7 @@ class booking_model extends CI_Model
     {
         $this->db->select("booking.reg_num as reg_num, booking.name as userName, booking.*, event.latitude, event.longitude");
         $this->db->select("event.id as event_id, event.name,event.agent_name, event.agent_phone, event.type, event.limit, event.cost, event.owner, 
-            event.start_time, event.end_time,  provinces.province,cities.city,areas.area, event.detail_address, event.pic");
+            event.start_time, event.end_time,  provinces.province,cities.city,areas.area, event.detail_address, event.pic, event.condition");
         $this->db->select("user.role, user.avatar, user.nickname");
         $this->db->from("user, event, provinces, cities, areas");
         $this->db->join("booking", "event.id = booking.event_id", "left");
@@ -81,6 +81,7 @@ class booking_model extends CI_Model
         $this->db->join("user", "booking.user_id = user.no");
         $this->db->join("event", "booking.event_id = event.id");
         $this->db->where("booking.event_id", $eventId);
+        $this->db->where("booking.user_id != ", 0);
         $this->db->group_by("booking.id");
         $query = $this->db->get();
         return $query->result();
@@ -93,8 +94,7 @@ class booking_model extends CI_Model
      */
     function getBookingDetailByEvent1($eventId)
     {
-        $this->db->select("user.avatar,user.nickname,user.no as user_id,  booking.name,booking.phone, booking.reg_num, 
-            booking.pay_type, booking.state, event.cost,event.agent_name, event.agent_phone, sum(booking.reg_num) as register_num");
+        $this->db->select("user.avatar,user.nickname,user.no as user_id,  booking.name,booking.phone, booking.reg_num, booking.pay_type, booking.state, event.cost,event.agent_name, event.agent_phone, sum(booking.reg_num) as register_num");
         $this->db->from("booking");
         $this->db->join("user", "booking.user_id = user.no");
         $this->db->join("event", "booking.event_id = event.id and booking.state = event.state");

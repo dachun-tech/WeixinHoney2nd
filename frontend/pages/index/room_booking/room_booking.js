@@ -96,21 +96,21 @@ Page({
                             that.globalData.initDisabled = true;
                         },
                         complete: function() {
-                            wx.authorize({
-                                scope: 'scope.werun',
-                                fail: function() {
-                                    that.globalData.initDisabled = true;
-                                },
-                                complete: function() {
-                                    if (that.globalData.initDisabled)
-                                        that.go2Setting();
-                                    else {
-                                        that.globalData.getUserInfoDisabled = false;
-                                        _this.onPrepare();
-                                        isFirstLaunch = false;
-                                    }
-                                }
-                            })
+                            if (that.globalData.initDisabled)
+                                that.go2Setting();
+                            else {
+                                that.globalData.getUserInfoDisabled = false;
+                                _this.onPrepare();
+                                app.globalData.isFirstLaunch = false;
+                            }
+                            // wx.authorize({
+                            //     scope: 'scope.werun',
+                            //     fail: function() {
+                            //         that.globalData.initDisabled = true;
+                            //     },
+                            //     complete: function() {
+                            //     }
+                            // })
                         }
                     });
                 }
@@ -218,6 +218,10 @@ Page({
         }
         var tmp = new Date(start2_time.toString());
         for (var i = 0; i < diff2 + time_step; i += time_step) {
+          if (i == 0 && site.end1 == site.start2) {
+              tmp.setTime(tmp.getTime() + time_step * 3600000);
+              continue;
+            }
             if (tmp > end2_time) tmp = new Date(end2_time.toString());
             var hr = tmp.getHours();
             var min = tmp.getMinutes();
@@ -258,20 +262,26 @@ Page({
                 if (status == 1) {
                     status = 0;
                 }
-
-                for (var mm = 0; mm < booking.length; mm++) {
-                    var item = booking[mm];
-                    if (status == 0) continue;
-                    if (item.room_id != room[i].id) continue;
-                    if (item.state == 3) continue;
-                    if (curstart >= (new Date(item.start_time.replace(/-/g, '/'))) &&
-                        curend <= (new Date(item.end_time.replace(/-/g, '/')))) {
-                        status = 4;
-                        cost = -cost;
-                        room[i].user_id = item.user_id;
-                        room[i].book_id = item.id;
-                        break;
+                for (var jj = 0; jj < booking.length; jj++) {
+                    var bookRecord = JSON.parse(booking[jj].book_info);
+                    var isBreak = false;
+                    if (booking[jj].state == 3) continue;
+                    for (var mm = 0; mm < bookRecord.length; mm++) {
+                        var item = bookRecord[mm];
+                        if (status == 0) continue;
+                        if (item.room_id != room[i].id) continue;
+                        if (item.state == 3) continue;
+                        if (curstart >= (new Date(item.start_time.replace(/-/g, '/'))) &&
+                            curend <= (new Date(item.end_time.replace(/-/g, '/')))) {
+                            status = 4;
+                            cost = -cost;
+                            room[i].user_id = item.user_id;
+                            room[i].book_id = booking[jj].id;
+                            isBreak = true;
+                            break;
+                        }
                     }
+                    if (isBreak) break;
                 }
 
                 if (curend < new Date()) status = 0;
@@ -455,6 +465,14 @@ Page({
                 }
             }
         }
+        uploads.sort(function(a, b) { return (parseInt(a.room_id) > parseInt(b.room_id)) ? 1 : -1; });
+        uploads.sort(function(a, b) {
+            if (parseInt(a.room_id) > parseInt(b.room_id)) return 1;
+            else if (parseInt(a.room_id) < parseInt(b.room_id)) return -1;
+            else
+                return (a.start_time > b.start_time) ? 1 : -1;
+        });
+
         wx.setStorageSync("book_date", that.data.refDate);
         wx.setStorageSync("book_info", uploads);
         if (that.data.totalPrice > 0) {
@@ -484,10 +502,20 @@ Page({
         if (res.from === 'button') {
             console.log(res.target)
         }
+
         var that = this;
+        var sport = parseInt(that.data.site.site[0].site_type);
+        var title = "这家" + app.globalData.eventType[sport] + "场馆不错哦, 快来预定吧";
+        if (sport == 28)
+            title = "这家" + app.globalData.eventType[sport] + "不错哦, 快来购买吧"
+        else if (sport == 31)
+            title = "这家综合运动场馆不错哦, 快来预定吧"
+        else if (sport == 32)
+            title = "这家运动场馆不错哦, 快来预定吧"
+
         return {
-            title: that.data.site.site_name, // '../detail_gym/detail_gym?id='+ event.currentTarget.id,
-            path: '/pages/index/detail_gym/detail_gym?id=' + that.data.site.boss_id +
+            title: title, // '../detail_gym/detail_gym?id='+ event.currentTarget.id,
+            path: '/pages/index/detail_gym/detail_gym?id=' + that.data.site.site[0].boss_id +
                 '&user_id=' + app.globalData.userInfo.user_id +
                 '&nickname=' + app.globalData.userInfo.nickname +
                 '&atype=1',

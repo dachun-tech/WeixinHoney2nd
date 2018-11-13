@@ -54,7 +54,7 @@
     <view wx:elif="{{booking.cancel_time==0}}">
       <label>开始前可退/可用蜂蜜抵扣</label>
     </view>
-    <view wx:rlif="{{booking.cancel_time>100}}">
+    <view wx:elif="{{booking.cancel_time>100}}">
       <label>不可退</label>
     </view>
   </view>

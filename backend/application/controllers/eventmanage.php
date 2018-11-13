@@ -234,7 +234,6 @@ class eventmanage extends basecontroller
             $this->global['error_comment'] = "请输入".$type."介绍";
             $error++;
         }
-        var_dump($info);
         $id = $this->event_model->add($info, $id);
         $upload_root = "uploads/events/";
         $db_root = 'events/';

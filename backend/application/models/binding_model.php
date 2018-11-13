@@ -7,12 +7,16 @@ class binding_model extends CI_Model
      * @param number $userId : This is id of binding
      * @return number $count : This is row count
      */
-    function getBindingDetailById($bindingId)
+    function getBindingDetailById($userId)
     {
-        $query = "select binding_history.no, binding_history.state, binding_history.submit_time, binding.bank_phone, binding.credit_no, binding_history.amount, binding.receiver, binding.bank, binding.id_no,binding_history.comment,binding_history.binding_time,
+        $query = "select binding_history.*, 
+                    binding.amount as wallet,
                     user.name, user.phone
-                    from binding, `user`, binding_history 
-                    where binding.user_id = user.no and binding.no = binding_history.binding_no and binding_history.no=" . $bindingId;
+                    from binding_history
+                    left join `user` on binding_history.user_id = user.no
+                    left join binding on binding_history.user_id = binding.user_id
+                    where binding_history.user_id=" . $userId .
+            ' order by binding_history.submit_time desc';
         $result = $this->db->query($query);
         return $result->result();
     }
@@ -24,10 +28,9 @@ class binding_model extends CI_Model
      */
     function bindingListingCount($searchStatus = null, $searchText = '', $searchState)
     {
-        $query = "select binding_history.no, binding_history.state, binding_history.submit_time, binding.bank_phone, binding.credit_no, binding_history.amount, binding.receiver, binding.id_no,
-                    user.name, user.phone
-                    from binding, `user`, binding_history 
-                    where binding.user_id = user.no and binding.no = binding_history.binding_no";
+        $query = "select count(binding_history.no) as total_cnt
+                    from `user`, binding_history, binding
+                    where user.no = binding_history.user_id and user.no = binding.user_id ";
         if ($searchState != 10) {
             $query = $query . " and binding_history.state like '%" . $searchState . "%'";
         }
@@ -42,6 +45,7 @@ class binding_model extends CI_Model
                 }
             }
         }
+
         $result = $this->db->query($query);
 
         return count($result->result());
@@ -54,25 +58,27 @@ class binding_model extends CI_Model
      */
     function bindingListing($searchStatus = null, $searchText = '', $searchState, $page, $segment)
     {
-        $query = "select binding_history.no, binding_history.state, binding_history.submit_time, binding.bank_phone, binding.credit_no, binding_history.amount, binding.receiver, binding.id_no,
-                    user.name, user.phone
-                    from binding, `user`, binding_history 
-                    where binding.user_id = user.no and binding.no = binding_history.binding_no";
+        $query = "select binding_history.*, sum(binding_history.amount) as amount, binding.amount as wallet, 
+                    user.name, user.phone, 
+                    sum(if(date(binding_history.submit_time) = CURRENT_DATE,1,0)) as today_cnt, 
+                    count(binding_history.no) as total_cnt
+                    from `user`, binding_history, binding
+                    where user.no = binding_history.user_id and user.no = binding.user_id ";
         if ($searchState != 10) {
-            $query = $query . " and binding_history.state like '%" . $searchState . "%'";
+            $query .= " and binding_history.state like '%" . $searchState . "%'";
         }
         if (!empty($searchText)) {
             if (isset($searchStatus)) {
                 if ($searchStatus == '0') {
-                    $query = $query . " and (user.phone LIKE '%" . $searchText . "%')";
+                    $query .= " and (user.phone LIKE '%" . $searchText . "%')";
                 } else if ($searchStatus == '1') {
-                    $query = $query . " and (user.name LIKE '%" . $searchText . "%')";
+                    $query .= " and (user.name LIKE '%" . $searchText . "%')";
                 } else {
-                    $query = $query . " and (binding.receiver LIKE '%" . $searchText . "%')";
+                    $query .= " and (binding.receiver LIKE '%" . $searchText . "%')";
                 }
             }
         }
-        $query = $query . " order by binding_history.submit_time desc";
+        $query .= " order by binding_history.submit_time desc";
         if ($segment != "") {
             $query = $query . " limit " . $segment . ", " . $page;
         } else {
@@ -129,6 +135,21 @@ class binding_model extends CI_Model
         return $result->result();
     }
 
+    /**
+     * This function is used to get the binding information of current user
+     * @param string $userId : This is id of user
+     * @return array $result : This is information found
+     */
+    function getCntToday($userId)
+    {
+        $this->db->select("count(*) as cnt");
+        $this->db->where("user_id", $userId);
+        $this->db->where("date(binding_time) = CURRENT_DATE");
+        $this->db->from("binding_history");
+        $result = $this->db->get();
+        return $result->row()->cnt;
+    }
+
     function addNewBinding($open_id)
     {
         $user_id = $this->db->query("select no from user where open_id='" . $open_id . "'")->result();
@@ -183,20 +204,14 @@ class binding_model extends CI_Model
      * @param array $info : This is array of binding information
      * @return number $result : This is number of rows inserted into table
      */
-    function addBindingHistory($userId, $cost)
+    function addBindingHistory($userId, $info)
     {
-        $query = $this->db->query("insert payment_history(user_id, type, amount, submit_time) values(" . $userId . ", 0 ," . $cost . ",'" . date("Y-m-d H:i:s") . "')");
-        $this->db->select("amount,no");
-        $this->db->from("binding");
-        $this->db->where("user_id", $userId);
-        $result = $this->db->get()->result();
-        $info['amount'] = $result[0]->amount - $cost;
-        $this->db->where("user_id", $userId);
-        $this->db->update("binding", $info);
-        $info['amount'] = $cost;
-        $info['binding_no'] = $result[0]->no;
-        $info['submit_time'] = date("Y-m-d H:i:s");
+        $this->db->query("insert payment_history(user_id, type, amount, submit_time) values(" . $userId . ", 0 ," . $info['amount'] . ",'" . date("Y-m-d H:i:s") . "')");
+
+        $this->db->query('update binding set amount = amount - ' . $info['amount'] . ' where user_id = ' . $userId);
+
         $this->db->insert("binding_history", $info);
+
         return true;
     }
 
@@ -207,11 +222,10 @@ class binding_model extends CI_Model
      */
     function getBindingHistory($userId)
     {
-        $this->db->select("binding_history.submit_time,binding_history.amount,binding_history.binding_time, binding_history.submit_time, binding_history.state");
-        $this->db->from("binding_history, binding");
-        $this->db->join("binding", "binding.no = binding_history.binding_no");
-        $this->db->where("binding.user_id", $userId);
-        $this->db->group_by("binding_history.no");
+        $this->db->select("*");
+        $this->db->from("binding_history");
+        $this->db->where("user_id", $userId);
+        $this->db->order_by("submit_time", 'desc');
         $query = $this->db->get();
         return $query->result();
     }
@@ -223,12 +237,11 @@ class binding_model extends CI_Model
      */
     function getPaymentHistory($userId)
     {
-        $this->db->select("payment_history.type, payment_history.amount,payment_history.submit_time, event.name, room.room_name, boss.site_name");
+        $this->db->select("payment_history.type, payment_history.amount, room_booking.book_info, payment_history.submit_time, event.name, boss.site_name");
         $this->db->from("payment_history");
         $this->db->join("event", "event.id = payment_history.event_id", "left");
         $this->db->join("room_booking", "room_booking.id = payment_history.room_booking_id", "left");
-        $this->db->join("room", "room_booking.room_id = room.id", "left");
-        $this->db->join("boss", "room.boss_id = boss.boss_id", "left");
+        $this->db->join("boss", "room_booking.boss_id = boss.boss_id", "left");
         $this->db->where("payment_history.user_id", $userId);
         $this->db->order_by("payment_history.submit_time", "desc");
         $query = $this->db->get();
@@ -352,18 +365,18 @@ class binding_model extends CI_Model
         return true;
     }
 
-    function removeRoomBooking($boss_id, $price, $online_pay, $user_id, $roombooking_id)
+    function removeRoomBooking($boss_id, $price, $wallet_pay, $user_id, $roombooking_id)
     {
         // set owner's wallet
 
         $this->db->query("update binding set amount = amount - " . $price . " where user_id=" . $boss_id);
         // set user's wallet
-        $this->db->query("update binding set amount = amount + " . $online_pay . " where user_id=" . $user_id);
+        $this->db->query("update binding set amount = amount + " . $wallet_pay . " where user_id=" . $user_id);
         $now = date("Y-m-d H:i:s");
         $this->db->query("insert into payment_history(user_id, amount, submit_time, type, room_booking_id) values(" . $boss_id . ","
             . $price . ",'" . $now . "', 11" . "," . $roombooking_id . ")");
         $this->db->query("insert into payment_history(user_id, amount, submit_time, type, room_booking_id) values(" . $user_id . ","
-            . $online_pay . ",'" . $now . "', 14" . "," . $roombooking_id . ")");
+            . $wallet_pay . ",'" . $now . "', 14" . "," . $roombooking_id . ")");
         return true;
     }
 

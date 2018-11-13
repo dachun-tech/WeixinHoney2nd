@@ -1,6 +1,7 @@
 <!-- index.wxml -->
 <import src="template/template.wxml" />
 <import src="template/template_event.wxml" />
+<import src="../profile/template/get_userinfo.wxml"></import>
 <view class="container">
   <view class="tab">
     <view class="tab-bar">
@@ -130,7 +131,7 @@
       </view>
       <view class='index_table_search_item_view_new' style='left: 33%;width: 2rpx;height: 50%;top: 30%;background: #cccccc;'></view>
       <view bindtap="on_click_timemenu_new" class='index_table_search_item_view_new' style='left:33.5%;width:33%'>
-        <view class="filter_order_new" style='color:{{color_array[select_new_time_menu_state]}}'>赛事时间</view>
+        <view class="filter_order_new" style='color:{{color_array[select_new_time_menu_state]}}'>时间</view>
         <cover-image class="img_up_arrow_new" src="{{menu_btn_array[select_new_time_menu_state]}}" style="left: 432rpx;"></cover-image>
       </view>
       <view class='index_table_search_item_view_new' style='left: 66.5%;width: 2rpx;height: 50%;top: 30%;background: #cccccc;'></view>
@@ -191,4 +192,5 @@
       </view>
     </view>
   </view>
+<template is="get-user-template" wx:if="{{getUserInfoDisabled == true}}"></template>
 </view>

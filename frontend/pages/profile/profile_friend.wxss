@@ -254,3 +254,5 @@ button::after {
     -ms-border-radius: 8rpx;
     -o-border-radius: 8rpx;
 }
+
+@import "../profile/template/get_userinfo.wxss";

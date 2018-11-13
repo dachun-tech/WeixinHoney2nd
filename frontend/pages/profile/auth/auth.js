@@ -9,7 +9,7 @@ Page({
     data: {
         province: [],
         nickname: '',
-        user_role: "场馆主",
+        user_role: "个人",
         user: {
             name: "",
             phone: "",
@@ -22,7 +22,7 @@ Page({
 
         },
         hide: 0,
-        role: 1,
+        role: 2,
         overimagecount: 0,
         longitude: 0,
         latitude: 0,
@@ -46,7 +46,7 @@ Page({
         check_auth_image1: 0,
         check_auth_image2: 0,
         disable: 1,
-        istrue: 1
+        istrue: 0
     },
 
     On_clicked_role: function() {
@@ -130,12 +130,17 @@ Page({
                             city_id: user_info.city_id,
                             area_id: user_info.area_id,
                             select_location_text: user_info.province + user_info.city + user_info.area,
+                            longitude: user_info.longitude,
+                            latitude: user_info.latitude,
                             detail_address: user_info.detail_address
                         })
                         if (user_info.role == 1) {
                             user_info.allow_pic = app.globalData.uploadURL + user_info.allow_pic
                             user_info.id_pic1 = app.globalData.uploadURL + user_info.id_pic1
                             user_info.id_pic2 = app.globalData.uploadURL + user_info.id_pic2
+                            that.data.check_image = 1
+                            that.data.check_auth_image1 = 1
+                            that.data.check_auth_image2 = 1
                         }
                         if (user_info.allow_pic == undefined) {
                             user_info.allow_pic = "../../../image/zhizhao.png"
@@ -148,6 +153,7 @@ Page({
                             user_role: that.data.userRole[user_info.role],
                             method: method
                         })
+
                     }
                 }
             })
@@ -445,6 +451,7 @@ Page({
                     return
                 }
                 if (that.data.user.site_name.length == 0) {
+                    invalid++;
                     wx.showToast({
                         title: '请填写场馆名称',
                         duration: 3000,
@@ -546,7 +553,16 @@ Page({
                 if (that.data.select_location_text == '') {
                     invalid = invalid + 1
                     wx.showToast({
-                        title: '请在地图上选择活动地点',
+                        title: '请在地图上选择场馆地点',
+                        duration: 3000,
+                        icon: 'none'
+                    })
+                    return
+                }
+                if (that.data.longitude == 0) {
+                    invalid = invalid + 1
+                    wx.showToast({
+                        title: '请在地图上选择场馆地点',
                         duration: 3000,
                         icon: 'none'
                     })

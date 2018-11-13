@@ -39,20 +39,27 @@ Page({
                 'content-type': 'application/json'
             },
             success: function(res) {
-                console.log(res);
                 if (res.data.status) {
+                    console.log(res);
                     that.data.friendList = res.data.data;
 
                     that.calculateNewFriends();
+                } else {
+                    console.log(res);
                 }
             },
         })
     },
 
     filterUser: function(event) {
+        var that = this;
         var id = event.currentTarget.dataset.id;
         var friendList = that.data.friendList;
         // id: one of a~z, friendList:all of userlist.
+        console.log(id);
+        that.setData({
+            filterItem: id
+        })
     },
     calculateNewFriends: function() {
         var that = this;
@@ -77,7 +84,13 @@ Page({
                 item.status == 1)
                 filtered.push(item);
         }
-
+        filtered = filtered.sort(function(a, b) { return (a.filter_character.localeCompare(b.filter_character)); });
+        var filter_character = ' ';
+        for (var i = 0; i < filtered.length; i++) {
+            if (filtered[i].filter_character == filter_character) filtered[i].filter_character = '';
+            else filter_character = filtered[i].filter_character;
+        }
+        console.log(filtered);
         that.setData({
             newCount: cnt,
             friendList: filtered

@@ -42,7 +42,6 @@ Page({
             getUserInfoDisabled: false
         })
         this.data.isFirstInit = false;
-        app.globalData.initDisabled = false;
         this.onShow();
         // setTimeout(function() {
 
@@ -51,6 +50,7 @@ Page({
     onShow: function(option) {
         var that = app;
         var _this = this;
+        that.globalData.initDisabled = false;
         wx.getSetting({
             success: function(res) {
                 var perm = res;
@@ -77,21 +77,21 @@ Page({
                             that.globalData.initDisabled = true;
                         },
                         complete: function() {
-                            wx.authorize({
-                                scope: 'scope.werun',
-                                fail: function() {
-                                    that.globalData.initDisabled = true;
-                                },
-                                complete: function() {
-                                    if (that.globalData.initDisabled)
-                                        that.go2Setting();
-                                    else {
-                                        that.globalData.getUserInfoDisabled = false;
-                                        _this.onPrepare();
-                                        isFirstLaunch = false;
-                                    }
-                                }
-                            })
+                            if (that.globalData.initDisabled)
+                                that.go2Setting();
+                            else {
+                                that.globalData.getUserInfoDisabled = false;
+                                _this.onPrepare();
+                                app.globalData.isFirstLaunch = false;
+                            }
+                            // wx.authorize({
+                            //     scope: 'scope.werun',
+                            //     fail: function() {
+                            //         that.globalData.initDisabled = true;
+                            //     },
+                            //     complete: function() {
+                            //     }
+                            // })
                         }
                     });
                 }
@@ -155,7 +155,7 @@ Page({
                         for (var index = 0; index < event_buf.length; index++) {
                             if (event_buf[index].name.length > 15) {
                                 var name = event_buf[index].name
-                                name = name.slice(0, 15) + '..'
+                                name = name.slice(0, 15) + '...'
                                 event_buf[index].name = name
                             }
                         }
@@ -178,6 +178,8 @@ Page({
                           title: site_buf.site_name
                         })
                         */
+                        // if (site_buf.site_name.length > 6)
+                        //     site_buf.site_name = site_buf.site_name.substr(0, 6) + '...';
                         that.setData({
                             site: site_buf,
                             rooturl: that.data.rooturl,
@@ -249,9 +251,19 @@ Page({
         if (res.from === 'button') {
             console.log(res.target)
         }
+
         var that = this;
+        var sport = parseInt(that.data.site.site_type);
+        var title = "这家" + app.globalData.eventType[sport] + "场馆不错哦, 快来预定吧";
+        if (sport == 28)
+            title = "这家" + app.globalData.eventType[sport] + "场馆不错哦, 快来购买吧"
+        else if (sport == 31)
+            title = "这家综合运动场馆不错哦, 快来预定吧"
+        else if (sport == 32)
+            title = "这家运动场馆不错哦, 快来预定吧"
+
         return {
-            title: that.data.site.site_name,
+            title: title,
             path: '/pages/index/detail_gym/detail_gym?id=' + that.data.site.boss_id +
                 '&user_id=' + app.globalData.userInfo.user_id +
                 '&nickname=' + app.globalData.userInfo.nickname +

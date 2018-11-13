@@ -94,7 +94,7 @@
   position:relative;
   top:40rpx;
   left:30rpx;
-  background-color:#f4f4f4;
+  background-color:white;
   width:680rpx;
   height:320rpx;
   font-size:28rpx;

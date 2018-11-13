@@ -71,12 +71,21 @@
     letter-spacing: 0.64rpx;
 }
 
+.real-name-text,
+.real-phone-text,
+.cost-text,
+.mem-count-text {
+    vertical-align: middle;
+}
+
 .real-name-input,
 .mem-count-input,
 .cost-input,
 .real-phone-input {
+    margin: 0;
+    padding: 0;
     margin-left: 20rpx;
-    width: auto;
+    width: 60%;
     display: inline-block;
     vertical-align: middle;
 }
@@ -180,6 +189,7 @@
     width: calc(100vw - 100rpx);
     display: inline-block;
     vertical-align: top;
+    padding-left: 10rpx;
 }
 
 .info-icon,
@@ -189,6 +199,7 @@
     width: 30rpx;
     height: 30rpx;
     margin: 0 5rpx;
+    vertical-align: middle;
 }
 
 .count-icon {

@@ -72,11 +72,11 @@ Page({
                         }
                     }
 
-                    if (book.name.length > 12) {
-                        var name = book.name
-                        name = name.slice(0, 12) + '..'
-                        book.name = name
-                    }
+                    // if (book.name.length > 15) {
+                    //     var name = book.name
+                    //     name = name.slice(0, 15) + '...'
+                    //     book.name = name
+                    // }
                     that.setData({
                         booking: book,
                         rating: res.data.rating,

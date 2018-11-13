@@ -1,3 +1,6 @@
+
+<import src="../profile/template/get_userinfo.wxml"></import>
+
 <view class="container">
     <view style="background: #e6b53c;padding: 40rpx;">
         <view class="user_info">
@@ -49,3 +52,5 @@
         </view>
     </view>
 </view> -->
+
+<template is="get-user-template" wx:if="{{getUserInfoDisabled == true}}"></template>

@@ -20,6 +20,7 @@ class roombookingmanage extends basecontroller
         $this->load->model('roombooking_model');
         $this->load->model('boss_model');
         $this->load->model('user_model');
+        $this->load->model('room_model');
         $this->isLoggedIn();
     }
 
@@ -67,6 +68,7 @@ class roombookingmanage extends basecontroller
         $this->global['searchStart'] = $searchStart;
         $this->global['searchEnd'] = $searchEnd;
         $this->global['pageType'] = 'roombooking';
+        $this->global['rooms'] = $this->room_model->getRoomsByBossId();
         $this->loadViews("roombookingmanage", $this->global, $data, NULL);
     }
 
@@ -115,11 +117,7 @@ class roombookingmanage extends basecontroller
     function showBookingDetail($bookingId)
     {
         $data['bookingDetail'] = $this->roombooking_model->getBookingDetailById($bookingId);
-//        $eventId = $this->roombooking_model->getEventId($bookingId);
-//        $data['eventDetail'] = $this->event_model->getEventById($eventId->event_id);
-//        $boss = $this->event_model->getOrganizerId($eventId->event_id);
-//        $user = $this->roombooking_model->getUserId($bookingId);
-//        $data['rating'] = $this->rating_model->getRatingContentById($user->user_id, $boss[0]->organizer_id);
+        $this->global['rooms'] = $this->room_model->getRoomsByBossId();
         $this->global['pageTitle'] = '活动详情';
         $this->loadViews("roombookingdetail", $this->global, $data, NULL);
     }

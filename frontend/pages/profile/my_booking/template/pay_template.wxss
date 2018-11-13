@@ -12,7 +12,8 @@ view {
 }
 
 .honey-row,
-.wallet-row {
+.wallet-row,
+.bottom-space {
     position: relative;
     width: 100%;
     padding: 0;
@@ -24,7 +25,7 @@ view {
 }
 
 .wallet-row {
-    margin-bottom: 30rpx;
+    margin-bottom: 20rpx;
 }
 
 .info-label,
@@ -91,13 +92,12 @@ view {
 }
 
 .honey-item {
-    position:relative;
-width:130rpx;
-height:46rpx;
-text-align:center;
-border-bottom:1px solid #d0d0d0;
-line-height:46rpx;
-
+    position: relative;
+    width: 130rpx;
+    height: 46rpx;
+    text-align: center;
+    border-bottom: 1px solid #d0d0d0;
+    line-height: 46rpx;
 }
 
 .bottom-btn-area {

@@ -12,6 +12,7 @@
       <text class="cls_user_active_pay_state_txt" wx:if="{{item.type==11}}">{{(item.site_name==null)?"":item.site_name}}-{{(item.room_name==null)?"":item.room_name}}</text>
       <text class="cls_user_active_pay_state_txt" wx:elif="{{item.type==14}}">{{(item.site_name==null)?"":item.site_name}}-{{(item.room_name==null)?"":item.room_name}}</text>
       <text class="cls_user_active_pay_state_txt" wx:elif="{{item.type==9}}">{{(item.site_name==null)?"":item.site_name}}</text>
+      <text class="cls_user_active_pay_state_txt" wx:elif="{{item.type==0}}">{{sub_title[1]}}</text>
       <text class="cls_user_active_pay_state_txt" wx:else>{{(item.name==null)?sub_title[item.type]:item.name}}</text>
     </view>
   </view>

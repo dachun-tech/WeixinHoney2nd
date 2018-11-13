@@ -51,36 +51,39 @@
                         <tr style="background-color: lightslategrey;">
                             <th width="">认证手机号</th>
                             <th>申请人</th>
-                            <th>持卡人</th>
-                            <th>身份证号</th>
-                            <th>银行卡号</th>
-                            <th width="">银行预留手机号</th>
                             <th>申请金额</th>
+                            <th>申请时间</th>
+                            <th>到账时间</th>
                             <th>状态</th>
-                            <th width="">操作</th>
+                            <th>用户提现后金额</th>
+                            <th>当日提现次数</th>
+                            <th>总提现次数</th>
+                            <th>操作</th>
                         </tr>
                         </thead>
                         <tbody>
                        <?php
-                        $state = array("提现中", "提现成功", "提现失败");
+                        $state = array("正在处理", "提现成功", "提现失败");
                         if (!empty($bindingList)) {
                             $i = 0;
                             foreach ($bindingList as $record) {
+                        	if($record->no==null) continue;
                                 ?>
                                 <tr>
                                     <td><?php echo $record->phone; ?></td>
                                     <td><?php echo $record->name; ?></td>
-                                    <td><?php echo $record->receiver; ?></td>
-                                    <td><?php echo $record->id_no; ?></td>
-                                    <td><?php echo $record->credit_no; ?></td>
-                                    <td><?php echo $record->bank_phone; ?></td>
-                                    <td><?php echo $record->amount; ?></td>
+                                    <td><?php echo $record->amount.'元'; ?></td>
+                                    <td><?php echo $record->submit_time; ?></td>
+                                    <td><?php echo is_null($record->binding_time)?'':$record->binding_time; ?></td>
                                     <td><?php echo $state[$record->state]; ?></td>
+                                    <td><?php echo $record->wallet.'元'; ?></td>
+                                    <td><?php echo $record->today_cnt; ?></td>
+                                    <td><?php echo $record->total_cnt; ?></td>
                                     <td class="text-center">
                                        <?php 
-                                            if($record->state != 0){
+                                            if(true || $record->state != 0){
                                         ?>
-                                        <a href="<?php echo base_url().'bindingDetail/'.$record->no; ?>">
+                                        <a href="<?php echo base_url().'bindingDetail/'.$record->user_id; ?>">
                                             查看 &nbsp;
                                         </a>
                                        <?php

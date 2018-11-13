@@ -51,7 +51,7 @@ else $is_train = 0;
             <div>
                 <?php echo form_open_multipart(base_url() . 'eventmanage/addEvent');
                 $item = $eventDetail[0];
-                $limitStr = ['姓名', '电话', '性别', '身份证号', '所在城市', '所在大学院系', '职业', '微信号', '邮箱'];
+                $limitStr = ['姓名', '电话', '球队', '俱乐部', '性别', '身份证号', '所在城市', '所在大学院系', '职业', '微信号', '邮箱'];
                 ?>
 
                 <div class="row form-inline">
@@ -79,7 +79,7 @@ else $is_train = 0;
                     <label> *<?= $type ?>名称 : </label>
                     <div class="input-group margin">
                         <input name="name" type="text" class="form-control" placeholder="请输入"
-                               value="<?= $item->eventName ?>" maxlength="10"
+                               value="<?= $item->eventName ?>" maxlength="30"
                                style="margin: 0 ; padding: 0px 20px;"/>
                     </div>
                 </div>
@@ -93,7 +93,7 @@ else $is_train = 0;
                     </div>
                 </div>
                 <div class="row form-inline">
-                    <label> *比赛地点 : </label>
+                    <label> *<?=($is_train==0?'比赛':$type)?>地点 : </label>
                     <div class="input-group margin">
                         <input name="address" type="text" class="form-control" placeholder="请输入"
                                value="<?= $item->detail_address ?>" maxlength="10"
@@ -101,7 +101,7 @@ else $is_train = 0;
                     </div>
                 </div>
                 <div class="row form-inline">
-                    <label> *比赛时间 : </label>
+                    <label> *<?=($is_train==0?'比赛':$type)?>时间 : </label>
                     <div class="input-group margin">
                         <input id="fromTime" name="fromTime" class="datepicker-inline form-control" size="16"
                                placeholder="请选择"
@@ -153,7 +153,7 @@ else $is_train = 0;
                 <div class="row form-inline">
                     <label> *报名限制 : </label>
                     <?php
-                    $limit = $item->condition . ',-1,-1,-1,-1,-1,-1,-1,-1,-1,-1';
+                    $limit = $item->condition . ',-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1';
                     $limit = explode(',', $limit); ?>
                     <?php
                     $j = 0;
@@ -245,9 +245,10 @@ else $is_train = 0;
                                     $kk = 0;
                                     foreach ($condition as $cond) {
                                         if ($cond != '-1') {
-                                            if ($kk == 2)
+                                            if ($kk == 4) {
+                                                if($book_info[$kk]>1) $book_info[$kk]--;
                                                 echo '<td>' . $genderStr[(($book_info[$kk] == '') ? 0 : $book_info[$kk])] . '</td>';
-                                            else
+                                            }else
                                                 echo '<td>' . $book_info[$kk] . '</td>';
                                         }
                                         $kk++;

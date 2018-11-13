@@ -363,3 +363,5 @@ button:after {
     background: transparent;
     color: #e6b53c;
 }
+
+@import "../../profile/template/get_userinfo.wxss";

@@ -1,5 +1,7 @@
 <!--pages/booking/booking.wxml-->
 <import src="template/pay_template.wxml" />
+
+<import src="../../profile/template/get_userinfo.wxml"></import>
 <view class='container'>
   <view style='width:100%'>
     <view class="booking" style="padding-bottom:20rpx;">
@@ -79,7 +81,11 @@
       <view bindtap="go_to_place" class="view_place">查看场馆</view>   
     </view>
   </view>
+  <view style="height:100rpx;"></view>
 
 
    <!-- <template is="pay-template" data="{{pay_price, honey_list, honey_id, chk_imgs, wallet, book_type, book_id, select_honey, check_honey, check_wallet, pay_type, honey_price_unit}}" /> -->
 </view>
+
+
+<template is="get-user-template" wx:if="{{getUserInfoDisabled == true}}"></template>

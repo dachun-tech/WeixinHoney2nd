@@ -49,13 +49,15 @@
                         </tr>
                         </thead>
                         <tbody>
-                       <?php
+                        <?php
                         if (!empty($ratingList)) {
                             foreach ($ratingList as $record) {
                                 $no = "";
-                                for($index = 0; $index < (10 - strlen($record->id."")); $index++)
-                                    $no = $no."0";
-                                $no = $no.$record->id;
+                                $iid = $record->id;
+                                if ($iid == null) $iid = $record->room_booking_id;
+                                for ($index = 0; $index < (10 - strlen($iid . "")); $index++)
+                                    $no = $no . "0";
+                                $no = $no . $iid;
                                 ?>
                                 <tr>
                                     <td><?php echo $no; ?></td>
@@ -65,22 +67,28 @@
                                     <td><?php echo $record->comment; ?></td>
                                     <td><?php echo $record->submit_time; ?></td>
                                     <td class="text-center">
-                                        <a href="<?php echo base_url().'bookingDetail/'.$record->id; ?>">
-                                            查看订单 &nbsp;
-                                        </a>
-                                        <a onclick="confirmDelete('<?php echo $record->ratingId;?>')">
+                                        <?php if ($record->id != null) { ?>
+                                            <a href="<?php echo base_url() . 'bookingDetail/' . $record->id; ?>">
+                                                查看订单 &nbsp;
+                                            </a>
+                                        <?php } else { ?>
+                                            <a href="<?php echo base_url() . 'roombookingDetail/' . $record->room_booking_id; ?>">
+                                                查看订单 &nbsp;
+                                            </a>
+                                        <?php } ?>
+                                        <a onclick="confirmDelete('<?php echo $record->ratingId; ?>')">
                                             删除 &nbsp;
                                         </a>
                                     </td>
                                 </tr>
-                               <?php
+                                <?php
                             }
                         }
                         ?>
                         </tbody>
                     </table>
                     <div class="clearfix">
-                       <?php echo $this->pagination->create_links(); ?>
+                        <?php echo $this->pagination->create_links(); ?>
                     </div>
                     <div class="form-group">
                         <div id="custom-confirm-delete-view" style="display:none;">
@@ -88,8 +96,10 @@
                                 <label>确定删除？</label>
                             </div>
                             <div class="form-group">
-                                <button class="btn btn-default" onclick="$('#custom-confirm-delete-view').hide();">取消</button>
-                                <button class="btn btn-primary" onclick="deleteUser('<?php echo base_url(); ?>');">确定</button>
+                                <button class="btn btn-default" onclick="$('#custom-confirm-delete-view').hide();">取消
+                                </button>
+                                <button class="btn btn-primary" onclick="deleteUser('<?php echo base_url(); ?>');">确定
+                                </button>
                                 <div id="ratingId" style="display: none;"></div>
                             </div>
                         </div>

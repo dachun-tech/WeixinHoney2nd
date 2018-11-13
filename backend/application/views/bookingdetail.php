@@ -113,7 +113,7 @@
         <div class="container">
             <div class="row">
                 <div class="col-sm-offset-2 custom-course-control-view">
-                    <input type="button" class="btn btn-primary" onclick="location.href=baseURL+'bookingmanage';"
+                    <input type="button" class="btn btn-primary" onclick="history.back();"
                            value="返回"/>
                 </div>
             </div>

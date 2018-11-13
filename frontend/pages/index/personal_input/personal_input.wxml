@@ -1,11 +1,5 @@
 <import src="../../profile/my_booking/template/pay_template.wxml" />
-<scroll-view scroll-y class="container" style="height: auto;">
-  <!-- <view class="userinfo">
-    <image class="userinfo-avatar" src="{{user_avatar}}"></image>
-    <view class="userinfo-nickname">
-      <label style="font-weight: bold;">{{nickname}}</label>
-    </view>
-  </view> -->
+<scroll-view scroll-y="true" class="container" style="height: auto;">  
   <view class='event-info-view' style="margin-top:0;">
     <view class='event-info-border-view'>
       <text class='event-info-border-text' style="font-weight: bold;">活动信息</text>
@@ -47,10 +41,10 @@
       <input class='cost-input' placeholder='' disabled='true'></input>
     </view>
   </view>
-  <view class="add-info-desc" style="display:none;">
-        <view class = "real-name-view" style="width:100%;">备注：</view>
-        <textarea class="desc_text" placeholder="在此输入备注信息，如不需要请忽略" bindinput='On_edit_comment' value="{{comment}}"></textarea>
-    </view>
+  <!--<view class="add-info-desc" style="display:none;">
+        <view class = "real-name-view" style="width:100%;display:none;">备注：</view>
+        <textarea class="desc_text" placeholder="在此输入备注信息，如不需要请忽略" bindinput='On_edit_comment' value="{{comment}}" style="display:none;"></textarea>
+    </view>-->
   <view class='cost-way-view' >
     <text class='cost-way-text'>支付方式</text>
     <radio-group bindchange="on_click_payway" class="pay-way-radio" wx:if="{{event.pay_type==1}}">

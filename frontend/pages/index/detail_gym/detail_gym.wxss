@@ -109,7 +109,7 @@
     padding-right: 40rpx;
     word-break: break-all;
     font-family: PingFangSC-Regular;
-    font-size: 30rpx;
+    font-size: 26rpx;
     color: #333;
     letter-spacing: 1.04rpx;
     line-height: 50rpx;
@@ -139,7 +139,7 @@
     margin-right: 40rpx;
     word-break: break-all;
     font-family: PingFangSC-Regular;
-    font-size: 30rpx;
+    font-size: 26rpx;
     color: #333;
     letter-spacing: 1.04rpx;
     line-height: 50rpx;
@@ -200,7 +200,7 @@
 
 .place-type-text {
     margin-left: 5rpx;
-    font-size: 30rpx;
+    font-size: 26rpx;
     font-family: "PingFangSC-Regular";
     vertical-align: middle;
 }
@@ -211,6 +211,7 @@
     color: #a0a0a0;
     font-size: 23rpx;
     font-family: "PingFangSC-Regular";
+    padding-top:15rpx;
 }
 
 .booking-btn {
@@ -239,4 +240,5 @@
     overflow: hidden;
 }
 
-@import "../../profile/template/stadium_template.wxss"
+@import "../../profile/template/stadium_template.wxss";
+@import "../../profile/template/get_userinfo.wxss";

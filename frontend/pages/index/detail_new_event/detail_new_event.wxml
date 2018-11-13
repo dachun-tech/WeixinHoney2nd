@@ -1,6 +1,8 @@
 <!-- User Activity Detail Viewer -->
 <import src="../../../wxParse/wxParse.wxml" />
-<view class="container">
+<import src="../../profile/template/get_userinfo.wxml"></import>
+
+<view class="container" style="width:calc(100vw);height:calc(100vh);">
 
   <scroll-view scroll-y class='postadd-view'>
           
@@ -65,7 +67,7 @@
  <!-- Event introduce info -->
     <view class='introduce'>
       <view class='introduce-view'>
-        <text class='introduce-border' style="font-weight: bold;">赛事介绍</text>
+        <text class='introduce-border' style="font-weight: bold;">{{train_type[is_train]}}介绍</text>
       </view>
       <view class='product-explain-view'>
         <template is="wxParse" data="{{wxParseData:event_comment.nodes}}" />
@@ -130,6 +132,7 @@
             </view>
         </view>
     </view>
+    
   </scroll-view>
 
 
@@ -153,11 +156,13 @@
     
     <button bindtap="btn_Clicked_Personal_Input" id="{{event.id}}" disabled="{{is_disabled}}" class='btn-personal-participate'>{{btn_text}}</button>
   </view>
+  
 </view>
-
 
 <view class="view_mask" bindtap='hide_canvas' wx:if="{{show_state}}"></view>
 <canvas canvas-id="shareImg" style="width:600px;height:900px"></canvas>
 <view class="show_canvas{{event.detail_address.length>20?2:1}}"  wx:if="{{show_state}}">
   <image class="canvas_image" src='{{img_url}}' bindtap='hide_canvas'></image>
 </view>
+
+<template is="get-user-template" wx:if="{{getUserInfoDisabled == true}}"></template>

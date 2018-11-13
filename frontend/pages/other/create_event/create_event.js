@@ -395,10 +395,11 @@ Page({
     },
     on_blur_comment: function(e) {
         this.data.event.comment = e.detail.value;
+        this.data.flag == 1;
         this.setData({
             textareastr: e.detail.value,
+            flag: 1
         })
-        this.data.flag == 1;
     },
     on_blur_scroll: function() {
         var that = this;
@@ -478,7 +479,8 @@ Page({
                             province_id: that.data.province[province_index].id,
                             province_name: province_name,
                             city_name: city_name,
-                            area_name: area_name
+                            area_name: area_name,
+                            flag: 0
                         })
                         that.data.event.address4 = got_address;
                         that.setData({
@@ -657,7 +659,8 @@ Page({
     },
     on_submit: function() {
         this.setData({
-            isProcessing: true
+            isProcessing: true,
+            flag: 0
         })
 
         var _this = this;
@@ -670,6 +673,7 @@ Page({
         if (_this.data.event.name.length > 20) {
             _this.setData({
                 focus_name: true,
+                isProcessing: false
             })
             wx.showToast({
                 title: '活动名称不应超过20个字',
@@ -681,6 +685,7 @@ Page({
         if (_this.data.event.name.length == 0) {
             _this.setData({
                 focus_name: true,
+                isProcessing: false
             })
             wx.showToast({
                 title: '请填写活动名称',
@@ -692,6 +697,7 @@ Page({
         if (_this.data.event.agent_name.length > 20) {
             _this.setData({
                 focus_agent_name: true,
+                isProcessing: false
             })
             wx.showToast({
                 title: '发起人的名字不应超过20个字',
@@ -703,6 +709,7 @@ Page({
         if (_this.data.event.agent_name.length == 0) {
             _this.setData({
                 focus_agent_name: true,
+                isProcessing: false
             })
             wx.showToast({
                 title: '请填写发起人的名字',
@@ -714,6 +721,7 @@ Page({
         if (_this.data.event.agent_phone.length == 0) {
             _this.setData({
                 focus_phone: true,
+                isProcessing: false
             })
             wx.showToast({
                 title: '请填写手机号码',
@@ -725,6 +733,7 @@ Page({
         if (!app.checkValidPhone(_this.data.event.agent_phone)) {
             _this.setData({
                 focus_phone: true,
+                isProcessing: false
             })
             wx.showToast({
                 title: '请填写正确的手机号码',
@@ -736,6 +745,7 @@ Page({
         if (_this.data.event.limit == "" || _this.data.event.limit == 0) {
             _this.setData({
                 focus_limit: true,
+                isProcessing: false
             })
             wx.showToast({
                 title: '人数上限必须大于0',
@@ -747,6 +757,7 @@ Page({
         if (_this.data.event.limit_perUser == "" || _this.data.event.limit_perUser == 0) {
             _this.setData({
                 focus_limit_person: true,
+                isProcessing: false
             })
             wx.showToast({
                 title: '每个用户最多可以报名人数必须大于0',
@@ -758,6 +769,7 @@ Page({
         if (_this.data.event.cost == "") {
             _this.setData({
                 focus_cost: true,
+                isProcessing: false
             })
             wx.showToast({
                 title: '请填写活动费用',
@@ -769,6 +781,7 @@ Page({
         if (_this.data.event.cost < 0) {
             _this.setData({
                 focus_cost: true,
+                isProcessing: false
             })
             wx.showToast({
                 title: '请填写活动费用',
@@ -780,6 +793,9 @@ Page({
 
         if (_this.data.event.kind == 40) {
             _this.showitem();
+            _this.setData({
+                isProcessing: false,
+            })
             wx.showToast({
                 title: '请选择活动类型',
                 duration: 3000,
@@ -789,6 +805,9 @@ Page({
         }
         if (_this.data.select_position_text == "" && _this.data.role == 2) {
             _this.On_click_map();
+            _this.setData({
+                isProcessing: false,
+            })
             wx.showToast({
                 title: '请选择地图定位',
                 duration: 3000,
@@ -800,6 +819,9 @@ Page({
         var tempenddate = Date.parse(_this.data.event.end_time.replace(/-/g, '/'))
 
         if (tempstartdate > tempenddate) {
+            _this.setData({
+                isProcessing: false,
+            })
             wx.pageScrollTo({
                 scrollTop: 0,
                 duration: 100
@@ -812,6 +834,9 @@ Page({
             return
         }
         if (_this.data.image_path[0] == "") {
+            _this.setData({
+                isProcessing: false,
+            })
             wx.pageScrollTo({
                 scrollTop: 0,
                 duration: 100
@@ -824,6 +849,9 @@ Page({
             return
         }
         if (_this.data.overimagecount) {
+            _this.setData({
+                isProcessing: false,
+            })
             wx.pageScrollTo({
                 scrollTop: 0,
                 duration: 100
@@ -838,6 +866,9 @@ Page({
 
         if (_this.data.event.address4 == '') {
             _this.setData({
+                isProcessing: false,
+            })
+            _this.setData({
                 focus_address: true,
             });
             wx.showToast({
@@ -849,12 +880,16 @@ Page({
         }
         if (_this.data.event.comment == '') {
             _this.setData({
+                isProcessing: false,
+            })
+            _this.setData({
                 focus_comment: true,
+                flag: 1
             })
             wx.showToast({
                 title: '请填写活动简介',
                 duration: 3000,
-                icon: 'none'
+                icon: 'none',
             })
             return
         }
@@ -871,8 +906,13 @@ Page({
             var tmp = wx.getStorageSync("isfirstcreate")
             if (tmp == 1) {
                 _this.data.event.comment = _this.data.textareastr;
-                _this.setData({ showModal1: true, textareastr: "", placestr: '' })
-                _this.setData({ is_disabled: true })
+                _this.setData({
+                    showModal1: true,
+                    textareastr: "",
+                    placestr: '',
+                    is_disabled: true,
+                    isProcessing: false
+                })
             } else {
                 _this.on_submit1()
 
@@ -885,6 +925,9 @@ Page({
         var _this = this;
         var image_array = _this.data.image_path;
         var image_str = "";
+        this.setData({
+            flag: 0
+        })
         wx.uploadFile({
             url: app.globalData.mainURL + 'api/imageUpload',
             filePath: image_array[0],
@@ -940,7 +983,9 @@ Page({
         else if (this.data.isfirstbtn == 0) {
             this.data.isfirstbtn = 1
         }
-
+        this.setData({
+            flag: 0
+        })
         var _this = this;
         console.log(_this.data.event.comment);
         wx.request({
@@ -1003,7 +1048,8 @@ Page({
         this.setData({
             select_province: this.data.province_id,
             select_city: this.data.city_id,
-            select_area: this.data.area_id
+            select_area: this.data.area_id,
+            flag: 0
         })
 
         var _this = this
@@ -1066,7 +1112,8 @@ Page({
     onConfirm1: function() {
         this.on_submit1()
         this.setData({
-            showModal1: false
+            showModal1: false,
+            flag: 0
         });
     },
     preventTouchMove: function() {

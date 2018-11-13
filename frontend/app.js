@@ -48,9 +48,9 @@ App({
         memberState: ['使用中', '已过期'],
         exchangeState: ['待发货', '待收货', '交易成功'],
         bindingState: ['提现中', '提现成功', '提现失败'],
-        mainURL: 'https://www.fengteam.cn/backend_test/',
+        mainURL: 'https://www.fengteam.cn/backend2/',
         smsURL: 'https://www.fengteam.cn/sms/SendTemplateSMS.php',
-        uploadURL: 'https://www.fengteam.cn/backend_test/uploads/',
+        uploadURL: 'https://www.fengteam.cn/backend2/uploads/',
         // mainURL: 'https://127.0.0.1/honey/',
         // smsURL: 'https://www.fengteam.cn/sms/SendTemplateSMS.php',
         // uploadURL: 'https://127.0.0.1/honey/uploads/',
@@ -69,6 +69,7 @@ App({
         issearch: 0,
         searchlat: 0,
         searchlong: 0,
+        currentCityName: '',
         ischooseimage: 0,
         iscreatepage: 0,
         nickname_buf: '',
@@ -178,7 +179,9 @@ App({
                                 var pc = new WXBizDataCrypt(_this.globalData.appid, wx.getStorageSync('session_key'));
                                 var data = pc.decryptData(encryptedData, iv)
                                 wx.setStorageSync('user_step', data.stepInfoList.pop().step * 1)
-                                wx.setStorageSync('last_step', _this.globalData.laststep = data.stepInfoList.pop().step * 1)
+                                wx.setStorageSync('last_step', data.stepInfoList.pop().step * 1)
+                                _this.globalData.user_step = data.stepInfoList.pop().step * 1;
+                                _this.globalData.laststep = data.stepInfoList.pop().step * 1;
                                 console.log('User step is ', wx.getStorageSync('user_step'));
                             }
                         })
@@ -354,6 +357,21 @@ App({
             success: function(res) {
                 that.globalData.searchlat = res.latitude;
                 that.globalData.searchlong = res.longitude;
+
+                var url = 'https://restapi.amap.com/v3/geocode/regeo?key=8eb63e36d0b6d7d29a392503a4a80f6c&location=' + res.longitude + ',' + res.latitude + '&poitype=&radius=&extensions=all&batch=false&roadlevel=0';
+
+                //get activity array
+                wx.request({
+                    url: url,
+                    success: function(res) {
+                        //console.log('got location');
+                        //console.log(res.data);
+                        //console.log(res.data.regeocode.addressComponent);
+                        // var province_name = res.data.regeocode.addressComponent.province
+                        that.globalData.currentCityName = res.data.regeocode.addressComponent.city;
+                        // var area_name = res.data.regeocode.addressComponent.district
+                    },
+                });
             }
         });
     },

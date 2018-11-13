@@ -13,10 +13,12 @@ Page({
         user_id: 0,
         id: 0,
         pay_type: 1,
+        train_type: ["赛事", "培训"],
         btnstrarray: ["确认参加", "确认支付"],
         isfirstbtn: 0,
-        field_opt: ["姓名", "电话", "性别", "身份证号", "所在城市", "所在大学院系", "职业", "微信号", "邮箱"],
-        val_opt: ["", "", "", "", "", "", "", "", ""]
+        field_opt: ["姓名", "电话", "球队", "俱乐部", "性别", "身份证号", "所在城市", "所在大学院系", "职业", "微信号", "邮箱"],
+        val_opt: ["", "", "", "", "", "", "", "", "", "", ""],
+        isPayProcessing: false,
     },
     onLoad: function(param) {
         var that = this;
@@ -56,7 +58,20 @@ Page({
             },
             success: function(res) {
                 console.log(res)
-                var event_buf = res.data.result[0]
+                var event_buf = res.data.result[0];
+                var bookInfo = res.data.booking;
+                if (bookInfo.length > 0) {
+                    for (var i = 0; i < bookInfo.length; i++) {
+                        if (bookInfo[i].user_id == app.globalData.userInfo.user_id && bookInfo[i].state == '0') {
+                            wx.navigateBack({ delta: 1 });
+                            return;
+                        }
+                    }
+                }
+
+                wx.setNavigationBarTitle({
+                    title: that.data.train_type[event_buf.is_train] + '报名'
+                });
                 var time = event_buf.start_time.split(':');
                 event_buf.start_time = time[0] + ':' + time[1];
                 time = event_buf.end_time.split(':');
@@ -86,6 +101,7 @@ Page({
                 var memcount = '1';
                 that.setData({
                     event: event_buf,
+                    is_train: event_buf.is_train,
                     condition: event_buf.condition.split(','),
                     id: id,
                     val_realname: realname,
@@ -96,7 +112,7 @@ Page({
                     memcount: memcount,
                     gender: that.data.user_gender,
                 });
-                that.data.val_opt[2] = that.data.user_gender;
+                that.data.val_opt[4] = that.data.user_gender;
 
                 app.globalData.userInfo.honey = parseInt(app.globalData.userInfo.honey);
                 app.globalData.userInfo.amount = parseFloat(app.globalData.userInfo.amount);
@@ -150,14 +166,14 @@ Page({
             if (item == -1 || item == 0) continue;
             if (val_in.length == 0) {
                 x++;
-                if (i == 2)
+                if (i == 4)
                     wx.showToast({
-                        title: '请选择' + that.data.field_opt[i],
+                        title: '请选择您的' + that.data.field_opt[i],
                         icon: 'none'
                     })
                 else
                     wx.showToast({
-                        title: '请填写真实' + that.data.field_opt[i],
+                        title: '请填写您的真实' + that.data.field_opt[i],
                         icon: 'none'
                     })
                 break;
@@ -186,10 +202,10 @@ Page({
                 })
                 break;
             }
-            if (i == 3 && (val_in.length < 15 || val_in.length > 18)) {
+            if (i == 5 && (val_in.length < 15 || val_in.length > 18)) {
                 x++
                 wx.showToast({
-                    title: '请填写正确的' + that.data.field_opt[i],
+                    title: '请填写正确的' + that.data.field_opt[i] + '(15-18个字)',
                     icon: 'none'
                 })
                 break;
@@ -199,7 +215,7 @@ Page({
         if (this.data.realname.length == 0) {
             x++
             wx.showToast({
-                title: '请填写真实昵称',
+                title: '请填写您的真实昵称',
                 icon: 'none'
             })
         }
@@ -264,15 +280,16 @@ Page({
             '../../../image/minus@2x.png', '../../../image/minus_hover@2x.png',
             '../../../image/plus@2x.png', '../../../image/plus_hover@2x.png'
         ];
-
+        var honey_unit = 10000;
         var honey_list = [];
-        var honey_unit = parseInt(app.globalData.rule[8].value);
-        var honey_price_unit = parseFloat(app.globalData.rule[9].value);
+        var honey_rule = parseInt(app.globalData.rule[8].value);
+        var honey_price_rule = honey_unit / honey_rule * parseFloat(app.globalData.rule[9].value);
         if (app.globalData.userInfo.isVIP == 1) {
-            honey_unit = parseInt(app.globalData.rule[10].value);
-            honey_price_unit = parseFloat(app.globalData.rule[11].value);
+            honey_rule = parseInt(app.globalData.rule[10].value);
+            honey_price_rule = honey_unit / honey_rule * parseFloat(app.globalData.rule[11].value);
         }
-        for (var i = honey_unit; i <= honey; i += honey_unit) {
+        if (honey_rule > honey) honey_rule = honey;
+        for (var i = honey_unit; i <= honey_rule; i += honey_unit) {
             honey_list.push(i);
         }
 
@@ -292,7 +309,7 @@ Page({
             chk_imgs: ["../../../image/hook_n@2x.png", "../../../image/hook_s.png"],
             check_honey: 0,
             check_wallet: 0,
-            honey_price_unit: honey_price_unit,
+            honey_price_unit: honey_price_rule,
 
             min_img: that.data.mem_count_img[0],
             plus_img: that.data.mem_count_img[2],
@@ -404,16 +421,24 @@ Page({
             check_honey: that.data.check_honey,
             check_wallet: that.data.check_wallet,
             pay_price: that.data.pay_price,
-            wallet: that.data.wallet
+            wallet: that.data.wallet,
+            honey_list: that.data.honey_list,
+            honey_price_unit: that.data.honey_price_unit
         })
+
+        that.data.isPayProcessing = false;
     },
     perform_pay: function(event) {
         var that = this;
         if (that.checkValidation() == false) return;
 
+        if (that.data.isPayProcessing) return;
+        that.data.isPayProcessing = true;
+
         var type = that.data.pay_type;
         var item_id = that.data.book_id;
         var book_mode = that.data.book_type;
+
         if (that.data.pay_type == 1 && that.data.pay_price != 0) {
             console.log(that.data.pay_price)
             var ordercode = that.data.pay_price;
@@ -449,6 +474,7 @@ Page({
                                     },
                                     fail: function(res) {
                                         // fail
+                                        that.data.isPayProcessing = false;
                                     },
                                     complete: function(res) {
                                         that.data.isfirstbtn = 0
@@ -505,11 +531,11 @@ Page({
                 description: that.data.comment
             },
             success: function(res) {
+                that.data.isPayProcessing = false;
+                that.data.isfirstbtn = 0;
                 wx.redirectTo({
                     url: '../../profile/final_cancel/final_cancel?type=4&event=' + that.data.book_id,
-                    success: function() {
-                        that.data.isfirstbtn = 0
-                    }
+                    success: function() {}
                 })
             }
         })

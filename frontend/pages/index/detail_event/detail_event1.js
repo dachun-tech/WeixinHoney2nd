@@ -95,14 +95,14 @@ Page({
                 //get event detail
                 var event_buf = res.data.result[0];
                 event_buf.favor_state = 1 * event_buf.favor_state
-                if (event_buf.eventName.length > 15) {
-                    var name = event_buf.eventName
-                    name = name.slice(0, 15) + '..'
-                    event_buf.eventName = name
-                }
-                if ((event_buf.role != '2') && (event_buf.site_name.length > 11)) {
+                    // if (event_buf.eventName.length > 15) {
+                    //     var name = event_buf.eventName
+                    //     name = name.slice(0, 15) + '...'
+                    //     event_buf.eventName = name
+                    // }
+                if ((event_buf.role != '2') && (event_buf.site_name.length > 15)) {
                     var site_name = event_buf.site_name
-                    site_name = site_name.slice(0, 11) + '..'
+                    site_name = site_name.slice(0, 15) + '...'
                     event_buf.site_name = site_name
                 }
 

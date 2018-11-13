@@ -1,38 +1,54 @@
 {
     "pages": [
+
         "pages/index/index",
         "pages/index/close",
-        "pages/index/detail_gym/detail_gym",
         "pages/index/detail_event/detail_event",
+        "pages/index/detail_gym/detail_gym",
         "pages/index/detail_new_event/detail_new_event",
         "pages/index/detail_new_event/view_map",
         "pages/index/personal_input/personal_input",
         "pages/index/new_event_input/new_event_input",
         "pages/index/search/search",
         "pages/index/news/news",
+
         "pages/logs/logs",
+
         "pages/profile/profile",
         "pages/profile/profile_friend",
+
         "pages/profile/my_event/my_event",
         "pages/profile/my_event/event_detail",
+
         "pages/profile/my_booking/booking",
-        "pages/profile/my_booking/booking_detail",
         "pages/profile/my_booking/book_evaluation",
+        "pages/profile/my_booking/booking_detail",
         "pages/profile/my_booking/booking_user_detail",
         "pages/profile/my_booking/booking_final",
+        "pages/profile/my_booking/booking_cancel",
         "pages/profile/final_cancel/final_cancel",
+
         "pages/profile/my_activity/my_activity",
         "pages/profile/my_activity/booking_detail",
+
         "pages/profile/my_purse/my_purse",
+        "pages/profile/my_purse/my_withdraw",
+        "pages/profile/my_purse/trans_detail/withdraw_history",
         "pages/profile/my_purse/trans_detail/trans_detail",
         "pages/profile/my_purse/add_New_Account/add_New_Account",
+
         "pages/profile/my_membership/my_membership",
         "pages/profile/my_focus/my_focus",
         "pages/profile/auth/auth",
+        "pages/profile/auth/auth-text/auth_text",
+        "pages/profile/my_info/my_info",
+
         "pages/profile/delivery/delivery",
         "pages/profile/delivery/editdelivery",
         "pages/profile/register_stadium/register_stadium",
+
         "pages/activity/activity",
+
         "pages/backyard/backyard",
         "pages/backyard/backyard_friend",
         "pages/backyard/mainbeeshop/mainbeeshop",
@@ -44,15 +60,17 @@
         "pages/backyard/help/help",
         "pages/backyard/my_friend/friends",
         "pages/backyard/my_friend/nfriends",
+
         "pages/other/evaluation/evaluation",
         "pages/other/comment/comment",
         "pages/other/create_event/create_event",
         "pages/other/create_event/createfirst",
-        "pages/profile/auth/auth-text/auth_text",
-        "pages/profile/my_info/my_info",
+
         "pages/index/detail_event/detail_event1",
         "pages/index/detail_event/view_map",
+
         "pages/index/room_booking/room_booking",
+
         "pages/test/index"
     ],
     "window": {
@@ -97,5 +115,11 @@
                 "selectedIconPath": "image/my_s@2x.png"
             }
         ]
+    },
+    "networkTimeout": {
+        "request": 20000,
+        "connectSocket": 20000,
+        "uploadFile": 20000,
+        "downloadFile": 20000
     }
 }

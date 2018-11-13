@@ -90,7 +90,6 @@ Page({
             getUserInfoDisabled: false
         })
         this.data.isFirstInit = false;
-        app.globalData.initDisabled = false;
         this.onShow();
         // setTimeout(function() {
 
@@ -99,6 +98,7 @@ Page({
     onShow: function(option) {
         var that = app;
         var _this = this;
+        that.globalData.initDisabled = false;
         wx.getSetting({
             success: function(res) {
                 var perm = res;
@@ -125,21 +125,22 @@ Page({
                             that.globalData.initDisabled = true;
                         },
                         complete: function() {
-                            wx.authorize({
-                                scope: 'scope.werun',
-                                fail: function() {
-                                    that.globalData.initDisabled = true;
-                                },
-                                complete: function() {
-                                    if (that.globalData.initDisabled)
-                                        that.go2Setting();
-                                    else {
-                                        that.globalData.getUserInfoDisabled = false;
-                                        _this.onPrepare();
-                                        isFirstLaunch = false;
-                                    }
-                                }
-                            })
+                            if (that.globalData.initDisabled)
+                                that.go2Setting();
+                            else {
+                                that.globalData.getUserInfoDisabled = false;
+                                _this.onPrepare();
+                                app.globalData.isFirstLaunch = false;
+                            }
+                            // wx.authorize({
+                            //     scope: 'scope.werun',
+                            //     fail: function() {
+                            //        // that.globalData.initDisabled = true;
+                            //     },
+                            //     complete: function() {
+
+                            //     }
+                            // })
                         }
                     });
                 }
@@ -234,9 +235,15 @@ Page({
                                     if (event_buf[index].current_member == null) {
                                         event_buf[index].current_member = 0;
                                     }
-                                    if (event_buf[index].name.length > 10) {
+
+                                    if (event_buf[index].name.length > 14) {
                                         var name = event_buf[index].name
-                                        name = name.slice(0, 10) + '..'
+                                        name = name.slice(0, 14) + '...'
+                                        event_buf[index].name = name
+                                    }
+                                    if (event_buf[index].organizer_id != '0' && event_buf[index].name.length > 10) {
+                                        var name = event_buf[index].name
+                                        name = name.slice(0, 10) + '...'
                                         event_buf[index].name = name
                                     }
                                     event_buf[index].favor = res.data.favor[index];
@@ -337,9 +344,9 @@ Page({
         //                                 if (event_buf[index].current_member == null) {
         //                                     event_buf[index].current_member = 0;
         //                                 }
-        //                                 if (event_buf[index].name.length > 10) {
+        //                                 if (event_buf[index].name.length > 15) {
         //                                     var name = event_buf[index].name
-        //                                     name = name.slice(0, 10) + '..'
+        //                                     name = name.slice(0, 15) + '...'
         //                                     event_buf[index].name = name
         //                                 }
         //                                 event_buf[index].favor = res.data.favor[index];

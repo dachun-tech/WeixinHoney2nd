@@ -1,4 +1,7 @@
 <!-- User Activity Detail Viewer -->
+
+<import src="../../profile/template/get_userinfo.wxml"></import>
+
 <view class="container">
   <scroll-view scroll-y class='postadd-view'>
           
@@ -170,3 +173,5 @@
 <view class="show_canvas{{event.detail_address.length>20?2:1}}"  wx:if="{{show_state}}">
   <image class="canvas_image" src='{{img_url}}' bindtap='hide_canvas'></image>
 </view>
+
+<template is="get-user-template" wx:if="{{getUserInfoDisabled == true}}"></template>

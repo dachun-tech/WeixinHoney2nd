@@ -107,7 +107,7 @@ Page({
                         }
                         if (event_buf[index].name.length > 10) {
                             var name = event_buf[index].name
-                            name = name.slice(0, 10) + '..'
+                            name = name.slice(0, 10) + '...'
                             event_buf[index].name = name
                         }
 
@@ -161,9 +161,9 @@ Page({
                             book[index].idshow = '0000000000'
                             book[index].idshow = book[index].idshow.slice(0, 10 - book[index].id.length) + book[index].id
                         }
-                        if (book[index].name.length > 12) {
+                        if (book[index].name.length > 10) {
                             var name = book[index].name
-                            name = name.slice(0, 12) + '..'
+                            name = name.slice(0, 10) + '...'
                             book[index].name = name
                         }
                         var time = book[index].start_time.split(':');

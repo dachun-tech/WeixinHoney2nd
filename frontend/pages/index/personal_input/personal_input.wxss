@@ -176,6 +176,7 @@
     width: calc(100vw - 100rpx);
     display: inline-block;
     vertical-align: top;
+    padding-left: 10rpx;
 }
 
 .info-icon,
@@ -185,6 +186,7 @@
     width: 30rpx;
     height: 30rpx;
     margin: 0 5rpx;
+    vertical-align: middle;
 }
 
 .count-icon {

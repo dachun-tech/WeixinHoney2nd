@@ -15,6 +15,7 @@ Page({
         pay_type: 1,
         btnstrarray: ["确认参加", "确认支付"],
         isfirstbtn: 0,
+        isPayProcessing: false,
     },
     onLoad: function(param) {
         var that = this;
@@ -53,6 +54,16 @@ Page({
             },
             success: function(res) {
                 console.log(res)
+                var bookInfo = res.data.booking;
+                if (bookInfo.length > 0) {
+                    for (var i = 0; i < bookInfo.length; i++) {
+                        if (bookInfo[i].user_id == app.globalData.userInfo.user_id && bookInfo[i].state == '0') {
+                            wx.navigateBack({ delta: 1 });
+                            return;
+                        }
+                    }
+                }
+
                 var event_buf = res.data.result[0]
                 var time = event_buf.start_time.split(':');
                 event_buf.start_time = time[0] + ':' + time[1];
@@ -235,16 +246,22 @@ Page({
             '../../../image/plus@2x.png', '../../../image/plus_hover@2x.png'
         ];
 
+        var honey_unit = 10000;
         var honey_list = [];
-        var honey_unit = parseInt(app.globalData.rule[12].value);
-        var honey_price_unit = parseFloat(app.globalData.rule[13].value);
-        if (app.globalData.userInfo.isVIP != 1) {
-            honey_unit = parseInt(app.globalData.rule[10].value);
-            honey_price_unit = parseFloat(app.globalData.rule[11].value);
-        }
-        for (var i = honey_unit; i <= honey; i += honey_unit) {
+        var honey_rule = parseInt(app.globalData.rule[12].value);
+        var honey_price_rule = honey_unit / honey_rule * parseFloat(app.globalData.rule[13].value);
+
+        if (honey_rule > honey) honey_rule = honey;
+        for (var i = honey_unit; i <= honey_rule; i += honey_unit) {
             honey_list.push(i);
         }
+
+        if (app.globalData.userInfo.isVIP != 1) {
+            honey_unit = 0; //parseInt(app.globalData.rule[10].value);
+            honey_price_rule = 0; //parseFloat(app.globalData.rule[11].value);
+            honey_list = [];
+        }
+
         that.setData({
             total_cost: price,
             pay_price: price,
@@ -260,7 +277,7 @@ Page({
             chk_imgs: ["../../../image/hook_n@2x.png", "../../../image/hook_s.png"],
             check_honey: 0,
             check_wallet: 0,
-            honey_price_unit: honey_price_unit,
+            honey_price_unit: honey_price_rule,
 
 
             min_img: that.data.mem_count_img[0],
@@ -353,6 +370,7 @@ Page({
     calculate_pay_price: function() {
         var that = this;
         that.data.price = that.data.total_cost * 1;
+
         that.data.pay_price = that.data.price;
         that.data.wallet = that.data.old_wallet;
         if (that.data.check_honey == 1 && that.data.pay_price * 1 >= (that.data.honey_id * 1 + 1) * that.data.honey_price_unit)
@@ -380,11 +398,17 @@ Page({
             check_wallet: that.data.check_wallet,
             pay_price: that.data.pay_price,
             wallet: that.data.wallet
-        })
+        });
+        that.data.isPayProcessing = false;
     },
     perform_pay: function(event) {
         var that = this;
+
+
         if (that.checkValidation() == false) return;
+
+        if (that.data.isPayProcessing) return;
+        that.data.isPayProcessing = true;
 
         var type = that.data.pay_type;
         var item_id = that.data.book_id;
@@ -424,6 +448,7 @@ Page({
                                     },
                                     fail: function(res) {
                                         // fail
+                                        that.data.isPayProcessing = false;
                                     },
                                     complete: function(res) {
                                         that.data.isfirstbtn = 0
@@ -478,6 +503,8 @@ Page({
                 description: that.data.comment
             },
             success: function(res) {
+                that.data.isPayProcessing = false;
+                that.data.isfirstbtn = 0;
                 wx.redirectTo({
                     url: '../../profile/final_cancel/final_cancel?type=2&event=' + that.data.book_id,
                     success: function() {
