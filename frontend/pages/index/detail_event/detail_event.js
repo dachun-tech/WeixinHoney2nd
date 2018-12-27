@@ -65,9 +65,8 @@ Page({
 
                 that.globalData.getUserInfoDisabled = !perm.authSetting['scope.userInfo'];
                 that.globalData.getUserLocationDisabled = !perm.authSetting['scope.userLocation'];
-                that.globalData.getWerunDataDisabled = !perm.authSetting['scope.werun'];
 
-                if (!that.globalData.getUserInfoDisabled && !that.globalData.getUserLocationDisabled && !that.globalData.getWerunDataDisabled) {
+                if (!that.globalData.getUserInfoDisabled && !that.globalData.getUserLocationDisabled) {
                     _this.onPrepare();
                     return;
                 }
@@ -95,9 +94,10 @@ Page({
                             // wx.authorize({
                             //     scope: 'scope.werun',
                             //     fail: function() {
-                            //         that.globalData.initDisabled = true;
+                            //        // that.globalData.initDisabled = true;
                             //     },
                             //     complete: function() {
+
                             //     }
                             // })
                         }

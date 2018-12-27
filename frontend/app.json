@@ -28,6 +28,7 @@
         "pages/profile/my_booking/booking_cancel",
         "pages/profile/final_cancel/final_cancel",
 
+        "pages/activity/activity",
         "pages/profile/my_activity/my_activity",
         "pages/profile/my_activity/booking_detail",
 
@@ -47,7 +48,6 @@
         "pages/profile/delivery/editdelivery",
         "pages/profile/register_stadium/register_stadium",
 
-        "pages/activity/activity",
 
         "pages/backyard/backyard",
         "pages/backyard/backyard_friend",

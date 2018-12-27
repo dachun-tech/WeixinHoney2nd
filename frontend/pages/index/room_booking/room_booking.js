@@ -76,9 +76,8 @@ Page({
 
                 that.globalData.getUserInfoDisabled = !perm.authSetting['scope.userInfo'];
                 that.globalData.getUserLocationDisabled = !perm.authSetting['scope.userLocation'];
-                that.globalData.getWerunDataDisabled = !perm.authSetting['scope.werun'];
 
-                if (!that.globalData.getUserInfoDisabled && !that.globalData.getUserLocationDisabled && !that.globalData.getWerunDataDisabled) {
+                if (!that.globalData.getUserInfoDisabled && !that.globalData.getUserLocationDisabled) {
                     _this.onPrepare();
                     return;
                 }
@@ -218,9 +217,9 @@ Page({
         }
         var tmp = new Date(start2_time.toString());
         for (var i = 0; i < diff2 + time_step; i += time_step) {
-          if (i == 0 && site.end1 == site.start2) {
-              tmp.setTime(tmp.getTime() + time_step * 3600000);
-              continue;
+            if (i == 0 && site.end1 == site.start2) {
+                tmp.setTime(tmp.getTime() + time_step * 3600000);
+                continue;
             }
             if (tmp > end2_time) tmp = new Date(end2_time.toString());
             var hr = tmp.getHours();

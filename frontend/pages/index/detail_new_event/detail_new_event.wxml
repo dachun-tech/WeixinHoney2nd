@@ -35,7 +35,7 @@
       <view class="act_date">
         <view class="date_content">
           <view class="date_top">{{start_date}}</view>
-          <view class="date_bottom">比赛日期</view>
+          <view class="date_bottom">{{train_type[is_train]}}日期</view>
         </view>
         <view class="date_content" style="border-left:1rpx solid #eee;;color:#e6b53c">
           <view class="date_top">{{remain_day}}天(报满即止)</view>
@@ -60,7 +60,7 @@
       </view> 
       <view class='limit-num'>       
         <text class='limit-title-text' style="font-weight: bold;">报名限制</text>
-        <text class="limit-value-text">仅限18岁以上报名, {{condition_str}}</text>      
+        <text class="limit-value-text">{{condition_str}}</text>      
       </view>     
     </view>
 

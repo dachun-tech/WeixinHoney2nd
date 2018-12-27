@@ -170,21 +170,21 @@ App({
                         wx.setStorageSync('openid', res.data.openid); //存储openid 
                         wx.setStorageSync('session_key', res.data.session_key)
                         _this.getUserDetail(obj);
-
-                        wx.getWeRunData({
-                            success: function(res) {
-                                var encryptedData = res.encryptedData;
-                                console.log("getWerunData", encryptedData);
-                                var iv = res.iv;
-                                var pc = new WXBizDataCrypt(_this.globalData.appid, wx.getStorageSync('session_key'));
-                                var data = pc.decryptData(encryptedData, iv)
-                                wx.setStorageSync('user_step', data.stepInfoList.pop().step * 1)
-                                wx.setStorageSync('last_step', data.stepInfoList.pop().step * 1)
-                                _this.globalData.user_step = data.stepInfoList.pop().step * 1;
-                                _this.globalData.laststep = data.stepInfoList.pop().step * 1;
-                                console.log('User step is ', wx.getStorageSync('user_step'));
-                            }
-                        })
+                        if (!_this.globalData.getWerunDataDisabled)
+                            wx.getWeRunData({
+                                success: function(res) {
+                                    var encryptedData = res.encryptedData;
+                                    console.log("getWerunData", encryptedData);
+                                    var iv = res.iv;
+                                    var pc = new WXBizDataCrypt(_this.globalData.appid, wx.getStorageSync('session_key'));
+                                    var data = pc.decryptData(encryptedData, iv)
+                                    wx.setStorageSync('user_step', data.stepInfoList.pop().step * 1)
+                                    wx.setStorageSync('last_step', data.stepInfoList.pop().step * 1)
+                                    _this.globalData.user_step = data.stepInfoList.pop().step * 1;
+                                    _this.globalData.laststep = data.stepInfoList.pop().step * 1;
+                                    console.log('User step is ', wx.getStorageSync('user_step'));
+                                }
+                            })
                         console.log("getUserInfo Started")
                     }
                 });

@@ -86,9 +86,8 @@ Page({
 
                 that.globalData.getUserInfoDisabled = !perm.authSetting['scope.userInfo'];
                 that.globalData.getUserLocationDisabled = !perm.authSetting['scope.userLocation'];
-                that.globalData.getWerunDataDisabled = !perm.authSetting['scope.werun'];
 
-                if (!that.globalData.getUserInfoDisabled && !that.globalData.getUserLocationDisabled && !that.globalData.getWerunDataDisabled) {
+                if (!that.globalData.getUserInfoDisabled && !that.globalData.getUserLocationDisabled) {
                     _this.onPrepare();
                     return;
                 }
@@ -116,9 +115,10 @@ Page({
                             // wx.authorize({
                             //     scope: 'scope.werun',
                             //     fail: function() {
-                            //         that.globalData.initDisabled = true;
+                            //        // that.globalData.initDisabled = true;
                             //     },
                             //     complete: function() {
+
                             //     }
                             // })
                         }
@@ -398,8 +398,6 @@ Page({
                                 delta: delta_value
                             })
 
-
-
                             ctx.setFillStyle('#000')
                             ctx.setFontSize(32)
                             ctx.fillText(that.data.event.eventName, 30, 260)
@@ -426,7 +424,7 @@ Page({
                             ctx.fillText(that.data.start_date, 150, 575 - delta_value)
                             ctx.setFontSize(24)
                             ctx.setTextAlign('center')
-                            ctx.fillText('比赛日期', 150, 625 - delta_value)
+                            ctx.fillText(that.data.train_type[that.data.is_train] + '日期', 150, 625 - delta_value)
 
                             ctx.setFillStyle('#e6b53c')
                             ctx.setFontSize(28)
@@ -741,9 +739,6 @@ Page({
         })
     },
 
-
-
-
     onShareAppMessage: function(res) {
         console.log("SHARED")
         if (res.from === 'button') {
@@ -765,7 +760,10 @@ Page({
 
         var sport = parseInt(that.data.event.type);
 
-        var title = "鹿死谁手, 一起来参加" + app.globalData.eventType[sport] + "比赛决一雌雄"
+        var title = "鹿死谁手, 一起来参加" + app.globalData.eventType[sport] + "比赛决一雌雄";
+        if (that.data.event.is_train == '1') {
+            title = "这个培训不错哦，快来参加" + app.globalData.eventType[sport] + "培训班吧";
+        }
 
         return {
             title: title,

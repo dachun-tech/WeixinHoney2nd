@@ -21,7 +21,7 @@
 <script src="<?php echo base_url(); ?>assets/plugins/slimScroll/jquery.slimscroll.min.js"></script>
 <script src="<?php echo base_url(); ?>assets/plugins/iCheck/icheck.min.js"></script>
 <script src="<?php echo base_url(); ?>assets/plugins/fastclick/fastclick.js"></script>
-<!--<script src="--><?php //echo base_url(); ?><!--assets/dist/js/app.min.js"></script>-->
+<script src="<?php echo base_url(); ?>assets/dist/js/app.min.js"></script>
 <script src="<?php echo base_url(); ?>assets/dist/js/demo.js"></script>
 
 <!--[if lt IE 9]>

@@ -39,9 +39,8 @@ Page({
 
                 that.globalData.getUserInfoDisabled = !perm.authSetting['scope.userInfo'];
                 that.globalData.getUserLocationDisabled = !perm.authSetting['scope.userLocation'];
-                that.globalData.getWerunDataDisabled = !perm.authSetting['scope.werun'];
 
-                if (!that.globalData.getUserInfoDisabled && !that.globalData.getUserLocationDisabled && !that.globalData.getWerunDataDisabled) {
+                if (!that.globalData.getUserInfoDisabled && !that.globalData.getUserLocationDisabled) {
                     _this.onPrepare();
                     return;
                 }
@@ -124,8 +123,8 @@ Page({
                         if (res.data.status) {
                             type_array = res.data.result;
                         }
-
-                        var user_sports = that.data.userInfo.sport_type.split(',');
+                        var user_sports = [];
+                        if (that.data.userInfo.sport_type) user_sports = that.data.userInfo.sport_type.split(',');
                         var show_arr = [];
                         for (var i = 0; i < user_sports.length; i++) {
                             var item = { type: user_sports[i], count: 0 };

@@ -175,7 +175,7 @@ Page({
                             wx.authorize({
                                 scope: 'scope.werun',
                                 fail: function() {
-                                    // that.globalData.initDisabled = true;
+                                    //that.globalData.initDisabled = true;
                                 },
                                 complete: function() {
                                     if (that.globalData.initDisabled)

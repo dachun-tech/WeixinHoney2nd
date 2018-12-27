@@ -158,10 +158,10 @@ Page({
             })
             return ret;
         }
-        if (this.data.realname.length > 4) {
+        if (this.data.realname.length > 16) {
             x++
             wx.showToast({
-                title: '姓名应不超过4个字',
+                title: '姓名应不超过16个字',
                 icon: 'none'
             })
             return ret;
