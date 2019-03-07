@@ -59,8 +59,8 @@ class goodsmanage extends basecontroller
         $searchName = $this->input->post('searchName');
         $searchState = $this->input->post('searchState');
         $this->session->set_userdata('goods_infos', array(
-        'searchName'=>$searchName,
-        'searchStatus'=>$searchState,
+            'searchName' => $searchName,
+            'searchStatus' => $searchState,
         ));
         $this->goodsCollectListing($searchName, $searchState);
     }
@@ -75,12 +75,12 @@ class goodsmanage extends basecontroller
         //获取上传信息
         $info = $upload->getUploadFileInfo();
         $fileName = time() . rand(1000, 9999) . '.' . $info['suffix'];
-        $fullName = $path . $fileName;  
+        $fullName = $path . $fileName;
         $path = rtrim('upload', DIRECTORY_SEPARATOR) . '/' . $fullName;
         $success = $upload->save($path);
         $width = 0;
         $height = 0;
-        if($success) {
+        if ($success) {
             $attr = getimagesize($path);
             $width = $attr[0];
             $height = $attr[1];
@@ -98,12 +98,12 @@ class goodsmanage extends basecontroller
         //获取上传信息
         $info = $upload->getUploadFileInfo();
         $fileName = time() . rand(1000, 9999) . '.' . $info['suffix'];
-        $fullName =  $fileName;  
+        $fullName = $fileName;
         $path = rtrim('uploads', DIRECTORY_SEPARATOR) . '/' . $fullName;
         $success = $upload->save($path);
         $width = 0;
         $height = 0;
-        if($success) {
+        if ($success) {
             $attr = getimagesize($path);
             $width = $attr[0];
             $height = $attr[1];
@@ -118,12 +118,12 @@ class goodsmanage extends basecontroller
 
         //$src = 'upload/2014/06/07/14021146715797.jpg';
         $src = $_GET['src'];
-        $rs = explode(".",$src);
-        $ext = strtolower($rs[count($rs)-1]);
+        $rs = explode(".", $src);
+        $ext = strtolower($rs[count($rs) - 1]);
         $type = array('jpg', 'jpeg', 'png');
 
         $fileName = time() . rand(1000, 9999) . '.' . $ext;
-        $fullName = $fileName;  
+        $fullName = $fileName;
         $path = rtrim('uploads', DIRECTORY_SEPARATOR) . '/' . $fullName;
 
         $crop = new App_Util_Crop();
@@ -134,7 +134,7 @@ class goodsmanage extends basecontroller
         echo json_encode(array('result' => $success, 'msg' => $msg, 'file' => $fullName));
     }
 
-     /**
+    /**
      * This function is used to load the goods list by search
      */
     function deleteGood()
@@ -152,15 +152,15 @@ class goodsmanage extends basecontroller
 
 
     /**
-    * This function is used to show the confirm of the goods
-    */
+     * This function is used to show the confirm of the goods
+     */
     function changeState()
     {
-       $id = $this->input->post('goodId');
-       $state = $this->goods_model->getStateById($id);
-       $info['state'] = ($state[0]->state+1) % 2;
-       $result = $this->goods_model->updateGoods($id, $info);
-       if ($result) {
+        $id = $this->input->post('goodId');
+        $state = $this->goods_model->getStateById($id);
+        $info['state'] = ($state[0]->state + 1) % 2;
+        $result = $this->goods_model->updateGoods($id, $info);
+        if ($result) {
             $this->session->set_flashdata('success', '删除成功.');
             echo(json_encode(array('status' => TRUE)));
         } else {
@@ -169,16 +169,16 @@ class goodsmanage extends basecontroller
         }
     }
 
-     /**
-    * This function is used to add the amount of goods
-    */
+    /**
+     * This function is used to add the amount of goods
+     */
     function changeAmount()
     {
-       $id = $this->input->post('goodId');
-       $add = $this->input->post('amount');
-       $info['amount'] = $add;
-       $result = $this->goods_model->updateGoods($id, $info);
-       if ($result) {
+        $id = $this->input->post('goodId');
+        $add = $this->input->post('amount');
+        $info['amount'] = $add;
+        $result = $this->goods_model->updateGoods($id, $info);
+        if ($result) {
             $this->session->set_flashdata('success', '删除成功.');
             echo(json_encode(array('status' => TRUE)));
         } else {
@@ -193,56 +193,56 @@ class goodsmanage extends basecontroller
         $info['comment'] = $this->input->post('contents');
         $info['add_time'] = date("Y-m-d H:i:s");
         $info['cost'] = $this->input->post('price');
+        $info['end_time'] = $this->input->post('endTime');
+        if ($this->input->post('endTime') == '')
+            $info['end_time'] = null;
         $info['name'] = $this->input->post('name');
-        $info['avatar'] = $this->input->post('logo_cover');
-        $info['pic'] = $this->input->post('image_cover');
-        $error=0;
+        if ($this->input->post('logo_cover') != '')
+            $info['avatar'] = $this->input->post('logo_cover');
+        if ($this->input->post('image_cover') != '')
+            $info['pic'] = $this->input->post('image_cover');
+        $error = 0;
 
         $id = $this->input->post('id');
-        if($id==''){
-            $good = $this->db->query("select count(id) as amount from goods where name='".$info['name']."'")->result();
-            if($good[0]->amount>0){
+        if ($id == '') {
+            $good = $this->db->query("select count(id) as amount from goods where name='" . $info['name'] . "'")->result();
+            if ($good[0]->amount > 0) {
                 $this->global['error_name'] = "商品名称重复";
                 $error++;
             }
         }
-        if($info['name'] == '')
-        {
+        if ($info['name'] == '') {
             $this->global['error_name'] = "请填写商品名称";
-                $error++;
+            $error++;
         }
-        if($info['cost'] == '')
-        {
+        if ($info['cost'] == '') {
             $this->global['error_amount'] = "请填写消耗蜂蜜";
-                $error++;
+            $error++;
         }
-        if($info['comment']=='')
-        {
+        if ($info['comment'] == '') {
             $this->global['error_comment'] = "请填写商品详情";
-                $error++;
+            $error++;
         }
         $cost = $info['cost'];
-        if($cost!= floor($info['cost']) || $cost < 0)
-        {
+        if ($cost != floor($info['cost']) || $cost < 0) {
             $this->global['error_amount'] = "消耗蜂蜜必须是整数";
             $error++;
         }
-        if($error==0){
+        if ($error == 0) {
             $option = $this->input->post("image1");
-            if($id == '')
+            if ($id == '')
                 $result = $this->goods_model->addNewGoods($info);
             else
                 $result = $this->goods_model->editGoods($id, $info);
-            if($result!=null){
+            if ($result != null) {
                 redirect("goodsmanage");
-            }
-            else{
+            } else {
                 redirect("usermanage");
             }
-        }
-        else{
+        } else {
             $this->global['good_name'] = $info['name'];
             $this->global['amount'] = $info['cost'];
+            $this->global['end_time'] = $this->input->post('endTime');
             $this->global['comment'] = $info['comment'];
             $this->goodAdd();
         }
@@ -257,62 +257,59 @@ class goodsmanage extends basecontroller
         $this->load->library('upload');
 
         $files = $_FILES;
-        if($option==0){
+        if ($option == 0) {
             $count = count($_FILES['file']['name']);
-            for($i=0; $i<$count; $i++)
-            {           
-                $_FILES['file']['name']= $files['file']['name'][$i];
-                $_FILES['file']['type']= $files['file']['type'][$i];
-                $_FILES['file']['tmp_name']= $files['file']['tmp_name'][$i];
-                $_FILES['file']['error']= $files['file']['error'][$i];
-                $_FILES['file']['size']= $files['file']['size'][$i];    
+            for ($i = 0; $i < $count; $i++) {
+                $_FILES['file']['name'] = $files['file']['name'][$i];
+                $_FILES['file']['type'] = $files['file']['type'][$i];
+                $_FILES['file']['tmp_name'] = $files['file']['tmp_name'][$i];
+                $_FILES['file']['error'] = $files['file']['error'][$i];
+                $_FILES['file']['size'] = $files['file']['size'][$i];
                 $this->upload->initialize($this->set_upload_options());
                 // $this->upload->do_upload('files[]');
-                if (!$this->upload->do_upload('file'))
-                {  
-                    $error['error'] =$this->upload->display_errors();
-                    echo $error['error']; exit;
-                }
-                else{
+                if (!$this->upload->do_upload('file')) {
+                    $error['error'] = $this->upload->display_errors();
+                    echo $error['error'];
+                    exit;
+                } else {
                     $data[$i] = $this->upload->data();
                 }
             }
-        }
-        else{
-            $i = $option-1;
-            $_FILES['file']['name']= $files['file']['name'][$i];
-            $_FILES['file']['type']= $files['file']['type'][$i];
-            $_FILES['file']['tmp_name']= $files['file']['tmp_name'][$i];
-            $_FILES['file']['error']= $files['file']['error'][$i];
-            $_FILES['file']['size']= $files['file']['size'][$i];    
+        } else {
+            $i = $option - 1;
+            $_FILES['file']['name'] = $files['file']['name'][$i];
+            $_FILES['file']['type'] = $files['file']['type'][$i];
+            $_FILES['file']['tmp_name'] = $files['file']['tmp_name'][$i];
+            $_FILES['file']['error'] = $files['file']['error'][$i];
+            $_FILES['file']['size'] = $files['file']['size'][$i];
             $this->upload->initialize($this->set_upload_options());
-                // $this->upload->do_upload('files[]');
-            if (!$this->upload->do_upload('file'))
-            {  
-                $error['error'] =$this->upload->display_errors();
-                echo $error['error']; exit;
-            }
-            else{
+            // $this->upload->do_upload('files[]');
+            if (!$this->upload->do_upload('file')) {
+                $error['error'] = $this->upload->display_errors();
+                echo $error['error'];
+                exit;
+            } else {
                 $data = $this->upload->data();
             }
         }
         return $data;
     }
+
     public function set_upload_options()
     {
         $config['upload_path'] = './uploads/';
         $config['allowed_types'] = 'gif|jpg|jpeg|png';
         $config['remove_spaces'] = true;
-        $config['max_size']             = 10000;
-        $config['max_width']            = 1024;
-        $config['max_height']           = 768;
-        $config['encrypt_name'] =true;
+        $config['max_size'] = 10000;
+        $config['max_width'] = 1024;
+        $config['max_height'] = 768;
+        $config['encrypt_name'] = true;
         return $config;
     }
 
-     /**
-    * This function is used to add good or edit good
-    */
+    /**
+     * This function is used to add good or edit good
+     */
     function goodAdd()
     {
         $this->global['pageTitle'] = '新增商品';
@@ -320,20 +317,21 @@ class goodsmanage extends basecontroller
     }
 
     /**
-    * This function is used to add good or edit good
-    */
+     * This function is used to add good or edit good
+     */
     function goodsDetail($id)
     {
-        $this->global['pageTitle'] = '编辑商品';
+        $this->global['pageTitle'] = '商品详情';
         $data['goods'] = $this->goods_model->getGoodDetail($id);
         $this->loadViews("goodsdetail", $this->global, $data, NULL);
     }
+
     /**
-    * This function is used to add good or edit good
-    */
+     * This function is used to add good or edit good
+     */
     function goodsEdit($id)
     {
-        $this->global['pageTitle'] = '商品详情';
+        $this->global['pageTitle'] = '编辑商品';
         $data['goods'] = $this->goods_model->getGoodDetail($id);
         $this->loadViews("goodsedit", $this->global, $data, NULL);
     }

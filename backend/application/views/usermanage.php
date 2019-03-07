@@ -30,7 +30,7 @@
                                 <select class="form-control" id="searchRole" name="searchRole">
                                     <option value="10"<?php if ($searchRole == 10) echo ' selected'; ?>>认证角色</option>
                                     <option value="0"<?php if ($searchRole == 0) echo ' selected'; ?>>无</option>
-                                    <option value="1"<?php if ($searchRole == 1) echo ' selected'; ?>>场馆主</option>
+                                    <option value="1"<?php if ($searchRole == 1) echo ' selected'; ?>>商家</option>
                                     <option value="2"<?php if ($searchRole == 2) echo ' selected'; ?>>个人</option>
                                 </select>
                             </div>
@@ -49,7 +49,8 @@
                         <div class="col-xs-12 col-sm-2 form-inline">
                             <div class="form-group">
                                 <select class="form-control" id="searchForbidden" name="searchForbidden">
-                                    <option value="10"<?php if ($searchForbidden == 10) echo ' selected'; ?>>禁用状态</option>
+                                    <option value="10"<?php if ($searchForbidden == 10) echo ' selected'; ?>>禁用状态
+                                    </option>
                                     <option value="0"<?php if ($searchForbidden == 0) echo ' selected'; ?>>未禁用</option>
                                     <option value="1"<?php if ($searchForbidden == 1) echo ' selected'; ?>>已禁用</option>
                                 </select>
@@ -58,25 +59,34 @@
                         <div class="col-xs-12 col-sm-6 form-inline" style="margin-top: 10px;">
                             <div class="form-group">
                                 <span> 认证时间 </span>
-                                <input id="fromTime" name="fromTime" class="datepicker-inline form-control" size="16" type="text" value="<?php echo $fromTime;?>" readonly="">
+                                <input id="fromTime" name="fromTime" class="datepicker-inline form-control" size="16"
+                                       type="text" value="<?php echo $fromTime; ?>" readonly="">
 
                                 <span> 至 </span>
-                                <input id="toTime" name="toTime" class="datepicker-inline form-control" size="16" type="text" value="<?php echo $toTime;?>" readonly="">
+                                <input id="toTime" name="toTime" class="datepicker-inline form-control" size="16"
+                                       type="text" value="<?php echo $toTime; ?>" readonly="">
                                 <input type="button" class="btn btn-primary searchList"
-                                        onclick="cleanTime()" value="清除">
+                                       onclick="cleanTime()" value="清除">
                                 </input>
                             </div>
                         </div>
                         <div class="col-xs-12 col-sm-2 form-inline">
                             <div class="form-group area-search-control-view" style="margin-top:8px">
                                 <input type="button" class="btn btn-primary searchList"
-                                        onclick="exportTable()" value="导出">
+                                       onclick="exportTable()" value="导出">
                                 </input>
                             </div>
                         </div>
                         <div class="col-xs-12 col-sm-1 form-inline">
                             <div class="form-group area-search-control-view" style="margin-top:8px">
                                 <input type="submit" class="btn btn-primary searchList" value="查询">
+                                </input>
+                            </div>
+                        </div>
+                        <div class="col-xs-12 col-sm-1 form-inline">
+                            <div class="form-group area-search-control-view" style="margin-top:8px">
+                                <input type="button" class="btn btn-primary searchList"
+                                       onclick="addNewBoss()" value="新增">
                                 </input>
                             </div>
                         </div>
@@ -102,38 +112,40 @@
                         </tr>
                         </thead>
                         <tbody>
-                       <?php
-                        if(count($userList)>0) {
+                        <?php
+                        if (count($userList) > 0) {
                             $i = 0;
-                            $userRole = array('无', '场馆主', '个人');
+                            $userRole = array('无', '商家', '个人');
                             $userState = array('未认证', '认证中', '认证通过', '认证未通过');
-                            for($i=0 ;$i<count($userList); $i++) {
-                                if($userList[$i]->no == '0') continue;
+                            for ($i = 0; $i < count($userList); $i++) {
+                                if ($userList[$i]->no == '0') continue;
                                 ?>
                                 <tr>
-                                    <td><?php echo ($i+1); ?></td>
-                                    <td><image src="<?php echo $userList[$i]->avatar; ?>" style="width:50px; height:50px; border-radius:50%;"/></td>
-                                    <td><?php echo $userList[$i]->nickname; ?></td>
-                                    <td><?php echo $userList[$i]->name; ?></td>
-                                    <td><?php echo $userList[$i]->phone; ?></td>
-                                    <td><?php echo $userRole[$userList[$i]->role]; ?></td>
-                                    <td><?php echo $userList[$i]->honey.'ml'; ?></td>
-                                    <td><?php echo $userList[$i]->reg_time; ?></td>
-                                    <td><?php echo $userState[$userList[$i]->state]; ?></td>
-                                    <td><?php echo $userList[$i]->forbidden?'已禁用':'未禁用'; ?></td>
-                                    <td class="text-center">
-                                        <a href="<?php echo base_url().'userDetail/'.$userList[$i]->no; ?>">
-                                            用户详情 &nbsp;
-                                        </a>
-                                        <a
-                                           data-userid="<?php echo $userList[$i]->no; ?>"
-                                           onclick="confirmState('<?php echo $userList[$i]->no; ?>', 
-                                           '<?php echo $userList[$i]->name;?>', '<?php echo $userList[$i]->phone; ?>')"><?php if($userList[$i]->state==1) echo "审核"; ?>&nbsp;
-                                        </a>
-                                        <a  data-userid="<?php echo $userList[$i]->no; ?>"
-                                           onclick="confirmForbidden('<?php echo $userList[$i]->no; ?>','<?php echo $userList[$i]->forbidden?"取消禁用":"禁用"; ?>')"><?php echo ($userList[$i]->forbidden==1)?"取消禁用":"禁用"; ?> &nbsp;
-                                        </a>
-                                    </td>
+                                <td><?php echo($i + 1); ?></td>
+                                <td><?php if ($userList[$i]->avatar) echo '<image src="' . $userList[$i]->avatar . '" style="width:50px; height:50px; border-radius:50%;"/>'; ?></td>
+                                <td><?php echo $userList[$i]->nickname; ?></td>
+                                <td><?php echo $userList[$i]->name; ?></td>
+                                <td><?php echo $userList[$i]->phone; ?></td>
+                                <td><?php echo $userRole[$userList[$i]->role]; ?></td>
+                                <td><?php echo $userList[$i]->honey . 'ml'; ?></td>
+                                <td><?php echo $userList[$i]->reg_time; ?></td>
+                                <td><?php echo $userState[$userList[$i]->state]; ?></td>
+                                <td><?php echo $userList[$i]->forbidden ? '已禁用' : '未禁用'; ?></td>
+                                <td class="text-center">
+                                    <a href="<?php echo base_url() . 'userDetail/' . $userList[$i]->no; ?>">
+                                        用户详情 &nbsp;
+                                    </a>
+                                    <a
+                                            data-userid="<?php echo $userList[$i]->no; ?>"
+                                            onclick="confirmState('<?php echo $userList[$i]->no; ?>',
+                                                    '<?php echo $userList[$i]->name; ?>', '<?php echo $userList[$i]->phone; ?>')"><?php if ($userList[$i]->state == 1) echo "审核"; ?>
+                                        &nbsp;
+                                    </a>
+                                    <a data-userid="<?php echo $userList[$i]->no; ?>"
+                                       onclick="confirmForbidden('<?php echo $userList[$i]->no; ?>','<?php echo $userList[$i]->forbidden ? "取消禁用" : "禁用"; ?>')"><?php echo ($userList[$i]->forbidden == 1) ? "取消禁用" : "禁用"; ?>
+                                        &nbsp;
+                                    </a>
+                                </td>
                                 </tr><?php
                             }
                         }
@@ -142,26 +154,33 @@
                     </table>
                     <div class="form-group">
                         <div id="custom-confirm-delete-view" style="display:none;">
-                                <div class="form-group">
-                                    <label id="userAction"></label>
-                                </div>
-                                <div class="form-group" style="margin-top:50px; margin-bottom: 0px;">
-                                    <button class="btn btn-default" onclick="$('#custom-confirm-delete-view').hide();">取消</button>
-                                    <button class="btn btn-primary"  style="margin-left:2vw;" onclick="changeForbidden('<?php echo base_url(); ?>');">确定</button>
-                                    <div id="userId" style="display: none;"></div>
-                                </div>
+                            <div class="form-group">
+                                <label id="userAction"></label>
+                            </div>
+                            <div class="form-group" style="margin-top:50px; margin-bottom: 0px;">
+                                <button class="btn btn-default" onclick="$('#custom-confirm-delete-view').hide();">取消
+                                </button>
+                                <button class="btn btn-primary" style="margin-left:2vw;"
+                                        onclick="changeForbidden('<?php echo base_url(); ?>');">确定
+                                </button>
+                                <div id="userId" style="display: none;"></div>
+                            </div>
                         </div>
                         <div id="custom-generate-auth-view" style="display:none;">
-                                <div class="form-group">
-                                    <label id="name"></label>
-                                </div>
-                                <div class="form-group">
-                                    <label id="phone"></label>
-                                </div>
-                                <div class="form-group" style="margin-top:50px; margin-bottom: 0px;">
-                                    <button class="btn btn-default" onclick="changeState(2,'<?php echo base_url();?>')">通过</button>
-                                    <button class="btn btn-primary" style="margin-left: 2vw;" onclick="changeState(3,'<?php echo base_url();?>')">不通过</button>
-                                </div>
+                            <div class="form-group">
+                                <label id="name"></label>
+                            </div>
+                            <div class="form-group">
+                                <label id="phone"></label>
+                            </div>
+                            <div class="form-group" style="margin-top:50px; margin-bottom: 0px;">
+                                <button class="btn btn-default" onclick="changeState(2,'<?php echo base_url(); ?>')">
+                                    通过
+                                </button>
+                                <button class="btn btn-primary" style="margin-left: 2vw;"
+                                        onclick="changeState(3,'<?php echo base_url(); ?>')">不通过
+                                </button>
+                            </div>
                         </div>
                     </div>
                     <div class="clearfix"><?php echo $this->pagination->create_links(); ?>
@@ -180,8 +199,8 @@
             format: 'yyyy-mm-dd'
         });
     });
-    function cleanTime()
-    {
+
+    function cleanTime() {
         $("#fromTime").val("");
         console.log("here");
         $("#toTime").val("");

@@ -5,7 +5,7 @@
   
 <!-- 预览区域  -->
 <view class="main_content">
-  <image class="background_img" src="../../image/garden_bg@2x.png" />
+  <image class="background_img" src="{{uploadRoot}}global/garden_bg@2x.png" />
   <text style="position: fixed;top: 0;left: 0;">{{body_text}}</text>
 </view>
 <button class='share' type='primary' bindtap='share'>生成分享图</button>

@@ -1,6 +1,6 @@
 <view class='container'>
   <view class="accept-time" style="color:red;" wx:if="{{array.state == '1' && left_day != ''}}">{{(left_day!='')?("剩余"+left_day+"天"+seventime+"，系统将自动收货"):""}}</view>
-  <scroll-view scroll-y class='scroll-data' style='{{(array.state!="1")?"top: 0rpx; height: 100%;":""}}'>
+  <view scroll-y class='scroll-data' style='overflow-y:auto;{{(array.state!="1")?"top: 0rpx; height: 100%;":""}}'>
     <view class="product-order-number">
       <text class="product-order-no">订单编号：</text>
       <text>{{goodnumber}}</text>
@@ -47,7 +47,7 @@
       <view>物流名称：{{array.company}}</view>
       <view>物流编号：{{array.company_id}}</view>
     </view>
-  </scroll-view>
+  </view>
 
   <button wx:if="{{array.state == 1}}" bindtap="btn_submit" class='btn_submit'>确认收货</button>
 

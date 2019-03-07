@@ -63,11 +63,13 @@ view {
 .time-container {
     width: 150rpx;
     display: inline-block;
+    vertical-align: top;
 }
 
 .room-container {
     display: inline-block;
     width: 600rpx;
+    vertical-align: top;
 }
 
 .tr {
@@ -105,8 +107,8 @@ view {
     padding: 0rpx;
     margin: 0rpx;
     width: 145rpx;
-    height: 80rpx;
-    line-height: 80rpx;
+    height: 78rpx;
+    line-height: 78rpx;
     text-align: center;
     border-right: 1px solid #f8f8f8;
     border-top: 1px solid #f8f8f8;
@@ -120,12 +122,39 @@ view {
     color: black;
 }
 
+.th,
+.header-cell {
+    height: 100rpx;
+}
+
+.th text {
+    position: absolute;
+    width: 145rpx;
+    height: auto;
+    line-height: 1.3;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    -webkit-transform: translate(-50%, -50%);
+    -moz-transform: translate(-50%, -50%);
+    -ms-transform: translate(-50%, -50%);
+    -o-transform: translate(-50%, -50%);
+    white-space: normal;
+    word-break: keep-all;
+}
+
 .td.enabled {
     background: #6cab3b;
 }
 
 .td.booked {
     background: #e6b53c;
+}
+
+.tr,
+.td,
+th {
+    font-size: 24rpx;
 }
 
 .bottom-tools {
@@ -149,30 +178,35 @@ view {
     display: inline-block;
     white-space: nowrap;
     word-wrap: none;
-    vertical-align: middle;
-    line-height: 90rpx;
+    vertical-align: top;
+    line-height: 100rpx;
 }
 
 .info-content {
     position: relative;
     display: inline-block;
     width: calc(100vw - 185rpx);
-    height: 100%;
-    white-space: nowrap;
+    height: calc(100% - 24rpx);
+    white-space: normal;
     word-wrap: none;
-    vertical-align: middle;
-    line-height: 3rem;
+    vertical-align: top;
+    line-height: 1;
+    padding-top: 20rpx;
 }
 
 .book-item {
     position: relative;
     display: inline-block;
-    width: calc(40vw);
-    border-radius: 10rpx;
+    width: 95%;
+    border-radius: 8rpx;
     border: 1px solid #e6b53c;
-    margin: 5rpx;
+    margin: 8rpx 0;
     padding: 0;
     height: 1rem;
+    -webkit-border-radius: 8rpx;
+    -moz-border-radius: 8rpx;
+    -ms-border-radius: 8rpx;
+    -o-border-radius: 8rpx;
 }
 
 .book-title,
@@ -184,6 +218,7 @@ view {
     background: #e6b53c;
     color: white;
     text-align: center;
+    font-size: 22rpx;
 }
 
 .book-time {
@@ -195,12 +230,15 @@ view {
 
 .btn-area {
     position: absolute;
-    top: 50%;
+    bottom: 0;
     width: 100%;
     height: 90rpx;
     line-height: 90rpx;
-    font-weight: 600;
-    font-size: 40rpx;
+}
+
+.btn-area view {
+    font-weight: 500;
+    font-size: 32rpx;
 }
 
 .btn-info {

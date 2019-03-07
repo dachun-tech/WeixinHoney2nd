@@ -315,6 +315,22 @@ class event_model extends CI_Model
         return $this->db->affected_rows();
     }
 
+    /**
+     * This function is used to change event state
+     * @param number $eventId : This is event id
+     * @param number $state : This is event state
+     */
+    function updateEventOnTop($eventId)
+    {
+        $info = array(
+            'on_top' => -1,
+            'reg_time' => date('Y-m-d H:i:s')
+        );
+        $this->db->where('id', $eventId);
+        $this->db->update('event', $info);
+        return $this->db->affected_rows();
+    }
+
     function getRegisterNum($events)
     {
         $index = 0;
@@ -368,6 +384,12 @@ class event_model extends CI_Model
             $this->alarm_user_model->addAlarm($alarm);
             $this->db->query("update event set is_checked=1 where id=" . $event->id);
         }
+        $result = $this->db->query("SELECT name, id
+             FROM event
+              WHERE TIME_TO_SEC(TIMEDIFF(final_time, NOW()))<0 and is_used=0;")->result();
+        foreach ($result as $event) {
+            $this->db->query("update event set is_used=1 where id=" . $event->id);
+        }
         return true;
     }
 
@@ -380,8 +402,8 @@ class event_model extends CI_Model
         $this->db->select("event.*,provinces.province, cities.city, areas.area, user.role, user.avatar, sum(booking.reg_num) as register_num, count(favourite_event.no) as favor_state");
         $this->db->from("event");
         $this->db->join("provinces", "provinces.id=event.province", 'left');
-        $this->db->join("cities", "cities.id=event.city",'left');
-        $this->db->join("areas", "areas.id=event.area",'left');
+        $this->db->join("cities", "cities.id=event.city", 'left');
+        $this->db->join("areas", "areas.id=event.area", 'left');
         $this->db->join("user", "user.no = event.organizer_id");
         $this->db->join("booking", "event.id = booking.event_id and booking.state = event.state", "left");
         $this->db->join("favourite_event", "favourite_event.event_id = event.id and favourite_event.user_id = " . $user_id, "left");
@@ -418,6 +440,7 @@ class event_model extends CI_Model
      */
     function addEvent($user_role, $event, $member_state)
     {
+
         if ($user_role == 2 && $event['publicity'] == 1) {
             if ($event['additional'] == 1 && $member_state == 0) {
                 $this->db->select("honey");
@@ -432,7 +455,8 @@ class event_model extends CI_Model
             }
         }
         $this->db->insert("event", $event);
-        return true;
+        $result = $this->db->insert_id();
+        return $result;
     }
 
     /**
@@ -473,15 +497,36 @@ class event_model extends CI_Model
         $this->db->join("booking", "booking.event_id = event.id and event.state=booking.state", "left");
         $this->db->join("favourite_event", "favourite_event.event_id = event.id and favourite_event.user_id = " . $userId, "left");
         $this->db->join("user", "user.no = event.organizer_id", "left");
-        if ($province == '北京市' || $province == '上海市' || $province == ' 天津市' || $province == '重庆市') {
+        if ($province == '北京市' || $province == '上海市' || $province == '天津市' || $province == '重庆市') {
             $this->db->where('provinces.province', $province);
         } else {
-            $this->db->where("cities.city", $city);
+            if ($city != '') $this->db->where("cities.city", $city);
         }
         $this->db->where("event.publicity", 1);
         $this->db->where("event.state", 0);
         $this->db->order_by("event.reg_time", "desc");
         $this->db->group_by("event.id");
+        $query = $this->db->get();
+        $result = $query->result();
+        return $result;
+    }
+
+    /**
+     * This function is used to get the events in 5km from current user
+     * @param float $longitude : This is longitude of current user
+     * @param float $latitude : This is latitude of the current user
+     * @return array $result : information of events found
+     */
+    function getEventCities()
+    {
+        $this->db->select("provinces.province as province_name, cities.city as city_name, cities.id as city_id, provinces.id as province_id");
+        $this->db->from("event");
+        $this->db->join("cities", "cities.id=event.city", 'left');
+        $this->db->join("provinces", "provinces.id = event.province", 'left');
+        $this->db->where("event.publicity", 1);
+        $this->db->where("event.state", 0);
+        $this->db->order_by("event.reg_time", "desc");
+        $this->db->group_by("event.city");
         $query = $this->db->get();
         $result = $query->result();
         return $result;

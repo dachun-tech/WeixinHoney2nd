@@ -33,7 +33,7 @@ Page({
         var that = this;
         wx.showModal({
             title: '提示',
-            content: '是否取消您的预订？',
+            content: '是否取消您的订单？',
             confirmText: '是',
             cancelText: '否',
             success: function(res) {

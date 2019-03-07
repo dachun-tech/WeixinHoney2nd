@@ -20,7 +20,7 @@ class template extends basecontroller
      */
     public function index($type)
     {
-        $titleStr = ['场馆介绍模板', '服务介绍模板', '发布活动模板'];
+        $titleStr = ['商家介绍模板', '服务介绍模板', '发布活动模板'];
         $this->global['pageTitle'] = $titleStr[$type];
         $data['templates'] = $this->template_model->getItem($type);
         $data['type'] = $type;
@@ -37,7 +37,7 @@ class template extends basecontroller
             $info['content'] = $this->input->post("template" . $type . ($index - 1));
             $this->template_model->updateItem($index, $type, $info);
         }
-        $this->global['pageTitle'] = '场馆管理';
+        $this->global['pageTitle'] = '商家管理';
         var_dump($type);
         redirect(base_url('template/' . $type));
 //        $data['rule'] = $this->rule_model->getRule();

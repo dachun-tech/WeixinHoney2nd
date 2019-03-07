@@ -14,7 +14,7 @@
                 <view class="user_phone" wx:if="{{userInfo.show_state==1}}" bindtap="phone_call" data-id="{{userInfo.phone}}">{{userInfo.phone}}</view>
             </view>
             <view class="user_detail">{{userInfo.person_sign}}</view>
-            <scroll-view scroll-x class="type_content">
+            <view style="overflow-x:auto;" scroll-x class="type_content">
                 <view class="type_detail">
                     <view class="type">运动项目</view>
                     <view class="counts">运动次数</view>
@@ -23,7 +23,7 @@
                     <view class="type">{{event_types[item.type]}}</view>
                     <view class="counts">{{item.count}}次</view>
                 </view>
-            </scroll-view>
+            </view>
             <button class="share_btn"  bindtap='on_clicked_share_info' 
                 open-type="share" data-id="{{userInfo.no}}">
                 <image class="img_share" src="../../../image/share@2x.png" />

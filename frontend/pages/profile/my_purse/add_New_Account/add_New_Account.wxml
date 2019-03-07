@@ -7,7 +7,7 @@
   </view> 
   <view class="cls_bank_card_number">
     <text class="cls_bank_card_number_txt">银行卡号 : </text>
-    <input bindinput="input_Bankcardnumber" class="cls_bank_card_number_input" type="digit" placeholder="请填写正确卡号" />
+    <input type="digit" bindinput="input_Bankcardnumber" class="cls_bank_card_number_input" placeholder="请填写正确卡号" />
   </view> 
   <view class="cls_id_card_number">
     <text class="cls_id_card_number_txt">身份证号 : </text>
@@ -15,11 +15,11 @@
   </view> 
   <view class="cls_phone_number">
     <text class="cls_phone_number_txt">手机号 : </text>
-    <input bindinput="input_Phonenumber" class="cls_phone_number_input" type="number" placeholder="请填写银行预留手机号" />
+    <input type="number" bindinput="input_Phonenumber" class="cls_phone_number_input" placeholder="请填写银行预留手机号" />
   </view> 
   <view class="cls_bank_name">
     <text class="cls_bank_name_txt">开户行名称 : </text>
-    <input bindinput="input_Bankname" class="cls_bank_name_input" type="text" placeholder="请填写开户行" />
+    <input type="text" bindinput="input_Bankname" class="cls_bank_name_input" placeholder="请填写开户行" />
   </view>   
   <view class="cls_note_title">
     <image class="cls_note_title_image" src="{{img_note_src}}" mode="aspectFill"/>

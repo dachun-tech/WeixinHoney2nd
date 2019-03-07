@@ -79,14 +79,6 @@ Page({
                                 _this.onPrepare();
                                 app.globalData.isFirstLaunch = false;
                             }
-                            // wx.authorize({
-                            //     scope: 'scope.werun',
-                            //     fail: function() {
-                            //         that.globalData.initDisabled = true;
-                            //     },
-                            //     complete: function() {
-                            //     }
-                            // })
                         }
                     });
                 }
@@ -95,31 +87,33 @@ Page({
     },
     onPrepare: function() {
         var that = this;
-        app.onInitialize();
-        if (app.globalData.userInfo.user_id == 0) {
-            clearTimeout(that.data.tmrID);
-            that.data.tmrID = setTimeout(function() {
-                that.onPrepare();
-            }, 1000);
-        } else {
-            that.onInitStart();
-        }
+        wx.showLoading({
+            title: '加载中',
+        })
+        var option = that.data.options;
+        if (true || app.globalData.userInfo.user_id == 0)
+            app.onInitialize(function() {
+                that.onInitStart(option);
+            })
+        else
+            that.onInitStart(option);
     },
-    onInitStart: function() {
-        var options = this.data.options;
+    onInitStart: function(options) {
         var that = this;
 
         var pageType = options.type;
         if (pageType == '1') {
             that.data.pageType = pageType;
-            that.data.btn_text = '查看场馆'
+            that.data.btn_text = '查看商家'
         }
         that.setData({
             btn_text: that.data.btn_text
-        })
-
-
-
+        });
+        // options = {
+        //     bid: "1263",
+        //     uid: "1263",
+        //     sday: "1"
+        // }
         that.data.curBossId = options.bid;
         that.data.curUserId = options.uid;
         if (options.uid == app.globalData.userInfo.user_id) {
@@ -213,6 +207,9 @@ Page({
                     that.prepare_payment(totalPrice, 0, 0, 2); // price, honey, wallet, pay_type(0-offline, 1-online pay)
 
                 }
+            },
+            complete: function() {
+                wx.hideLoading({});
             }
         })
 
@@ -260,13 +257,13 @@ Page({
         }
         var that = this;
         var sport = parseInt(that.data.booking.site_type);
-        var title = "这家" + app.globalData.eventType[sport] + "场馆不错哦, 快来预定吧";
+        var title = "这家" + app.globalData.eventType[sport] + "商家不错哦, 快来预定吧";
         if (sport == 28)
             title = "这家" + app.globalData.eventType[sport] + "不错哦, 快来购买吧"
         else if (sport == 31)
-            title = "这家综合运动场馆不错哦, 快来预定吧"
+            title = "这家综合运动商家不错哦, 快来预定吧"
         else if (sport == 32)
-            title = "这家运动场馆不错哦, 快来预定吧"
+            title = "这家运动商家不错哦, 快来预定吧"
         return {
             title: title,
             path: 'pages/profile/my_booking/booking_final?bid=' + that.data.curBossId + '&uid=' + that.data.curUserId + '&sday=' + that.data.shareDay + '&type=1',

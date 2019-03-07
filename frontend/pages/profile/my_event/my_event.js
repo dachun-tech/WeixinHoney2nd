@@ -7,6 +7,7 @@ Page({
      * 页面的初始数据
      */
     data: {
+        uploadURL: app.globalData.uploadURL,
         active1: "active",
         active2: "",
         active3: "",
@@ -46,6 +47,7 @@ Page({
                 var reg_num = res.data.register_num;
                 if (book != null) {
                     for (var index = 0; index < book.length; index++) {
+                        book[index].picture = book[index].pic.split(",");
                         book[index].pic = book[index].pic.split(",")[0];
                         book[index].avatar = app.globalData.uploadURL + book[index].pic;
                         book[index].favor_num = favor[index];

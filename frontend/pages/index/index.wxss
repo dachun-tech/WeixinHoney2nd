@@ -11,6 +11,25 @@
     z-index: 7;
 }
 
+.index_mechant {
+    position: fixed;
+    bottom: 40rpx;
+    right: 25rpx;
+    width: 180rpx;
+    height: 130rpx;
+    line-height: 130rpx;
+    background: #cc0000;
+    color: white;
+    border-radius: 50%;
+    -webkit-border-radius: 50%;
+    -moz-border-radius: 50%;
+    -ms-border-radius: 50%;
+    -o-border-radius: 50%;
+    z-index: 10;
+    text-align: center;
+    font-size: 28rpx;
+}
+
 .news-image {
     position: fixed;
     z-index: 9;
@@ -34,7 +53,8 @@
     z-index: 10;
     left: 70rpx;
     top: 20rpx;
-    width: 30rpx;
+    width: auto;
+    min-width: 30rpx;
     line-height: 30rpx;
     background-color: red;
     color: white;
@@ -44,12 +64,37 @@
     pointer-events: none;
 }
 
-.search-box {
+.global-city-box {
     position: fixed;
     z-index: 10;
     top: 15rpx;
     left: 125rpx;
-    width: 490rpx;
+    width: 135rpx;
+    line-height: 60rpx;
+    opacity: 0.9;
+    background: #fff;
+    border-radius: 6rpx;
+    font-family: PingFangSC-Regular;
+    font-size: 24rpx;
+    color: #888;
+    letter-spacing: -0.22rpx;
+}
+
+.city-icon {
+    position: fixed;
+    z-index: 10;
+    width: 17rpx;
+    height: 11rpx;
+    top: 40rpx;
+    left: 230rpx;
+}
+
+.search-box {
+    position: fixed;
+    z-index: 10;
+    top: 15rpx;
+    left: 290rpx;
+    width: 330rpx;
     line-height: 60rpx;
     opacity: 0.9;
     background: #fff;
@@ -61,9 +106,15 @@
 }
 
 .inner-box {
-    margin-left: 25rpx;
-    width: 100%;
+    margin-left: 0;
+    width: 110rpx;
     line-height: 60rpx;
+    height: 60rpx;
+    text-align: center;
+}
+
+.search-box .inner-box {
+    width: 280rpx;
 }
 
 .search-icon {

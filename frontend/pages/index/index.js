@@ -2,14 +2,15 @@ const app = getApp()
 var amapFile = require('../../lib/amap-wx.js')
 require('../../utils/global.js')
 
-var myAmap = new amapFile.AMapWX({ key: "F8f1f5c8a20c199dd0f70f5a6b162280" })
-var mapCtx
+var myAmap = new amapFile.AMapWX({ key: "8eb63e36d0b6d7d29a392503a4a80f6c" })
+var mapCtx;
 Page({
     data: {
         rooturl: "../../",
         uploadUrl: app.globalData.uploadURL,
         event_type: app.globalData.eventType,
         view_type: 0,
+        isAuthorized: true,
         select_kind: 0,
         select_able_type: "../../image/mapview_icon.png",
         current_latitude: 0,
@@ -45,7 +46,7 @@ Page({
             "../../image/btn_updown@2x.png",
             "../../image/btn_updown_hover@2x.png"
         ],
-        menu_order_index: 0,
+        menu_order_index: 2,
         menu_filter_index: 0,
         menu_style_index: 34,
         prev_menu_style_index: 0,
@@ -68,64 +69,65 @@ Page({
             }
         ],
         item_array: [
-            { id: 0, src: "../../image/move00@2x.png" },
-            { id: 1, src: "../../image/move01@2x.png" },
-            { id: 2, src: "../../image/move02@2x.png" },
-            { id: 3, src: "../../image/move03@2x.png" },
-            { id: 4, src: "../../image/move04@2x.png" },
-            { id: 5, src: "../../image/move05@2x.png" },
-            { id: 6, src: "../../image/move06@2x.png" },
-            { id: 7, src: "../../image/move07@2x.png" },
-            { id: 8, src: "../../image/move08@2x.png" },
-            { id: 9, src: "../../image/move09@2x.png" },
-            { id: 10, src: "../../image/move10@2x.png" },
-            { id: 11, src: "../../image/move11@2x.png" },
-            { id: 12, src: "../../image/move12@2x.png" },
-            { id: 13, src: "../../image/move13@2x.png" },
-            { id: 14, src: "../../image/move14@2x.png" },
-            { id: 15, src: "../../image/move15@2x.png" },
-            { id: 16, src: "../../image/move16@2x.png" },
-            { id: 17, src: "../../image/move17@2x.png" },
-            { id: 18, src: "../../image/move18@2x.png" },
-            { id: 19, src: "../../image/move19@2x.png" },
-            { id: 20, src: "../../image/move20@2x.png" },
-            { id: 21, src: "../../image/move21@2x.png" },
-            { id: 22, src: "../../image/move22@2x.png" },
-            { id: 23, src: "../../image/move23@2x.png" },
-            { id: 24, src: "../../image/move24@2x.png" },
-            { id: 25, src: "../../image/move25@2x.png" },
-            { id: 26, src: "../../image/move26@2x.png" },
-            { id: 27, src: "../../image/move27@2x.png" },
-            { id: 28, src: "../../image/move28@2x.png" },
-            { id: 29, src: "../../image/move29@2x.png" },
-            { id: 30, src: "../../image/move30@2x.png" },
-            { id: 31, src: "../../image/move31@2x.png" },
-            { id: 32, src: "../../image/move32@2x.png" },
-            { id: 33, src: "../../image/move33@2x.png" }
+            { id: 0, src: app.globalData.uploadURL + "global/move00@2x.png" },
+            { id: 1, src: app.globalData.uploadURL + "global/move01@2x.png" },
+            { id: 2, src: app.globalData.uploadURL + "global/move02@2x.png" },
+            { id: 3, src: app.globalData.uploadURL + "global/move03@2x.png" },
+            { id: 4, src: app.globalData.uploadURL + "global/move04@2x.png" },
+            { id: 5, src: app.globalData.uploadURL + "global/move05@2x.png" },
+            { id: 6, src: app.globalData.uploadURL + "global/move06@2x.png" },
+            { id: 7, src: app.globalData.uploadURL + "global/move07@2x.png" },
+            { id: 8, src: app.globalData.uploadURL + "global/move08@2x.png" },
+            { id: 9, src: app.globalData.uploadURL + "global/move09@2x.png" },
+            { id: 10, src: app.globalData.uploadURL + "global/move10@2x.png" },
+            { id: 11, src: app.globalData.uploadURL + "global/move11@2x.png" },
+            { id: 12, src: app.globalData.uploadURL + "global/move12@2x.png" },
+            { id: 13, src: app.globalData.uploadURL + "global/move13@2x.png" },
+            { id: 14, src: app.globalData.uploadURL + "global/move14@2x.png" },
+            { id: 15, src: app.globalData.uploadURL + "global/move15@2x.png" },
+            { id: 16, src: app.globalData.uploadURL + "global/move16@2x.png" },
+            { id: 17, src: app.globalData.uploadURL + "global/move17@2x.png" },
+            { id: 18, src: app.globalData.uploadURL + "global/move18@2x.png" },
+            { id: 19, src: app.globalData.uploadURL + "global/move19@2x.png" },
+            { id: 20, src: app.globalData.uploadURL + "global/move20@2x.png" },
+            { id: 21, src: app.globalData.uploadURL + "global/move21@2x.png" },
+            { id: 22, src: app.globalData.uploadURL + "global/move22@2x.png" },
+            { id: 23, src: app.globalData.uploadURL + "global/move23@2x.png" },
+            { id: 24, src: app.globalData.uploadURL + "global/move24@2x.png" },
+            { id: 25, src: app.globalData.uploadURL + "global/move25@2x.png" },
+            { id: 26, src: app.globalData.uploadURL + "global/move26@2x.png" },
+            { id: 27, src: app.globalData.uploadURL + "global/move27@2x.png" },
+            { id: 28, src: app.globalData.uploadURL + "global/move28@2x.png" },
+            { id: 29, src: app.globalData.uploadURL + "global/move29@2x.png" },
+            { id: 30, src: app.globalData.uploadURL + "global/move30@2x.png" },
+            { id: 31, src: app.globalData.uploadURL + "global/move31@2x.png" },
+            { id: 32, src: app.globalData.uploadURL + "global/move32@2x.png" },
+            { id: 33, src: app.globalData.uploadURL + "global/move33@2x.png" }
         ],
         show_array: [
-            { id: 0, src: "../../image/move00@2x.png" },
-            { id: 1, src: "../../image/move01@2x.png" },
-            { id: 2, src: "../../image/move02@2x.png" },
-            { id: 3, src: "../../image/move03@2x.png" },
-            { id: 4, src: "../../image/move04@2x.png" },
-            { id: 5, src: "../../image/move05@2x.png" },
-            { id: 6, src: "../../image/move06@2x.png" },
-            { id: 7, src: "../../image/move07@2x.png" },
-            { id: 8, src: "../../image/move08@2x.png" }
+            { id: 0, src: app.globalData.uploadURL + "global/move00@2x.png" },
+            { id: 1, src: app.globalData.uploadURL + "global/move01@2x.png" },
+            { id: 2, src: app.globalData.uploadURL + "global/move02@2x.png" },
+            { id: 3, src: app.globalData.uploadURL + "global/move03@2x.png" },
+            { id: 4, src: app.globalData.uploadURL + "global/move04@2x.png" },
+            { id: 5, src: app.globalData.uploadURL + "global/move05@2x.png" },
+            { id: 6, src: app.globalData.uploadURL + "global/move06@2x.png" },
+            { id: 7, src: app.globalData.uploadURL + "global/move07@2x.png" },
+            { id: 8, src: app.globalData.uploadURL + "global/move08@2x.png" }
         ],
         uppoint: 0,
         downpoint: 8,
-        currentkind: "../../image/move00@2x.png",
+        currentkind: app.globalData.uploadURL + "global/move00@2x.png",
         marker: [],
         site_array: [],
         newscount: 0,
         events: [],
         currentid: 0,
+        currentCityName: '',
         num: 0,
         flag: 100,
         file_paths: [],
-        tmrID: 0,
+        _tmr: 0,
         isFirstInit: true,
     },
     onLoad: function(option) {
@@ -152,9 +154,8 @@ Page({
 
                 that.globalData.getUserInfoDisabled = !perm.authSetting['scope.userInfo'];
                 that.globalData.getUserLocationDisabled = !perm.authSetting['scope.userLocation'];
-                that.globalData.getWerunDataDisabled = !perm.authSetting['scope.werun'];
 
-                if (!that.globalData.getUserInfoDisabled && !that.globalData.getUserLocationDisabled && !that.globalData.getWerunDataDisabled) {
+                if (!that.globalData.getUserInfoDisabled && !that.globalData.getUserLocationDisabled) {
                     _this.onPrepare();
                     return;
                 }
@@ -172,21 +173,13 @@ Page({
                             that.globalData.initDisabled = true;
                         },
                         complete: function() {
-                            wx.authorize({
-                                scope: 'scope.werun',
-                                fail: function() {
-                                    //that.globalData.initDisabled = true;
-                                },
-                                complete: function() {
-                                    if (that.globalData.initDisabled)
-                                        that.go2Setting();
-                                    else {
-                                        that.globalData.getUserInfoDisabled = false;
-                                        _this.onPrepare();
-                                        app.globalData.isFirstLaunch = false;
-                                    }
-                                }
-                            })
+                            if (that.globalData.initDisabled)
+                                that.go2Setting();
+                            else {
+                                that.globalData.getUserInfoDisabled = false;
+                                _this.onPrepare();
+                                app.globalData.isFirstLaunch = false;
+                            }
                         }
                     });
                 }
@@ -195,15 +188,16 @@ Page({
     },
     onPrepare: function() {
         var that = this;
-        app.onInitialize();
-        if (app.globalData.userInfo.user_id == 0) {
-            clearTimeout(that.data.tmrID);
-            that.data.tmrID = setTimeout(function() {
-                that.onPrepare();
-            }, 1000);
-        } else {
-            that.onInitStart();
-        }
+        wx.showLoading({
+            title: '加载中',
+        })
+        var option = that.data.options;
+        if (app.globalData.userInfo.user_id == 0)
+            app.onInitialize(function() {
+                that.onInitStart(option);
+            })
+        else
+            that.onInitStart(option);
     },
     onInitStart: function() {
         //get system templates.
@@ -211,31 +205,26 @@ Page({
 
         wx.showTabBar({})
         that.data.show_array = [
-            { id: 0, src: "../../image/move00@2x.png" },
-            { id: 1, src: "../../image/move01@2x.png" },
-            { id: 2, src: "../../image/move02@2x.png" },
-            { id: 3, src: "../../image/move03@2x.png" },
-            { id: 4, src: "../../image/move04@2x.png" },
-            { id: 5, src: "../../image/move05@2x.png" },
-            { id: 6, src: "../../image/move06@2x.png" },
-            { id: 7, src: "../../image/move07@2x.png" },
-            { id: 8, src: "../../image/move08@2x.png" }
+            { id: 0, src: app.globalData.uploadURL + "global/move00@2x.png" },
+            { id: 1, src: app.globalData.uploadURL + "global/move01@2x.png" },
+            { id: 2, src: app.globalData.uploadURL + "global/move02@2x.png" },
+            { id: 3, src: app.globalData.uploadURL + "global/move03@2x.png" },
+            { id: 4, src: app.globalData.uploadURL + "global/move04@2x.png" },
+            { id: 5, src: app.globalData.uploadURL + "global/move05@2x.png" },
+            { id: 6, src: app.globalData.uploadURL + "global/move06@2x.png" },
+            { id: 7, src: app.globalData.uploadURL + "global/move07@2x.png" },
+            { id: 8, src: app.globalData.uploadURL + "global/move08@2x.png" }
         ]
         that.data.select_kind = 0
         that.data.uppoint = 0
         that.data.downpoint = 8
-        that.data.currentkind = "../../image/move00@2x.png"
+        that.data.currentkind = app.globalData.uploadURL + "global/move00@2x.png"
         that.data.marker = []
         that.data.circles = []
         that.data.newscount = 0
         that.data.events = []
-        that.data.currentid = 0
-            // wx.showLoading({
-            //     title: '加载中'
-            // });
-            // setTimeout(function() {
-            //     wx.hideLoading({});
-            // }, 1000);
+        that.data.currentid = 0;
+
         this.setData({
             getUserInfoDisabled: app.globalData.getUserInfoDisabled,
             show_array: that.data.show_array,
@@ -245,18 +234,6 @@ Page({
             rooturl: that.data.rooturl
         });
 
-        wx.request({
-            url: app.globalData.mainURL + 'api/getTemplates',
-            method: 'POST',
-            header: {
-                'content-type': 'application/json'
-            },
-            success: function(res) {
-                console.log(res)
-                app.globalData.template = res.data.template
-                console.log(app.globalData.template)
-            },
-        })
         this.data.num = 0
         if (app.globalData.userInfo.forbidden == 1) {
             wx.showModal({
@@ -275,34 +252,113 @@ Page({
             frontColor: '#000000',
             backgroundColor: '#e6b53c'
         })
-        var that = this
 
+        that.setData({
+            isAuthorized: (app.globalData.userInfo.state != 0)
+        })
+        wx.request({
+            url: app.globalData.mainURL + 'api/getNewAlarm',
+            data: {
+                user_id: app.globalData.userInfo.user_id
+            },
+            method: 'POST',
+            header: {
+                'content-type': 'application/json'
+            },
+            success: function(res) {
+                if (!res.data.status) return;
+                if (res.data.news.length > 0)
+                    that.setData({ newscount: res.data.news[0].amount * 1 })
+                else
+                    that.setData({ newscount: 0 })
+            },
+        })
+        clearInterval(that.data._tmr);
+        // that.data._tmr = setInterval(function() {
+        // if (wx.getStorageSync('currentCity') == "")
+        that.updateLocation();
+        // }, 5000);
 
+    },
+    updateLocation: function() {
+        var that = this;
         wx.getLocation({
             type: 'gcj02',
             success: function(res) {
-                if (app.globalData.issearch == 0) {
-                    that.data.current_latitude = res.latitude
-                    that.data.current_longitude = res.longitude
-                } else {
-                    that.data.current_latitude = app.globalData.searchlat
-                    that.data.current_longitude = app.globalData.searchlong
-                    app.globalData.issearch = 0
+                var cityData = wx.getStorageSync('currentCity');
+                var isCityInitialized = true;
+                if (cityData == '') {
+                    cityData = {
+                        current_latitude: res.latitude + '',
+                        current_longitude: res.longitude + ''
+                    };
+                    isCityInitialized = false;
                 }
-                app.globalData.searchlat = res.latitude;
-                app.globalData.searchlong = res.longitude;
-                that.updateLocation();
-                console.log(res);
-                that.setData({ current_latitude: that.data.current_latitude, current_longitude: that.data.current_longitude, circles: that.data.circles })
-                setTimeout(function() {
-                    if (app.globalData.userInfo.user_id != '0') {
+                cityData.user_latitude = res.latitude + '';
+                cityData.user_longitude = res.longitude + '';
+                // if (app.globalData.issearch == 0) {
+                //     that.data.current_latitude = res.latitude
+                //     that.data.current_longitude = res.longitude
+                // } else {
+                //     that.data.current_latitude = app.globalData.searchlat
+                //     that.data.current_longitude = app.globalData.searchlong
+                //     app.globalData.issearch = 0
+                // }
+                app.globalData.searchlat = res.latitude + '';
+                app.globalData.searchlong = res.longitude + '';
+
+                var url = 'https://restapi.amap.com/v3/geocode/regeo?key=8eb63e36d0b6d7d29a392503a4a80f6c&location=' + res.longitude + ',' + res.latitude + '&poitype=&radius=&extensions=all&batch=false&roadlevel=0';
+
+                //get activity array
+                wx.request({
+                    url: url,
+                    success: function(res) {
+                        //console.log('got location');
+                        //console.log(res.data);
+                        //console.log(res.data.regeocode.addressComponent);
+                        // var province_name = res.data.regeocode.addressComponent.province
+                        app.globalData.userCityName = res.data.regeocode.addressComponent.city;
+                        app.globalData.userProvinceName = res.data.regeocode.addressComponent.province;
+                        if (!isCityInitialized) {
+                            cityData.city = app.globalData.userCityName;
+                            cityData.province = app.globalData.userProvinceName;
+                            app.globalData.currentCityName = cityData.city;
+                        }
+                        cityData.user_cityName = app.globalData.userCityName;
+                        wx.setStorageSync('currentCity', cityData);
+                        // var area_name = res.data.regeocode.addressComponent.district
+                    },
+                    complete: function(res) {
+                        // wx.showModal({ content: app.globalData.currentCityName });
+
+                        // var cityShow = app.globalData.userCityName;
+                        // if (cityShow.length > 4) cityShow = cityShow.substr(1, 3) + '...';
+                        that.data.circles[0] = {
+                            latitude: parseFloat(cityData.current_latitude),
+                            longitude: parseFloat(cityData.current_longitude),
+                            color: "#e6b53c",
+                            fillColor: "#e6b53c20",
+                            radius: wx.getStorageSync('user_step') / 2,
+                            // radius: 500 / 2,
+                            strokeWidth: 1
+                        };
+                        // that.setData({
+                        //     currentCityName: cityShow,
+                        //     current_latitude: cityData.current_latitude,
+                        //     current_longitude: cityData.current_longitude,
+                        //     circles: that.data.circles
+                        // })
+
+                        var cityShow = cityData.city;
+                        if (cityShow.length > 4) cityShow = cityShow.substr(1, 3) + '...';
+
                         wx.request({
                             url: app.globalData.mainURL + 'api/getItemsOnMap',
                             data: {
-                                latitude: that.data.current_latitude,
-                                longitude: that.data.current_longitude,
+                                latitude: cityData.current_latitude,
+                                longitude: cityData.current_longitude,
                                 user_id: app.globalData.userInfo.user_id,
-                                current_city: app.globalData.currentCityName
+                                current_city: cityData.city
                             },
                             method: 'POST',
                             header: {
@@ -354,39 +410,44 @@ Page({
                                                         wx.removeSavedFile({
                                                             filePath: res.fileList[0].filePath,
                                                             complete: function(res) {
-                                                                console.log(res)
+                                                                // console.log(res)
                                                             }
                                                         })
                                                     }
                                                 }
                                             })
-                                            var sites = res.data.site
+                                            var sites = res.data.site;
                                             that.data.site_array = [];
-                                            iter = 0
+                                            iter = 0;
                                             var menu_filter_array = [{
-                                                    areaId: res.city_id,
-                                                    areaName: "" + app.globalData.currentCityName
-                                                },
-                                                {
+                                                areaId: res.city_id,
+                                                areaName: "" + cityShow
+                                            }];
+                                            if (cityData.city == cityData.user_cityName) {
+                                                menu_filter_array.push({
                                                     areaId: "000000",
                                                     areaName: "附近3km"
-                                                },
-                                                {
+                                                });
+                                                menu_filter_array.push({
                                                     areaId: "000000",
                                                     areaName: "附近5km"
-                                                }
-                                            ];
+                                                });
+                                            }
                                             that.data.current_city_id = res.city_id;
                                             that.data.menu_filter_array = menu_filter_array;
                                             for (var i = 0; i < sites.length; i++) {
-                                                if (sites[i].site_name.length > 12) {
+                                                if (sites[i].site_name.length > 16) {
                                                     var name = sites[i].site_name;
-                                                    name = name.slice(0, 12) + '...'
+                                                    name = name.slice(0, 16) + '...'
                                                     sites[i].site_name = name
                                                 }
+                                                if (parseFloat(sites[i].point) == 0.0)
+                                                    sites[i].point = "5.0";
+                                                if (sites[i].picture.length == 0)
+                                                    sites[i].picture = app.globalData.default_stadium_img;
                                                 that.data.site_array.push(sites[i])
                                                 that.data.marker.push({
-                                                    iconPath: "/image/" + (1 * sites[i].site_type + 1) + ".png",
+                                                    iconPath: "../../image/" + (1 * sites[i].site_type + 1) + ".png",
                                                     id: "o" + sites[i].boss_id,
                                                     latitude: 1 * sites[i].latitude,
                                                     longitude: 1 * sites[i].longitude,
@@ -394,7 +455,7 @@ Page({
                                                     height: 73 / 1344 * res2.screenHeight,
                                                     kind: "site"
                                                 });
-                                                console.log("-----" + that.data.menu_filter_array._find(item => item.areaId == sites[i].areaId));
+                                                // console.log("-----" + that.data.menu_filter_array._find(item => item.areaId == sites[i].areaId));
                                                 if (!that.data.menu_filter_array._find(item => item.areaId == sites[i].areaId)) {
                                                     that.data.menu_filter_array.push({
                                                         areaId: sites[i].areaId,
@@ -403,208 +464,23 @@ Page({
                                                 }
                                             }
                                             that.setData({
+                                                currentCityName: cityShow,
+                                                current_latitude: cityData.current_latitude,
+                                                current_longitude: cityData.current_longitude,
+                                                circles: that.data.circles,
                                                 menu_filter_array: that.data.menu_filter_array,
                                             });
                                             that.all_filter_item();
                                             that.show_marker();
+                                            console.log(that.data.filter_places);
                                         }
                                     },
                                 })
                             },
+                            complete: function() {
+                                wx.hideLoading({});
+                            },
                         })
-                    } else {
-                        setTimeout(function() {
-                            wx.request({
-                                url: app.globalData.mainURL + 'api/getItemsOnMap',
-                                data: {
-                                    latitude: that.data.current_latitude,
-                                    longitude: that.data.current_longitude,
-                                    user_id: app.globalData.userInfo.user_id,
-                                    current_city: app.globalData.currentCityName
-                                },
-                                method: 'POST',
-                                header: {
-                                    'content-type': 'application/json'
-                                },
-                                success: function(res) {
-
-                                    if (!res.data.status) return;
-                                    wx.getSystemInfo({
-                                        success: function(res2) {
-                                            var brandx = 0
-                                            var brandy = 0
-                                            if (res2.brand == 'iPhone') {
-                                                brandx = -50
-                                                brandy = 20
-                                            }
-                                            var iter
-                                            for (iter = 0; iter < res.data.honey.length; iter++) {
-                                                var str = res.data.honey[iter].amount + "ml"
-                                                var id = "h" + res.data.honey[iter].no
-                                                that.data.marker[iter] = {
-                                                    iconPath: "../../image/honey.png",
-                                                    id: id,
-                                                    boss_id: res.data.honey[iter].boss_id,
-                                                    favor_state: res.data.honey[iter].favor_state,
-                                                    latitude: 1 * (res.data.honey[iter].latitude),
-                                                    longitude: 1 * (res.data.honey[iter].longitude),
-                                                    width: (68 / 750) * res2.screenWidth,
-                                                    height: (40 / 1344) * res2.screenHeight,
-                                                    anchor: { x: 0, y: 1 },
-                                                    kind: "honey",
-                                                    label: {
-                                                        content: str,
-                                                        color: "#000000",
-                                                        fontSize: (20 / 750) * res2.screenWidth,
-                                                        bgColor: "#e6b53c",
-                                                        padding: (3 / 750) * res2.screenWidth,
-                                                        borderWidth: (1 / 750) * res2.screenWidth,
-                                                        borderColor: "#000000",
-                                                        borderRadius: (3 / 750) * res2.screenWidth,
-                                                        x: ((70 + brandx) / 750) * res2.screenWidth,
-                                                        y: ((-38 + brandy) / 1344) * res2.screenHeight
-                                                    }
-                                                }
-                                            }
-                                            if (iter == res.data.honey.length) {
-                                                wx.getSavedFileList({
-                                                    success: function(res) {
-                                                        if (res.fileList.length > 0) {
-                                                            wx.removeSavedFile({
-                                                                filePath: res.fileList[0].filePath,
-                                                                complete: function(res) {
-                                                                    console.log(res)
-                                                                }
-                                                            })
-                                                        }
-                                                    }
-                                                })
-                                                var sites = res.data.site
-                                                that.data.site_array = [];
-                                                iter = 0
-                                                that.data.menu_filter_array = [{
-                                                        areaId: res.city_id,
-                                                        areaName: "" + app.globalData.currentCityName
-                                                    },
-                                                    {
-                                                        areaId: "000000",
-                                                        areaName: "附近3km"
-                                                    },
-                                                    {
-                                                        areaId: "000000",
-                                                        areaName: "附近5km"
-                                                    }
-                                                ];
-                                                that.data.current_city_id = res.city_id;
-                                                for (var i = 0; i < sites.length; i++) {
-                                                    that.data.site_array.push(sites[i])
-                                                    that.data.marker.push({
-                                                        iconPath: "/image/" + (1 * sites[i].site_type + 1) + ".png",
-                                                        id: "o" + sites[i].boss_id,
-                                                        latitude: 1 * sites[i].latitude,
-                                                        longitude: 1 * sites[i].longitude,
-                                                        width: .092 * res2.screenWidth,
-                                                        height: 73 / 1344 * res2.screenHeight,
-                                                        kind: "site"
-                                                    });
-                                                    console.log("-----" + that.data.menu_filter_array._find(item => item.areaId == sites[i].areaId));
-                                                    if (!that.data.menu_filter_array._find(item => item.areaId == sites[i].areaId)) {
-                                                        that.data.menu_filter_array.push({
-                                                            areaId: sites[i].areaId,
-                                                            areaName: sites[i].areaName
-                                                        });
-                                                    }
-                                                }
-                                                that.setData({
-                                                    menu_filter_array: that.data.menu_filter_array,
-                                                });
-                                                that.all_filter_item();
-                                                that.show_marker();
-                                            }
-                                        },
-                                    })
-                                },
-                            })
-                        }, 1000)
-                    }
-
-                }, 1)
-            },
-            fail(error) {}
-        })
-        var that = this
-            /*
-            if (app.globalData.see_news == 1) {
-              app.globalData.see_news == 0
-              that.setData({ newscount: 0 })
-              return;
-            }
-            */
-        wx.request({
-            url: app.globalData.mainURL + 'api/getNewAlarm',
-            data: {
-                user_id: app.globalData.userInfo.user_id
-            },
-            method: 'POST',
-            header: {
-                'content-type': 'application/json'
-            },
-            success: function(res) {
-                if (!res.data.status) return;
-                if (res.data.news.length > 0)
-                    that.setData({ newscount: res.data.news[0].amount * 1 })
-                else
-                    that.setData({ newscount: 0 })
-            },
-        })
-        clearInterval(that.data.tmrID);
-        that.data.tmrID = setInterval(function() {
-            that.updateLocation()
-        }, 5000);
-
-    },
-    updateLocation: function() {
-        var that = this;
-        wx.getLocation({
-            type: 'gcj02',
-            success: function(res) {
-                if (app.globalData.issearch == 0) {
-                    that.data.current_latitude = res.latitude
-                    that.data.current_longitude = res.longitude
-                } else {
-                    that.data.current_latitude = app.globalData.searchlat
-                    that.data.current_longitude = app.globalData.searchlong
-                    app.globalData.issearch = 0
-                }
-                app.globalData.searchlat = res.latitude;
-                app.globalData.searchlong = res.longitude;
-
-                var url = 'https://restapi.amap.com/v3/geocode/regeo?key=8eb63e36d0b6d7d29a392503a4a80f6c&location=' + res.longitude + ',' + res.latitude + '&poitype=&radius=&extensions=all&batch=false&roadlevel=0';
-
-                //get activity array
-                wx.request({
-                    url: url,
-                    success: function(res) {
-                        //console.log('got location');
-                        //console.log(res.data);
-                        //console.log(res.data.regeocode.addressComponent);
-                        // var province_name = res.data.regeocode.addressComponent.province
-                        app.globalData.currentCityName = res.data.regeocode.addressComponent.city;
-                        // var area_name = res.data.regeocode.addressComponent.district
-                    },
-                    complete: function(res) {
-                        // wx.showModal({ content: app.globalData.currentCityName });
-
-                        that.data.circles[0] = {
-                            latitude: that.data.current_latitude,
-                            longitude: that.data.current_longitude,
-                            color: "#e6b53c",
-                            fillColor: "#e6b53c20",
-                            radius: wx.getStorageSync('user_step') / 2,
-                            strokeWidth: 2
-                        };
-
-                        that.setData({ current_latitude: that.data.current_latitude, current_longitude: that.data.current_longitude, circles: that.data.circles })
 
                     }
                 });
@@ -616,8 +492,8 @@ Page({
      */
     onHide: function() {
         var that = this;
-        console.log('hidden.......')
-        clearInterval(that.data.tmrID);
+        // console.log('hidden.......')
+        clearInterval(that.data._tmr);
     },
     sleep: function(milliseconds) {
         var start = new Date().getTime();
@@ -630,7 +506,7 @@ Page({
     },
     download_honey: function(res, res2, iter, brandx, brandy) {
         setTimeout(function() {
-            console.log(iter)
+            // console.log(iter)
         }, 1000)
 
     },
@@ -695,7 +571,7 @@ Page({
                     // }
                 }
             }
-            console.log(tempmarker)
+            // console.log(tempmarker)
             this.setData({ markers: tempmarker })
         }
     },
@@ -716,11 +592,11 @@ Page({
 
             if (origin[0].boss_id != null) {
                 if (origin[0].favor_state == '0') {
-                    console.log('show modal');
+                    // console.log('show modal');
                     //show modal and go to gym to set favourite.
                     wx.showModal({
                         title: '提示',
-                        content: '关注场馆才能采集\n该场馆产生的蜂蜜哦!',
+                        content: '关注商家才能采集\n该商家产生的蜂蜜哦!',
                         confirmText: '去关注',
                         cancelText: '算了',
                         success: function(res) {
@@ -750,8 +626,9 @@ Page({
                 d = 0;
             "" == e.globalData.user_step && (e.globalData.user_step = 0);
             var l = e.globalData.user_step / 2 * t;
-            if (console.log("------markersin =  ------" + l), "" == e.globalData.daily_honey && (e.globalData.daily_honey = [0, 0]), !(r < l)) return void wx.showToast({
-                title: "距离不够，无法采集",
+            // console.log("------markersin =  ------" + l);
+            if ("" == e.globalData.daily_honey && (e.globalData.daily_honey = [0, 0]), !(r < l)) return void wx.showToast({
+                title: "距离不够，请到商家附近采蜜",
                 icon: "none",
                 duration: 2e3
             });
@@ -780,7 +657,8 @@ Page({
             var m = h.total_honey;
             e.globalData.honey_info = h, u.push(a.markerId), e.globalData.todayselected = u;
             v = a.markerId.slice(1, a.markerId.length);
-            e.globalData.honey_info = h, console.log(d);
+            e.globalData.honey_info = h;
+            //  console.log(d);
             var p = "成功收取" + d + "ml蜂蜜";
             wx.showToast({
                 title: p,
@@ -848,6 +726,21 @@ Page({
     on_click_select_menu: function() {
         this.setData({ select_kind: 1 })
     },
+
+    on_click_global_city: function() {
+        var that = this;
+        wx.navigateTo({
+            url: 'cities/cities',
+        })
+    },
+
+    go_claim: function() {
+        var that = this;
+        wx.navigateTo({
+            url: '../profile/auth/auth?id=0',
+        })
+    },
+
     //searchbox function
     on_click_search: function() {
         wx.navigateTo({
@@ -928,19 +821,20 @@ Page({
         })
     },
     preventTouchMove: function() {
-        console.log("Ok")
+        // console.log("Ok")
     },
 
     // template_table functions
     click_detail_place: function(event) {
         wx.navigateTo({
-            url: 'detail_gym/detail_gym?id=' + event.currentTarget.id,
+            url: 'detail_gym/detail_gym?id=' + event.currentTarget.id + '&no=' + event.currentTarget.dataset.no,
         })
     },
     click_set_status: function(event) {
         var that = this;
         var boss_id = event.currentTarget.id;
-        var item = that.data.site_array._find(item => item.boss_id == boss_id);
+        var boss_no = event.currentTarget.dataset.no;
+        var item = that.data.site_array._find(item => item.boss_no == boss_no);
         var index = that.data.site_array.indexOf(item);
 
         wx.showLoading({
@@ -955,10 +849,10 @@ Page({
             },
             data: {
                 'user_id': app.globalData.userInfo.user_id,
-                'boss_id': boss_id
+                'boss_id': 0, //boss_id,
+                'boss_no': boss_no
             },
             success: function(res) {
-                wx.hideLoading()
 
                 if (that.data.site_array[index].isfavourite == 0) {
                     that.data.site_array[index].isfavourite = 1;
@@ -971,6 +865,9 @@ Page({
                     site_array: that.data.site_array
                 })
                 that.all_filter_item();
+            },
+            complete: function() {
+                wx.hideLoading({});
             }
         })
     },
@@ -1015,16 +912,16 @@ Page({
     },
 
     compare_distance: function(a, b) {
-        if (a.distance < b.distance)
+        if (a.distance * 1 < b.distance * 1)
             return -1;
-        if (a.distance > b.distance)
+        if (a.distance * 1 > b.distance * 1)
             return 1;
         return 0;
     },
     compare_score: function(a, b) {
-        if (a.point > b.point)
+        if (a.point * 1 > b.point * 1)
             return -1;
-        if (a.point < b.point)
+        if (a.point * 1 < b.point * 1)
             return 1;
         return 0;
     },
@@ -1043,16 +940,16 @@ Page({
         var order_index = that.data.menu_order_index;
         var filter_index = that.data.menu_filter_index;
         var style_index = that.data.menu_style_index;
-
+        var cityData = wx.getStorageSync('currentCity');
         //get filter array
         var filter_array = [];
         if (filter_index == 0) {
             // search by nearest 3km from me 
             filter_array = that.data.site_array.filter(item => item.cityId == that.data.current_city_id);
-        } else if (filter_index == 1) {
+        } else if (filter_index == 1 && cityData.city == cityData.user_cityName) {
             // search by nearest 5km from me 
             filter_array = that.data.site_array.filter(item => 1.0 * item.distance < 3.0);
-        } else if (filter_index == 2) {
+        } else if (filter_index == 2 && cityData.city == cityData.user_cityName) {
             // search by nearest 5km from me 
             filter_array = that.data.site_array.filter(item => 1.0 * item.distance < 5.0);
         } else {
@@ -1068,6 +965,10 @@ Page({
             style_array = filter_array.filter(item => item.site_type == style_index);
         }
 
+        that.data.filter_places = [];
+        // that.setData({
+        //     filter_places: []
+        // })
 
         //get order arrays
         if (order_index == 0) {
@@ -1142,18 +1043,18 @@ Page({
         this.all_filter_item();
     },
     getUserinfo: function(a) {
-        console.log(a),
-            app.globalData.userInfo.nickname = app.detail.userInfo.nickName,
+        // console.log(a);
+        app.globalData.userInfo.nickname = app.detail.userInfo.nickName,
             app.globalData.userInfo.avatar = a.detail.userInfo.avatarUrl;
     },
     onShareAppMessage: function(res) {
         console.log("SHARED")
         if (res.from === 'button') {
-            console.log(res.target)
+            // console.log(res.target)
         }
         var that = this;
 
-        var title = "看看你的周围有哪些运动场馆，一起来玩吧"
+        var title = "看看你的周围有哪些运动商家，一起来玩吧"
 
         return {
             title: title,
@@ -1163,9 +1064,6 @@ Page({
         }
     }
 })
-
-
-
 
 //filter and find array
 Array.prototype.filter = function(fun /* , thisArg*/ ) {

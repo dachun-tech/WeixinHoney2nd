@@ -7,6 +7,21 @@
     border-bottom: 3rpx solid #f4f4f4;
 }
 
+.booking-type {
+    vertical-align: middle;
+    padding: 1px 5px;
+    background: white;
+    color: #E6B53C;
+    border: 1px solid #E6B53C;
+    font-size: 24rpx;
+    margin-right: 10rpx;
+    border-radius: 10rpx;
+    -webkit-border-radius: 10rpx;
+    -moz-border-radius: 10rpx;
+    -ms-border-radius: 10rpx;
+    -o-border-radius: 10rpx;
+}
+
 .booking-bar {
     padding-left: 30rpx;
     line-height: 60rpx;
@@ -61,8 +76,18 @@
 
 .time_content {
     display: inline-block;
-    line-height: 40rpx;
-    width: 80%;
+    line-height: 30rpx;
+    width: 85%;
+    white-space: normal;
+    word-break: keep-all;
+    padding: 10rpx 0;
+}
+
+.time_content view {
+    display: inline-block;
+    width: 170rpx;
+    text-align: center;
+    vertical-align: bottom;
 }
 
 .booking-place {
@@ -92,8 +117,8 @@
 
 .booking-fav-content {
     display: inline-block;
-    width: 20%;
-    float: right;
+    width: 15%;
+    /* float: right; */
     vertical-align: middle;
 }
 

@@ -8,6 +8,7 @@ App({
         secret: 'fengtiWeixin17642518820android12', //secret is required to provide, where the secret I wrote 
         mch_id: '1500220062',
         userInfo: {
+            user_id: 0,
             'nickname': 'WeiXin',
             'avatar': '',
             'user_id': 0,
@@ -35,22 +36,22 @@ App({
         },
         getUserInfoDisabled: false,
         getUserLocationDisabled: false,
-        getWerunDataDisabled: false,
         initDisabled: false,
         address: [],
         productState: ["待发货", "待收货", "交易成功"],
         eventState: ["进行中", "已完成", "已取消"],
-        userRole: ['无', '场馆主', '个人'],
+        userRole: ['无', '商家', '个人'],
         eventType: ['足球', '篮球', '台球', '排球', '网球', '壁球', '瑜伽', '舞蹈', '电竞', '爬山', '轮滑', '武术',
             '旅游', '滑冰', '滑雪', '拳击', '跑步', '棋牌', '户外', '健身', '游泳', '桌游', '骑行', '羽毛球',
-            '乒乓球', '保龄球', '跆拳道', '高尔夫', '运动装备', '射击射箭', '轰趴聚会', '综合场馆', '其他'
+            '乒乓球', '保龄球', '跆拳道', '高尔夫', '运动装备', '射击射箭', '轰趴聚会', '综合商家', '其他'
         ],
+        default_stadium_img: [{ picture: "global/picture01@2x.png" }],
         memberState: ['使用中', '已过期'],
         exchangeState: ['待发货', '待收货', '交易成功'],
         bindingState: ['提现中', '提现成功', '提现失败'],
-        mainURL: 'https://www.fengteam.cn/backend2/',
+        mainURL: 'https://www.fengteam.cn/backend3/',
         smsURL: 'https://www.fengteam.cn/sms/SendTemplateSMS.php',
-        uploadURL: 'https://www.fengteam.cn/backend2/uploads/',
+        uploadURL: 'https://www.fengteam.cn/backend3/uploads/',
         // mainURL: 'https://127.0.0.1/honey/',
         // smsURL: 'https://www.fengteam.cn/sms/SendTemplateSMS.php',
         // uploadURL: 'https://127.0.0.1/honey/uploads/',
@@ -74,59 +75,29 @@ App({
         iscreatepage: 0,
         nickname_buf: '',
         isFirstLaunch: false,
+        callback: null,
+        _tmr: 0,
+        _backend_tmr: 0,
+        templateIds: {
+            // order_cancel: 'uL8sjGNBu5z7I8ZpR7TCyDsSqLK19BjjspuLG4gvEmA', // activity name, time, number of person, canceled user, address
+            order_start: '0za3UAJpKFCWHQi0ZH47i0ILE4t29UZ7GAc0D632mQs', // boss name, address, start time, end time, cost, sport type
+            pay_cancel: 'VG1esuovTwhXWY0a4HWMuWjKWADb8rPhPkpVGFgga2s', // activity name, time, address, canceled time, canceled user
+            event_start: '1X8r81uZNJQ1_byAYiTueELz9bWKIQNFY7legHDu_jU', // event name, start time, end time, address
+            pay_success: '0DCgeORa3iSshUNs7q4hzCgV8Uep3sCdFypGRBvXY4A', // activity name, address, time, organizer, number of activity, number of paid, paid user
+            group_success: '1c_Qfq9-np9sJKdJGdo6XP67vSNzPKSZbTRzuRQy6Zw', // activity name, number of person, organizer, activity time, address, paid person
+        }
     },
     onLaunch: function() {},
     onAuthorize: function() {
         var that = this;
-        // wx.getSetting({
-        //     success: function(res) {
-        //         var perm = res;
-
-        //         that.globalData.getUserInfoDisabled = !perm.authSetting['scope.userInfo'];
-        //         that.globalData.getUserLocationDisabled = !perm.authSetting['scope.userLocation'];
-        //         that.globalData.getWerunDataDisabled = !perm.authSetting['scope.werun'];
-
-        //         if (!that.globalData.getUserInfoDisabled && !that.globalData.getUserLocationDisabled && !that.globalData.getWerunDataDisabled) {
-        //             that.onInitialize();
-        //             return;
-        //         }
-
-        //         if (perm.authSetting['scope.userInfo'] != true) {
-        //             that.globalData.initDisabled = true;
-        //         } else {
-        //             wx.authorize({
-        //                 scope: 'scope.userLocation',
-        //                 fail: function() {
-        //                     that.globalData.initDisabled = true;
-        //                 },
-        //                 complete: function() {
-        //                     wx.authorize({
-        //                         scope: 'scope.werun',
-        //                         fail: function() {
-        //                             that.globalData.initDisabled = true;
-        //                         },
-        //                         complete: function() {
-        //                             if (that.globalData.initDisabled)
-        //                                 that.go2Setting();
-        //                             else {
-        //                                 that.globalData.getUserInfoDisabled = false;
-        //                                 that.onInitialize();
-        //                                 isFirstLaunch = false;
-        //                             }
-        //                         }
-        //                     })
-        //                 }
-        //             });
-        //         }
-        //     }
-        // });
     },
     go2Setting: function() {
         wx.openSetting({});
-        // this.onAuthorize();
-        // wx.navigateBackMiniProgram({})
     },
-    onInitialize: function() {
+    onInitialize: function(callback) {
+        clearInterval(this.globalData._tmr);
+        clearTimeout(this.globalData._tmr);
+        this.globalData.callback = callback;
         // wx.setTabBarStyle({
         //         color: '#888888',
         //         selectedColor: '#472E00',
@@ -137,7 +108,7 @@ App({
         //     backgroundColor: '#ffffff',
         // })
         var _this = this
-        _this.getLocation();
+            // _this.getLocation();
 
         wx.request({
             url: _this.globalData.mainURL + 'api/getRules',
@@ -146,9 +117,27 @@ App({
                 'content-type': 'application/json'
             },
             success: function(res) {
-                _this.globalData.rule = res.data.rule
+                _this.globalData.rule = res.data.rule;
+                wx.setStorageSync('user_step', _this.globalData.rule[16].value);
+                wx.setStorageSync('last_step', _this.globalData.rule[16].value);
+                _this.globalData.user_step = _this.globalData.rule[16].value;
+                _this.globalData.laststep = _this.globalData.rule[16].value;
             },
         })
+
+        wx.request({
+            url: _this.globalData.mainURL + 'api/getTemplates',
+            method: 'POST',
+            header: {
+                'content-type': 'application/json'
+            },
+            success: function(res) {
+                // console.log(res)
+                _this.globalData.template = res.data.template
+                    // console.log(app.globalData.template)
+            },
+        })
+
         wx.login({
             success: function(res) {
                 _this.globalData.user_code = res.code;
@@ -170,28 +159,16 @@ App({
                         wx.setStorageSync('openid', res.data.openid); //存储openid 
                         wx.setStorageSync('session_key', res.data.session_key)
                         _this.getUserDetail(obj);
-                        if (!_this.globalData.getWerunDataDisabled)
-                            wx.getWeRunData({
-                                success: function(res) {
-                                    var encryptedData = res.encryptedData;
-                                    console.log("getWerunData", encryptedData);
-                                    var iv = res.iv;
-                                    var pc = new WXBizDataCrypt(_this.globalData.appid, wx.getStorageSync('session_key'));
-                                    var data = pc.decryptData(encryptedData, iv)
-                                    wx.setStorageSync('user_step', data.stepInfoList.pop().step * 1)
-                                    wx.setStorageSync('last_step', data.stepInfoList.pop().step * 1)
-                                    _this.globalData.user_step = data.stepInfoList.pop().step * 1;
-                                    _this.globalData.laststep = data.stepInfoList.pop().step * 1;
-                                    console.log('User step is ', wx.getStorageSync('user_step'));
-                                }
-                            })
-                        console.log("getUserInfo Started")
+
+                        // console.log('User step is ', wx.getStorageSync('user_step'));
                     }
                 });
-
             }
         })
         _this.globalData.userInfo.nickname = _this.globalData.nickname
+    },
+    onUnload: function() {
+        this.onHide();
     },
     onHide: function() {
         wx.setStorageSync('honey_info', this.globalData.honey_info)
@@ -202,7 +179,7 @@ App({
             success: function(res) {
                 var info = _this.globalData.userInfo;
                 info.nickname = res.userInfo.nickName;
-                console.log(info.nickname)
+                // console.log(info.nickname)
                 _this.globalData.nickname = info.nickname
                 info.avatar = res.userInfo.avatarUrl;
                 info.gender = res.userInfo.gender;
@@ -254,7 +231,7 @@ App({
                                     //   // _this.globalData.userInfo.name = _this.globalData.userInfo.nickname
                                     //   // _this.globalData.userInfo.user_id = info.user_id;
                                     // }
-                                    console.log(ret)
+                                    // console.log(ret)
                                 }
                             })
                         } else {
@@ -306,6 +283,7 @@ App({
                             }
                             info.name = res.data.result[0].name;
                             info.amount = res.data.result[0].amount;
+                            info.amount_withdraw = res.data.result[0].amount_withdraw;
                             _this.globalData.honey_info.total_honey = info.honey
                             wx.setStorageSync('honey_info', _this.globalData.honey_info)
                             if (info.state * 1 != 2) {
@@ -321,18 +299,35 @@ App({
                                 info.isVIP = 1;
                             }
                             _this.globalData.userInfo = info
-                            console.log(info);
+                                // console.log(info);
                             var tempdate1 = new Date()
                             if (tempdate1.getHours() >= 0 && tempdate1.getHours() < 7) {
                                 _this.globalData.isactivetime = 0
                             } else {
                                 _this.globalData.isactivetime = 1
                             }
-                            setInterval(_this.checkDate, 1000)
+                            if (_this.globalData.callback) _this.globalData.callback();
+                            //clearInterval(_this.globalData._backend_tmr);
+                            //_this.globalData._backend_tmr = setInterval(_this.changeServerState, 5000)
+                            _this.checkDate();
+
                         }
                     },
                     fail: function() {}
                 })
+            }
+        });
+    },
+    changeServerState: function() {
+        wx.request({
+            url: this.globalData.mainURL + "api/datamanage/checkEventState",
+            method: "POST",
+            header: {
+                "content-type": "application/json"
+            },
+            data: {},
+            success: function() {
+                // console.log("Status Changed");
             }
         });
     },
@@ -350,7 +345,7 @@ App({
             }
         })
     },
-    getLocation: function() {
+    getLocation: function(callback) {
         var that = this;
         wx.getLocation({
             type: 'gcj02',
@@ -364,17 +359,56 @@ App({
                 wx.request({
                     url: url,
                     success: function(res) {
-                        //console.log('got location');
+                        // console.log('got location');
                         //console.log(res.data);
-                        //console.log(res.data.regeocode.addressComponent);
+                        console.log(res.data.regeocode.addressComponent);
                         // var province_name = res.data.regeocode.addressComponent.province
-                        that.globalData.currentCityName = res.data.regeocode.addressComponent.city;
+                        that.globalData.userCityName = res.data.regeocode.addressComponent.city;
                         // var area_name = res.data.regeocode.addressComponent.district
                     },
                 });
+                if (callback) callback();
             }
         });
     },
+
+    getLatLng: function(cityName, callback) {
+        var that = this;
+        var url = 'https://restapi.amap.com/v3/geocode/geo?key=8eb63e36d0b6d7d29a392503a4a80f6c&address=' + cityName;
+
+        //get activity array
+        wx.request({
+            url: url,
+            success: function(res) {
+                console.log('got location');
+                //console.log(res.data);
+                //console.log(res.data.regeocode.addressComponent);
+                // var province_name = res.data.regeocode.addressComponent.province
+                //app.globalData.currentCityName = res.data.regeocode.addressComponent.city;
+                var cityData = wx.getStorageSync('currentCity');
+                var location = res.data.geocodes[0].location.split(',');
+                cityData.current_latitude = location[1];
+                cityData.current_longitude = location[0];
+                cityData.city = cityName;
+                if (cityData.city == cityData.user_cityName) {
+                    cityData.current_latitude = cityData.user_latitude;
+                    cityData.current_longitude = cityData.user_longitude;
+                }
+                that.globalData.currentCityName = cityName;
+                wx.setStorageSync('currentCity', cityData);
+                // var area_name = res.data.regeocode.addressComponent.district
+            },
+            complete: function(res) {
+                // wx.showModal({ content: app.globalData.currentCityName });
+                console.log(callback);
+                if (callback)
+                    callback();
+
+            }
+        });
+
+    },
+
     resethoney: function() {
 
     },
@@ -455,39 +489,29 @@ App({
                                 e.globalData.session_key = t.data.session_key;
                                 wx.getSetting({
                                     success: function(t) {
-                                        1 != t.authSetting["scope.werun"] && wx.authorize({
-                                            scope: "scope.werun"
-                                        }), wx.getWeRunData({
-                                            success: function(t) {
-                                                var o = t.encryptedData,
-                                                    n = t.iv,
-                                                    s = new a(e.globalData.appid, e.globalData.session_key).decryptData(o, n);
-                                                e.globalData.step = 1 * s.stepInfoList.pop().step
-                                                e.globalData.laststep = 1 * s.stepInfoList.pop().step
-                                                console.log('Last day step is ' + e.globalData.laststep);
-                                                console.log('Today step is ' + e.globalData.step);
-                                                new Date();
-                                                var i = new Date();
-                                                e.globalData.daily_honey = [0, 0];
-                                                var l = 1 * e.globalData.laststep * (1 * e.globalData.rule[3].value);
-                                                l = 1 * Math.floor(l)
-                                                wx.request({
-                                                    url: e.globalData.mainURL + "api/setTodayFirst",
-                                                    method: "POST",
-                                                    header: {
-                                                        "content-type": "application/json"
-                                                    },
-                                                    data: {
-                                                        todayfirst: i.getDate(),
-                                                        user_id: e.globalData.userInfo.user_id,
-                                                        honey: l
-                                                    },
-                                                    success: function() {
-                                                        console.log("success");
-                                                    }
-                                                });
+                                        e.globalData.step = 1 * e.globalData.rule[16].value
+                                        e.globalData.laststep = 1 * e.globalData.rule[16].value
+                                        console.log('Last day step is ' + e.globalData.laststep);
+                                        console.log('Today step is ' + e.globalData.step);
+                                        new Date();
+                                        var i = new Date();
+                                        e.globalData.daily_honey = [0, 0];
+                                        var l = 1 * e.globalData.laststep * (1 * e.globalData.rule[3].value);
+                                        l = 1 * Math.floor(l)
+                                        wx.request({
+                                            url: e.globalData.mainURL + "api/setTodayFirst",
+                                            method: "POST",
+                                            header: {
+                                                "content-type": "application/json"
                                             },
-                                            fail: function(a) {}
+                                            data: {
+                                                todayfirst: i.getDate(),
+                                                user_id: e.globalData.userInfo.user_id,
+                                                honey: l
+                                            },
+                                            success: function() {
+                                                console.log("success");
+                                            }
                                         });
                                     }
                                 });
@@ -524,128 +548,16 @@ App({
         })
     },
 
-    // gainNewHoney: function(booking_data) {
-    //     var _this = this
-    //     console.log(_this.globalData.honey_info.honeybox_array)
-    //     var iter;
-    //     var tempx, tempy
-    //     var honeytype = 1
-    //     var vip = _this.globalData.userInfo.isVIP + 1
-    //     console.log(vip)
-    //     var daily_honey = wx.getStorageSync("daily_honey")
-    //     if (daily_honey == '') daily_honey = [0, 0];
-    //     _this.globalData.daily_honey = daily_honey
-    //     console.log(daily_honey[1])
-    //     if (true || _this.globalData.daily_honey[1] <= _this.globalData.rule[6].value) {
-    //         if (booking_data.role == 1) {
-    //             var unit = _this.globalData.rule[0].value * 1;
-    //             var portion = _this.globalData.rule[4].value * 1;
-    //             var honey = unit / (portion + 1) * booking_data.amount;
-    //             honey = Math.floor(honey)
-    //             console.log(honey)
-    //             if (honey >= (_this.globalData.rule[6].value * vip)) {
-    //                 honey = (_this.globalData.rule[5 + honeytype].value * 1)
-    //                 _this.globalData.honey_info.honeybox_array = []
-    //             } else {
-    //                 var temparray = _this.globalData.honey_info.honeybox_array
-    //                 var sum = honey
-    //                 for (iter = temparray.length - 1; iter >= 0; iter--) {
-    //                     if (sum + temparray[iter] < (_this.globalData.rule[6].value * vip)) {
-    //                         sum = sum + temparray[iter]
-    //                     } else {
-    //                         break;
-    //                     }
-    //                 }
-    //                 if (temparray.length > 0 && iter >= 0) {
-    //                     var last = temparray.splice(iter, iter + 1)
-    //                     last[0].honey = _this.globalData.rule[6].value * vip - sum
-    //                     temparray.splice(0, iter)
-    //                     if (last[0].honey > 0) {
-    //                         temparray.unshift(last[0])
-    //                     }
-    //                 }
-    //                 _this.globalData.honey_info.honeybox_array = temparray
-    //             }
-    //             while (1) {
-    //                 tempx = Math.floor((Math.random() * 100) % 9)
-    //                 tempy = Math.floor((Math.random() * 100) % 3)
-    //                 for (iter = 0; iter < _this.globalData.honey_info.honeybox_array.length; iter++) {
-    //                     if (tempx == _this.globalData.honey_info.honeybox_array[iter].x && tempy == _this.globalData.honey_info.honeybox_array[iter].y) {
-    //                         break;
-    //                     }
-    //                 }
-    //                 if (iter == _this.globalData.honey_info.honeybox_array.length) {
-    //                     break;
-    //                 }
-    //             }
-    //             var tempdate
-    //             tempdate = Date.parse(booking_data.end_time.replace(/-/g, '/'))
-    //             _this.globalData.honey_info.honeybox_array.push({
-    //                 x: tempx,
-    //                 y: tempy,
-    //                 honey: honey,
-    //                 start_time: tempdate
-    //             })
-    //             wx.setStorageSync("honey_info", _this.globalData.honey_info)
-    //         }
-    //         if (booking_data.role == 2) {
-    //             if (booking_data.additional == 1) {
-    //                 //} && _this.globalData.daily_honey[1] < _this.globalData.rule[6].value) {
-    //                 var unit = _this.globalData.rule[1].value * 1;
-    //                 var portion = _this.globalData.rule[4].value * 1;
-    //                 var honey = unit * booking_data.amount / (portion + 1);
-    //                 honey = Math.floor(honey)
-    //                 console.log(_this.globalData.honey_info.honeybox_array)
-    //                 if (honey >= _this.globalData.rule[6].value * vip) {
-    //                     honey = _this.globalData.rule[6].value * vip
-    //                     _this.globalData.honey_info.honeybox_array = []
-    //                 } else {
-    //                     var temparray = _this.globalData.honey_info.honeybox_array
-    //                     var sum = honey
-    //                     for (iter = temparray.length - 1; iter >= 0; iter--) {
-    //                         if (sum + temparray[iter].honey <= (_this.globalData.rule[6].value * vip)) {
-    //                             sum = sum + temparray[iter].honey
-    //                         } else {
-    //                             break;
-    //                         }
-    //                     }
-    //                     console.log(sum)
-    //                     if (temparray.length > 0 && iter >= 0) {
-    //                         var last = temparray.splice(iter, 1)
-    //                         last[0].honey = _this.globalData.rule[6].value * vip - sum
-    //                         console.log('here')
-    //                         console.log(iter)
-    //                         temparray.splice(0, iter)
-    //                         if (last[0].honey > 0) {
-    //                             temparray.unshift(last[0])
-    //                         }
-    //                     }
-    //                     _this.globalData.honey_info.honeybox_array = temparray
-    //                 }
-    //                 while (1) {
-    //                     tempx = Math.floor((Math.random() * 100) % 9)
-    //                     tempy = Math.floor((Math.random() * 100) % 3)
-    //                     for (iter = 0; iter < _this.globalData.honey_info.honeybox_array.length; iter++) {
-    //                         if (tempx == _this.globalData.honey_info.honeybox_array[iter].x && tempy == _this.globalData.honey_info.honeybox_array[iter].y) {
-    //                             break;
-    //                         }
-    //                     }
-    //                     if (iter == _this.globalData.honey_info.honeybox_array.length) {
-    //                         break;
-    //                     }
-    //                 }
-    //                 var tempdate
-    //                 tempdate = Date.parse(booking_data.end_time.replace(/-/g, '/'))
-    //                 _this.globalData.honey_info.honeybox_array.push({
-    //                     x: tempx,
-    //                     y: tempy,
-    //                     honey: honey,
-    //                     start_time: tempdate
-    //                 })
-    //                 wx.setStorageSync("honey_info", _this.globalData.honey_info)
-    //             }
-    //         }
-    //     }
-    //     wx.setStorageSync("honey_info", _this.globalData.honey_info)
-    // }
+    makeNDigit: function(num, len) {
+        num = num.toString();
+        if (!len) len = 2;
+        var ret = ''
+        for (var i = 0; i < len; i++) {
+            ret += '0';
+        }
+        ret += num;
+        ret = ret.substr(-len);
+        return ret;
+    },
+
 })

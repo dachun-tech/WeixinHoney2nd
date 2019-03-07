@@ -40,12 +40,12 @@ Page({
             },
             success: function(res) {
                 if (res.data.status) {
-                    console.log(res);
+                    console.log(res.data);
                     that.data.friendList = res.data.data;
 
                     that.calculateNewFriends();
                 } else {
-                    console.log(res);
+                    // console.log(res);
                 }
             },
         })
@@ -56,7 +56,7 @@ Page({
         var id = event.currentTarget.dataset.id;
         var friendList = that.data.friendList;
         // id: one of a~z, friendList:all of userlist.
-        console.log(id);
+        // console.log(id);
         that.setData({
             filterItem: id
         })
@@ -90,7 +90,7 @@ Page({
             if (filtered[i].filter_character == filter_character) filtered[i].filter_character = '';
             else filter_character = filtered[i].filter_character;
         }
-        console.log(filtered);
+        // console.log(filtered);
         that.setData({
             newCount: cnt,
             friendList: filtered
@@ -102,8 +102,8 @@ Page({
         var that = this;
         var id = event.currentTarget.dataset.id;
         if (id == undefined) return;
-        console.log(that.data.friendList)
-            // 
+        // console.log(that.data.friendList)
+        // 
         wx.navigateTo({
             url: '../../profile/profile_friend?id=' + id + '&type=0'
         })
@@ -114,7 +114,7 @@ Page({
         var that = this;
         var cnt = event.currentTarget.dataset.cnt;
         if (cnt == 0) return;
-        console.log(that.data.friendList)
+        // console.log(that.data.friendList)
         wx.redirectTo({
             url: 'nfriends'
         })

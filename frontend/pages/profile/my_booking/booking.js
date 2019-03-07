@@ -14,7 +14,8 @@ Page({
         selectedtab: 1,
         eventType: [],
         userRole: [],
-        bookingState: ["已支付", "进行中", "已完成", "已取消"],
+        bookingState: ["已支付", "进行中", "已完成", "已取消", "待支付"],
+        nameLen: [14, 10], // maximum ellipse length(user, boss)
     },
 
     /**
@@ -75,90 +76,32 @@ Page({
                     console.log(res.data)
                     var book = res.data.result;
                     var rooms = res.data.rooms;
+                    var bossgroups = res.data.bossgroups;
 
                     if (book != null) {
                         for (var index = 0; index < book.length; index++) {
-                            if (book[index].site_name.length > 17) {
+                            var item = book[index];
+                            item.start_time = item.start_time.split(' ')[0];
+                            item.end_time = item.end_time.split(' ')[0];
+                            if (item.book_type == 1) {
+                                var bossgroup = bossgroups.find(function(a) { return a.no == item.bossgroup_id; })
+                                if (bossgroup) {
+                                    item.site_name = bossgroup.group_package;
+                                }
+                            }
+                            if (item.site_name.length > that.data.nameLen[0]) {
                                 var site_name = book[index].site_name
-                                site_name = site_name.slice(0, 17) + '...'
-                                book[index].site_name = site_name
+                                site_name = site_name.slice(0, that.data.nameLen[0]) + '...'
+                                item.site_name = site_name
                             }
 
-                            if (book[index].is_rating == null) {
-                                book[index].is_rating = 0;
+                            if (item.is_rating == null) {
+                                item.is_rating = 0;
                             }
-                            book[index].roll_state = 0; //my room booked state
-                            var book_info = JSON.parse(book[index].book_info);
-                            book_info.sort(function(a, b) { return (parseInt(a.room_id) > parseInt(b.room_id)) ? 1 : -1; });
-                            book_info.sort(function(a, b) {
-                                if (parseInt(a.room_id) > parseInt(b.room_id)) return 1;
-                                else if (parseInt(a.room_id) < parseInt(b.room_id)) return -1;
-                                else
-                                    return ((new Date(a.start_time.replace(/-/g, '/'))) > (new Date(b.start_time.replace(/-/g, '/')))) ? 1 : -1;
-                            });
-                            for (var j = 0; j < book_info.length; j++) {
-                                var tempdate;
-                                tempdate = book_info[j].end_time.split(" ")
-                                book_info[j].end_time = tempdate[1];
+                            item.roll_state = 0; //my room booked state
 
-                                var time = book_info[j].start_time.split(':');
-                                book_info[j].start_time = time[0] + ':' + time[1];
-
-                                var time1 = book_info[j].end_time.split(':');
-                                book_info[j].end_time = time1[0] + ':' + time1[1];
-
-                                for (var kk = 0; kk < rooms.length; kk++) {
-                                    if (book_info[j].room_id == rooms[kk].id) {
-                                        book_info[j].room_name = rooms[kk].room_name + '';
-                                        if (j > 0 && book_info[j].room_id == book_info[j - 1].room_id)
-                                            book_info[j].room_name = '';
-                                        break;
-                                    }
-                                }
-                            }
-                            book[index].book_info = book_info;
-                        }
-                        console.log(book);
-                        that.data.booking = book;
-                    }
-                }
-                wx.request({
-                    url: app.globalData.mainURL + 'api/datamanage/getRoomBookingByBossID',
-                    method: 'POST',
-                    header: {
-                        'content-type': 'application/json'
-                    },
-                    data: {
-                        'user_id': app.globalData.userInfo.user_id
-                    },
-                    success: function(res1) {
-                        if (res1.data.status == false) {
-                            that.setData({ booking: that.data.booking });
-                            return;
-                        }
-                        var book_order = res1.data.result;
-                        if (book_order != null) {
-                            for (var index = 0; index < book_order.length; index++) {
-                                var tempdate;
-                                tempdate = book_order[index].end_time.split(" ")
-                                book_order[index].end_time = tempdate[1];
-                                if (book_order[index].site_name.length > 13) {
-                                    var site_name = book_order[index].site_name
-                                    site_name = site_name.slice(0, 13) + '...'
-                                    book_order[index].site_name = site_name
-                                }
-                                if (book_order[index].is_rating == null) {
-                                    book_order[index].is_rating = 0;
-                                }
-                                book_order[index].site_name += "(场馆主)";
-                                var time = book_order[index].start_time.split(':');
-                                book_order[index].start_time = time[0] + ':' + time[1];
-
-                                var time1 = book_order[index].end_time.split(':');
-                                book_order[index].end_time = time1[0] + ':' + time1[1];
-                                book_order[index].roll_state = 1; //my room booked state
-
-                                var book_info = JSON.parse(book_order[index].book_info);
+                            var book_info = JSON.parse(item.book_info);
+                            if (item.book_type == 0) {
                                 book_info.sort(function(a, b) { return (parseInt(a.room_id) > parseInt(b.room_id)) ? 1 : -1; });
                                 book_info.sort(function(a, b) {
                                     if (parseInt(a.room_id) > parseInt(b.room_id)) return 1;
@@ -186,8 +129,91 @@ Page({
                                         }
                                     }
                                 }
-                                book_order[index].book_info = book_info;
-                                that.data.booking.push(book_order[index]);
+                            }
+                            item.book_info = book_info;
+                        }
+                        console.log(book);
+                        that.data.booking = book;
+                    }
+                }
+                wx.request({
+                    url: app.globalData.mainURL + 'api/datamanage/getRoomBookingByBossID',
+                    method: 'POST',
+                    header: {
+                        'content-type': 'application/json'
+                    },
+                    data: {
+                        'user_id': app.globalData.userInfo.user_id
+                    },
+                    success: function(res1) {
+                        if (res1.data.status == false) {
+                            that.setData({ booking: that.data.booking });
+                            return;
+                        }
+                        var book_order = res1.data.result;
+                        var bossgroups = res1.data.bossgroups;
+                        if (book_order != null) {
+                            for (var index = 0; index < book_order.length; index++) {
+                                var item = book_order[index];
+
+                                item.start_time = item.start_time.split(' ')[0];
+                                item.end_time = item.end_time.split(' ')[0];
+
+                                if (item.book_type == 1) {
+                                    var bossgroup = bossgroups.find(function(a) { return a.no == item.bossgroup_id; })
+                                    if (bossgroup) {
+                                        item.site_name = bossgroup.group_package;
+                                    }
+                                }
+
+                                if (item.site_name.length > that.data.nameLen[1]) {
+                                    var site_name = item.site_name
+                                    site_name = site_name.slice(0, that.data.nameLen[1]) + '...'
+                                    item.site_name = site_name
+                                }
+                                if (item.is_rating == null) {
+                                    item.is_rating = 0;
+                                }
+                                item.site_name += "(商家)";
+                                // var time = item.start_time.split(':');
+                                // item.start_time = time[0] + ':' + time[1];
+
+                                // var time1 = item.end_time.split(':');
+                                // item.end_time = time1[0] + ':' + time1[1];
+                                item.roll_state = 1; //my room booked state
+
+                                var book_info = JSON.parse(item.book_info);
+                                if (item.book_type == 0) {
+                                    book_info.sort(function(a, b) { return (parseInt(a.room_id) > parseInt(b.room_id)) ? 1 : -1; });
+                                    book_info.sort(function(a, b) {
+                                        if (parseInt(a.room_id) > parseInt(b.room_id)) return 1;
+                                        else if (parseInt(a.room_id) < parseInt(b.room_id)) return -1;
+                                        else
+                                            return ((new Date(a.start_time.replace(/-/g, '/'))) > (new Date(b.start_time.replace(/-/g, '/')))) ? 1 : -1;
+                                    });
+                                    for (var j = 0; j < book_info.length; j++) {
+                                        var tempdate;
+                                        tempdate = book_info[j].end_time.split(" ")
+                                        book_info[j].end_time = tempdate[1];
+
+                                        var time = book_info[j].start_time.split(':');
+                                        book_info[j].start_time = time[0] + ':' + time[1];
+
+                                        var time1 = book_info[j].end_time.split(':');
+                                        book_info[j].end_time = time1[0] + ':' + time1[1];
+
+                                        for (var kk = 0; kk < rooms.length; kk++) {
+                                            if (book_info[j].room_id == rooms[kk].id) {
+                                                book_info[j].room_name = rooms[kk].room_name + '';
+                                                if (j > 0 && book_info[j].room_id == book_info[j - 1].room_id)
+                                                    book_info[j].room_name = '';
+                                                break;
+                                            }
+                                        }
+                                    }
+                                }
+                                item.book_info = book_info;
+                                that.data.booking.push(item);
 
                             }
                         }
@@ -274,9 +300,34 @@ Page({
     },
     //called when user wants to see detail
     click_detail_event: function(event) {
-        wx.navigateTo({
-            url: 'booking_detail?id=' + event.currentTarget.id,
-        })
+        var bossId = event.currentTarget.dataset.boss;
+        var id = event.currentTarget.id;
+        var status = event.currentTarget.dataset.status;
+        var site_name = event.currentTarget.dataset.name;
+        var type = event.currentTarget.dataset.type;
+        if (type == 0) {
+            if (status == '4' && site_name.indexOf('(商家)') == -1)
+                wx.navigateTo({
+                    url: 'booking_user_detail?id=' + bossId + '&book=' + id,
+                })
+            else
+                wx.navigateTo({
+                    url: 'booking_detail?id=' + id,
+                })
+        } else {
+            if (status == '4' && site_name.indexOf('(商家)') == -1)
+                wx.navigateTo({
+                    url: '../../index/bossgroup_input/bossgroup_input?id=' + id,
+                })
+            else if (site_name.indexOf('(商家)') == -1)
+                wx.navigateTo({
+                    url: '../../index/detail_bossgroup/mybossgroup_mine?id=' + id,
+                })
+            else
+                wx.navigateTo({
+                    url: '../../index/detail_bossgroup/mybossgroup?id=' + id,
+                })
+        }
     },
     //called when user wants to write comment
     btn_write_comment: function(event) {

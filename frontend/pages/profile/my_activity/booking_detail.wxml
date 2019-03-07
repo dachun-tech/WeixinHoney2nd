@@ -1,5 +1,5 @@
 <!--pages/booking/booking.wxml-->
-<view class='container'>
+<scroll-view scroll-y class='container'>
   <view style='width:100%'>
     <view class="activity">
       <view class="activity-bar">
@@ -7,7 +7,15 @@
         <label class="activity-status">{{bookingState[booking.state]}}</label>
       </view>
       <view class="activity-detail">
-        <image class="activity-picture" src="{{booking.avatar}}"></image>
+        <view class="activity-picture">          
+          <swiper class="swiper_box" autoplay="true" interval="3000" duration="300">
+              <block wx:for="{{booking.picture}}" wx:key="index">
+                  <swiper-item>
+                      <image class="img-item" mode="aspectFill" src="{{uploadURL + item}}"></image>
+                  </swiper-item>
+              </block>
+          </swiper>
+        </view>
         <view class="activity-name">
           <text class='activity-name-label' style="font-weight: bold;">{{booking.name}}</text>
           <text class="activity-role-text">{{userRole[booking.role]}}</text>
@@ -79,13 +87,13 @@
     </view>
   </view>
   <block wx:if="{{booking.state==0  && bookingcanceltime}}">
-    <view class="cancel-button" bindtap='final_cancel'>
-      取消蜂约
-    </view>
+    <form name="pushMsgForm" report-submit bindsubmit="final_cancel">      
+      <button class="cancel-button" form-type="submit">取消蜂约</button>
+    </form>
   </block>
   <block wx:if="{{(booking.state==1) && (rating.length==0)}}">
     <view class="cancel-button" id="{{booking.id}}" bindtap='btn_write_comment'>
       评价
     </view>
   </block>
-</view>
+</scroll-view>

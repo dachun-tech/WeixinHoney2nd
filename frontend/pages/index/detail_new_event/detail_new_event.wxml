@@ -6,7 +6,14 @@
 
   <scroll-view scroll-y class='postadd-view'>
           
-    <swiper class="personal-img-wrapper" indicator-dots="true" autoplay="true" interval="3000" duration="300">
+    <swiper class="personal-img-wrapper" wx:if="{{pictures.length==1}}"  autoplay="true" interval="3000" duration="300">
+      <block wx:for="{{pictures}}" wx:key="index">
+        <swiper-item>
+          <image class="personal-event-img" mode="aspectFill" src="{{item}}" id="{{index}}" bindtap="show_preview" />
+        </swiper-item>
+      </block>
+    </swiper>
+    <swiper class="personal-img-wrapper" wx:if="{{pictures.length>1}}" indicator-dots="true" autoplay="true" interval="3000" duration="300">
       <block wx:for="{{pictures}}" wx:key="index">
         <swiper-item>
           <image class="personal-event-img" mode="aspectFill" src="{{item}}" id="{{index}}" bindtap="show_preview" />
@@ -33,13 +40,14 @@
       </view> 
 
       <view class="act_date">
-        <view class="date_content">
-          <view class="date_top">{{start_date}}</view>
+        <view class="date_content" style="border-right:1rpx solid #eee;">
           <view class="date_bottom">{{train_type[is_train]}}日期</view>
+          <view class="date_top">{{start_date}} 到</view>
+          <view class="date_top">{{end_date}}</view>
         </view>
-        <view class="date_content" style="border-left:1rpx solid #eee;;color:#e6b53c">
-          <view class="date_top">{{remain_day}}天(报满即止)</view>
-          <view class="date_bottom">截止日{{end_date}}</view>
+        <view class="date_content" style="color:#e6b53c">
+          <view class="date_bottom" style="padding-bottom: 20rpx;">截止日({{final_date}})</view>
+          <view class="date_top">{{remain_day}}(报满即止)</view>
         </view>        
       </view>
 
@@ -86,56 +94,65 @@
       </view>
     </view>
 
- <!-- comment list -->
+
+
+
+    <!-- comment list -->
     <view class="applicant-view">
-       <!-- add feedback part -->
-        <view class="applicant-title">
-            <text class="applicant-title-text" style="font-weight: bold;">留言</text>            
+      <!-- add feedback part -->
+      <view class="applicant-title">
+        <text class="applicant-title-text" style="font-weight: bold;">留言</text>
+      </view>
+      <view class="submit_feedback">
+        <view class="comment_content">
+          <input type="text" class="text_comment" bindinput='On_input_comment' placeholder="我也来说几句" value="{{comment}}"></input>
         </view>
-        <view class="submit_feedback">
-          <view class="comment_content">
-            <input class="text_comment"  focus="{{focus}}" bindblur="unselect_comment"  bindinput='On_input_comment' placeholder="我也来说几句" value="{{comment}}"></input>
+        <view bindtouchstart="add_feedback" class="comment-btn">发表</view>
+      </view>
+      <!-- feedback list -->
+      <view class="comment-view" wx:for="{{feedbacks}}" wx:key="{{index}}" wx:for-index="mainid">
+        <view class="cls_user_comment_info">
+          <image class="cls_user_photo" mode="aspectFill" src="{{item.avatar}}"></image>
+          <view class="cls_comment_date">{{item.nickname}}</view>
+          <text class="cls_comment_time">{{item.submit_time}}</text>
+          <text class="cls_comment_content">{{item.comment}}</text>
+        </view>
+        <view class="interested_content">
+          <view class="message_back" data-id="{{mainid}}" bindtap="select_feedback" data-parent="{{item.user_id}}" data-type="main">回复</view>
+          <view class="message_delete" wx:if="{{item.user_id == myId}}" data-id="{{item.no}}" bindtap="delete_feedback" data-type="main">删除</view>
+          <image class="message_img" mode="scaleToFill" src="../../../image/msg@2x.png"></image>
+          <view class="message_count">{{item.child_array.length}}</view>
+          <image class="fav_img" mode="scaleToFill" id="{{index}}" bindtap="submit_event_favorite" src="{{fav_img_list[item.fav_state]}}"></image>
+          <view class="fav_count" style="color: {{(item.fav_state==0)?'#888':'#604000'}};">{{item.fav_count}}</view>
+        </view>
+        <!-- child feedback list -->
+        <view class="child_feedback" wx:if="{{item.child_array.length>0}}">
+          <view class="child_item" wx:for="{{item.child_array}}" wx:for-item="child_item" wx:for-index="subid" wx:key="subid">
+            <view class="child_name">
+              <text data-id="{{child_item.user_id}}" bindtap="go2UserDetail" style="color: {{(child_item.user_id == myId)?'black':'#604000'}};">{{(child_item.user_id == myId)?'我':child_item.nickname}}</text>
+              <text wx:if="{{child_item.user_id != child_item.parent_user}}">回复</text>
+              <text wx:if="{{child_item.user_id != child_item.parent_user}}" style="color: {{(child_item.parent_user == myId)?'black':'#604000'}};" data-id="{{child_item.parent_user}}" bindtap="go2UserDetail">{{(child_item.parent_user == myId)?'我':child_item.parent_user_name}}</text>:
+              <text>{{child_item.comment}}</text>
+            </view>
+            <view class="child_content">
+              <view class="child_time_content">
+                <view class="message_back" data-id="{{mainid}}" data-parent="{{child_item.user_id}}" data-type="child" bindtap="select_feedback">回复</view>
+                <view class="message_delete" wx:if="{{child_item.user_id == myId}}" data-id="{{child_item.no}}" data-type="child" bindtap="delete_feedback">删除</view>
+                <view class="child_time">{{child_item.submit_time}}</view>
+              </view>
+            </view>
           </view>
-          <view bindtouchstart="add_feedback" class="comment-btn">发表</view>
         </view>
-
-     <!-- feedback list -->
-        <view class="comment-view" wx:for="{{feedbacks}}" wx:key="{{index}}">
-            <view class="cls_user_comment_info"  id="{{index}}"  bindtap="select_feedback">
-              <image class="cls_user_photo" mode="aspectFill" src="{{item.avatar}}"></image>
-              <view class="cls_comment_date">{{item.nickname}}</view>
-              <text class="cls_comment_time">{{item.submit_time}}</text>              
-              <text class="cls_comment_content">{{item.comment}}</text>
-            </view>
-            <view class="interested_content">
-              <view class="fav_count">{{item.fav_count}}</view> 
-              <image class="fav_img" mode="aspectFill" id="{{index}}" bindtap="submit_event_favorite" src="{{fav_img_list[item.fav_state]}}"></image>
-              <view class="message_count">{{item.child_array.length}}</view>
-              <image class="message_img" mode="aspectFill" src="../../../image/msg@2x.png"></image>                           
-            </view>
-
-         <!-- child feedback list -->
-            <view class="child_feedback" wx:if="{{item.child_array.length>0}}">              
-
-              <view class="child_item" wx:for="{{item.child_array}}" wx:key="child_item" wx:for-item="child_item">
-                <view class="child_name">{{child_item.nickname}}: </view>
-                <view class="child_content">
-                  <view class="child_comment">
-                    {{child_item.comment}}
-                  </view>
-                  <view class="child_time_content">
-                    <view class="child_time">{{child_item.submit_time}}</view>
-                  </view>
-                </view>
-              </view>              
-
-            </view>
-        </view>
+      </view>
     </view>
-    
   </scroll-view>
 
-
+  <view class="input-message" wx:if="{{focus}}">
+    <view class="input-area">
+      <textarea class="input-comment" focus="{{focus}}" bindblur="unselect_comment" bindinput='On_input_comment' value="{{comment}}"></textarea>
+      <view class="input-comment-btn" bindtouchstart="add_feedback">发送</view>
+    </view>
+  </view>
 
  <!-- footer view-->
   <view class='btn-footer'>
@@ -160,7 +177,7 @@
 </view>
 
 <view class="view_mask" bindtap='hide_canvas' wx:if="{{show_state}}"></view>
-<canvas canvas-id="shareImg" style="width:600px;height:900px"></canvas>
+<canvas canvas-id="shareImg" style="width:750px;height:985px"></canvas>
 <view class="show_canvas{{event.detail_address.length>20?2:1}}"  wx:if="{{show_state}}">
   <image class="canvas_image" src='{{img_url}}' bindtap='hide_canvas'></image>
 </view>

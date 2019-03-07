@@ -1,20 +1,18 @@
-<view wx:if="{{isshow}}" class="container">
+<view wx:if="{{true}}" class="container">
   <view class='create-event-container'>
-    <view class='stadium-images-view'>
-      <view class='stadium-images-text'>上传封面，最多3张</view>
-      <image class='stadium-images-image' id="0" mode="aspectFill" src='{{(image_path[0]=="")?"../../../image/shop_license.png":image_path[0]}}' bindtap='on_click_image'>
-      </image>
+    <view class='stadium-images-view' style="background: url({{uploadURL}}global/picture05@2x.png);">
+      <view class="stadium-images-bg" id="{{selected}}" bindtap="on_click_image"></view>
+      <view class='stadium-images-text'>点击上传活动封面</view>
+      <image class='stadium-images-image' id="0" mode="aspectFill" src='{{(image_path[0]=="")?"../../../image/shop_license.png":image_path[0]}}' wx:if="{{image_path[0]!=''}}"></image>
       <image class='stadium-images-delete' id="0" mode="aspectFill" src="../../../image/del02@2x.png" style="{{display[select[1]]}}" bindtap="on_click_delete"></image>
-      <image class='stadium-images-image' id="1" mode="aspectFill" src='{{(image_path[1]=="")?"../../../image/shop_license.png":image_path[1]}}' style="{{display[select[1]]}}" bindtap='on_click_image'>
-      </image>
+      <image class='stadium-images-image' id="1" mode="aspectFill" src='{{(image_path[1]=="")?"../../../image/shop_license.png":image_path[1]}}' wx:if="{{image_path[1]!=''}}" bindtap='on_click_image'></image>
       <image class='stadium-images-delete' id="1" mode="aspectFill" src="../../../image/del02@2x.png" style='{{display[select[2]]}}' bindtap="on_click_delete"></image>
-      <image class='stadium-images-image' id="2" mode="aspectFill" src='{{(image_path[2]=="")?"../../../image/shop_license.png":image_path[2]}}' style="{{display[select[2]]}}" bindtap='on_click_image'>
-      </image>      
-      <image wx:if="{{selected==3}}" class='stadium-images-delete1' id="2" mode="aspectFill" src="../../../image/del02@2x.png" bindtap="on_click_delete"></image>
+      <image class='stadium-images-image' id="2" mode="aspectFill" src='{{(image_path[2]=="")?"../../../image/shop_license.png":image_path[2]}}' wx:if="{{image_path[2]!=''}}" bindtap='on_click_image'></image>
+      <image wx:if="{{selected==3}}" class='stadium-images-delete' id="2" mode="aspectFill" src="../../../image/del02@2x.png" bindtap="on_click_delete"></image>
     </view>
     <view class='event-view'>
       <text>活动名称:</text>
-      <input class='event-input' style="width: 70vw" placeholder='请输入活动名称' bindinput='on_event_name' focus="{{focus_name}}"></input>
+      <input class='event-input' value="{{event.name}}" style="width: 70vw" placeholder='请输入活动名称' bindinput='on_event_name' focus="{{focus_name}}" ></input>
     </view>
     <view class='event-view' bindtap="showitem">
       <text>活动类型:</text>
@@ -48,21 +46,19 @@
       <input class='event-input' value="{{detail_address}}" style='width:calc(100% - 20rpx); height:auto;margin-left:0rpx;' 
             placeholder='请输入详细地址' bindinput='On_blur_detailaddress' focus="{{focus_address}}"></input>
     </view>
-      
-
     <view class='event-view'>
       <text>人数上限:</text>
-      <input class='event-input' type="number" bindinput='on_blur_limit' focus="{{focus_limit}}"></input>
+      <input type="number" class='event-input' value="{{event.limit}}" bindinput='on_blur_limit' focus="{{focus_limit}}"></input>
       <text class='event-left-text'>人</text>
     </view>
     <view class='event-view'>
       <text>每个用户最多可以报名人数:</text>
-      <input class='event-input' style="width: 30%" type="number" bindinput='on_blur_limit_perUser' focus="{{focus_limit_person}}"></input>
+      <input type="number" class='event-input' value="{{event.limit_perUser}}" style="width: 30%" bindinput='on_blur_limit_perUser' focus="{{focus_limit_person}}"></input>
       <text class='event-left-text'>人</text>
     </view>
     <view class='event-view'>
       <text>活动费用:</text>
-      <input class='event-input' bindinput='on_blur_cost' focus="{{focus_cost}}"></input>
+      <input type="digit" class='event-input' value="{{event.cost}}" bindinput='on_blur_cost' focus="{{focus_cost}}"></input>
       <text class='event-left-text'>元/人</text>
     </view> 
     <view wx:if="{{!showModal2  && !showModal1}}" class='event-view'>
@@ -78,19 +74,34 @@
       <view class = "comment_picker">
         <image class='event-next-image' style="padding-top:12rpx;" src='../../../image/btn_updown@2x.png'></image>
         <picker bindchange="bindtemplatechange" value="{{select_template}}" range="{{templates}}">
-            {{templates[select_template]}}
+          {{templates[select_template]}}
         </picker>
-      </view>      
+      </view>
       <text style="float: right;padding-right: 15rpx;">插入模板</text>
-      <textarea class='event-comment-textarea' bindfocus="scrollDown"  wx:if="{{!is_disabled}}" focus="{{focus_comment}}"
-        maxlength='500' value="{{textareastr}}" bindinput='on_blur_comment' bindblur='on_blur_scroll'></textarea>
+      <textarea class='event-comment-textarea' bindfocus="scroll2Down" wx:if="{{!is_disabled}}" focus="{{focus_comment}}" 
+      maxlength='500' value="{{textareastr}}" bindinput='on_blur_comment' bindblur='on_blur_scroll'></textarea>        
     </view>
-    <view wx:if="{{!showModal2  && !showModal1}}" class='event-view'>
-      <text>是否公开:</text>
-      <radio-group class="event-private-group" bindchange="radioChange">
-         <radio value='0'></radio>隐私创建
-         <radio value='1' checked></radio>公开创建
-      </radio-group>
+    
+    <view wx:if="{{!showModal2  && !showModal1}}" class='event-option'>
+      <text>报名者是否可退:</text>
+      <view>
+        <text bindtap="radioChange" data-type="isCancel">报名后{{isCancel==0?'不':''}}可以取消报名</text>
+        <image src="{{switch_img[1-isCancel]}}" bindtap="radioChange" data-type="isCancel"></image> 
+      </view>
+    </view>
+    <view wx:if="{{!showModal2  && !showModal1}}" class='event-option'>
+      <text>报名者是否填写电话:</text>
+      <view>
+        <text bindtap="radioChange" data-type="isPhone">报名者{{isPhone==0?'不':''}}需填写电话</text>
+        <image src="{{switch_img[1-isPhone]}}" bindtap="radioChange" data-type="isPhone"></image>  
+      </view>
+    </view>
+    <view wx:if="{{!showModal2  && !showModal1}}" class='event-option'>
+      <text>报名链接是否公开:</text>
+      <view>
+        <text bindtap="radioChange" data-type="isPublic">{{isPublic==0?'不':''}}显示在蜂约列表中</text>
+        <image src="{{switch_img[1-isPublic]}}" bindtap="radioChange" data-type="isPublic"></image>  
+      </view>
     </view>
     <view class='event-view'>
       <text>发起人: </text>
@@ -98,35 +109,33 @@
               bindinput='on_agent_name' focus="{{focus_agent_name}}"></input>
     </view>
     <view class='event-view'>
-      <text>电话: </text>
-      <input class='event-input' type="number" style="width: 70vw" value="{{val_phone}}" 
-          placeholder='请输入联系方式' bindinput='on_agent_phone' focus="{{focus_phone}}"></input>
-    </view>   
-    <block wx:if="{{ false && !showModal2 && role==2 && publicity==1 && !showModal1}}">
+      <text>电话:</text>
+      <input type="number" class='event-input' style="width: 70vw;" value="{{val_phone}}" 
+      placeholder='请输入联系方式' bindinput='on_agent_phone' focus="{{focus_phone}}"></input>
+    </view>
+    <block wx:if="{{false && !showModal2 && role==2 && isPublic==1 && !showModal1}}">
       <view class='event-view'>
         <text>活动结束后是否在地图上生成能量:</text>
         <radio-group class="event-add-radiogroup" bindchange="radioChange1">
           <block wx:if="{{member_state==0}}">
-            <radio value='1' checked></radio>是
-            <text>(需花费{{honey}}ml蜂蜜)</text>
+            <radio value='1' checked></radio>是<text>(需花费{{honey}}ml蜂蜜)</text>
           </block>
           <block wx:else>
-            <radio value='1' checked></radio>是
-            <text>(会员不需要花费蜂蜜)</text>
+            <radio value='1' checked></radio>是<text>(会员不需要花费蜂蜜)</text>
           </block>
-          <radio value='0'></radio>否
-        </radio-group>
+          <radio value='0'></radio>否</radio-group>
       </view>
     </block>
-  </view>
+  </view>  
   <button wx:if="{{!showModal2 && !showModal1}}" class='btn_submit' bindtap="on_submit">创建活动</button>
-  <view wx:if="{{flag==1}}" style="height:400rpx;position:relative;display:inline-block;"></view>
+  <view wx:if="{{focus_comment}}" style="height:400rpx;position:relative;display:inline-block;"></view>
 </view>
+<!-- </scroll-view> -->
 
-<view class="modal-mask1" bindtap="hideModal" catchtouchmove="preventTouchMove" wx:if="{{showModal1}}"></view>
-<view class="modal-dialog1" wx:if="{{showModal1}}" catchtouchmove="preventTouchMove">
+<view class="modal-mask1" bindtap="hideModal" wx:if="{{showModal1}}"></view>
+<view class="modal-dialog1" wx:if="{{showModal1}}">
 
-  <scroll-view scroll-y class='main-text'>
+  <view style="overflow-y: auto;" scroll-y class='main-text'>
     <view>蜂去吧是哈尔滨蜂体网络科技有限公司（以下简称本公司）的开发产品，本公司通过用户使用蜂去吧的相关功能向用户提供服务，您在使用相关服务之前，需要仔细阅读本协议，并通过在线形式签署，您选择【同意】，即表示协议生效。本协议由哈尔滨蜂体网络科技有限公司与您签订。</view>
     <view>本协议版本信息</view>
     <view>版本更新日期:2018年5月2日</view>
@@ -237,7 +246,7 @@
     <view>十一、法律适用管辖</view>
     <view>49. 本协议之效力、解释、变更、执行与争议解决均适用中华人民共和国法律，没有相关法律规定的，参照通用国际商业惯例和（或）行业惯例。本协议部分内容被有管辖权的法院认定为违法的，不因此影响其他内容的效力。</view>
     <view>50. 因本协议产生之争议，均应依照中华人民共和国法律予以处理，并由哈尔滨市南岗区人民法院管辖。</view>
-  </scroll-view>
+  </view>
 
   <view class='modal-footer1'>
     <view bindtap="onCancel1" class='modal-cancel1'>
@@ -249,13 +258,16 @@
   </view>
 </view>
 
-<view class="modal-mask1" bindtap="preventTouchMove" catchtouchmove="preventTouchMove" wx:if="{{showModal2}}"></view>
-<view class="modal-dialog1" wx:if="{{showModal2}}" catchtouchmove="preventTouchMove">
+<view class="modal-mask1" bindtap="preventTouchMove" wx:if="{{showModal2}}"></view>
+<view class="modal-dialog1" wx:if="{{showModal2}}">
 
-  <scroll-view scroll-y class='main-text1'>
+  <view style="overflow-y: auto;" scroll-y class='main-text1'>
     <view wx:for="{{eventType}}" wx:key="index">
       <view class='display_show' id="{{index}}" bindtap="on_click_type">{{item}}</view>
     </view>
-  </scroll-view>
+  </view>
 </view>
 <view style="position:fixed:left:0;top:0;width:calc(100vw);height:calc(100vh);background:transparent;z-index:10000;" wx:if="{{isProcessing}}"></view>
+
+
+<!-- <scroll-view>   -->

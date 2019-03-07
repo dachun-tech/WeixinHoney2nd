@@ -2,7 +2,7 @@
     <!-- Content Header (Page header) -->
     <section class="content-header">
         <h1>
-            预订管理
+            订单管理
         </h1>
         <input id="pageTitle" value="<?php echo $pageTitle ?>" type="hidden">
     </section>
@@ -17,7 +17,7 @@
                                     <option value="0"<?php if ($searchStatus == 0) echo ' selected'; ?>>订单编号</option>
                                     <option value="1"<?php if ($searchStatus == 1) echo ' selected'; ?>>订场人姓名</option>
                                     <option value="2"<?php if ($searchStatus == 2) echo ' selected'; ?>>订场人电话</option>
-                                    <option value="3"<?php if ($searchStatus == 3) echo ' selected'; ?>>场馆名称</option>
+                                    <option value="3"<?php if ($searchStatus == 3) echo ' selected'; ?>>商家名称</option>
                                 </select>
                             </div>
                             <div class="input-group">
@@ -43,7 +43,7 @@
                         <div class="col-xs-2 col-sm-1 form-inline">
                             <div class="form-group">
                                 <select class="form-control" id="searchState" name="searchState">
-                                    <option value="10"<?php if ($searchState == 10) echo ' selected'; ?>>预订状态</option>
+                                    <option value="10"<?php if ($searchState == 10) echo ' selected'; ?>>订单状态</option>
                                     <option value="0"<?php if ($searchState == 0) echo ' selected'; ?>>已预订</option>
                                     <option value="0"<?php if ($searchState == 1) echo ' selected'; ?>>进行中</option>
                                     <option value="1"<?php if ($searchState == 2) echo ' selected'; ?>>已完成</option>
@@ -51,9 +51,28 @@
                                 </select>
                             </div>
                         </div>
+                        <div class="col-xs-2 col-sm-1 form-inline">
+                            <div class="form-group">
+                                <select class="form-control" id="searchBookType" name="searchBookType">
+                                    <option value="100"<?php if ($searchBookType == 100) echo ' selected'; ?>>订单类型
+                                    </option>
+                                    <?php
+
+                                    $bookType = array('订场', '团购');
+                                    $index = 0;
+                                    foreach ($bookType as $item) {
+                                        ?>
+                                        <option value="<?php echo $index; ?>" <?php if ($searchBookType == $index) echo ' selected'; ?>><?php echo $bookType[$index]; ?></option>
+                                        <?php
+                                        $index++;
+                                    }
+                                    ?>
+                                </select>
+                            </div>
+                        </div>
                         <div class="col-xs-12 col-sm-6 form-inline" style="margin-top: 10px;">
                             <div class="form-group">
-                                <span> 预订时间 </span>
+                                <span> 订单时间 </span>
                                 <input id="fromTime" name="searchStart" class="datepicker-inline form-control" size="16"
                                        type="text" value="<?php echo $searchStart; ?>" readonly="">
 
@@ -87,11 +106,12 @@
                         <thead>
                         <tr style="background-color: lightslategrey;">
                             <th width="">订单号</th>
+                            <th>订单类型</th>
                             <th>预订人</th>
                             <th>手机号</th>
-                            <th>预订信息</th>
+                            <th>订单信息</th>
                             <th>金额</th>
-                            <th>预订状态</th>
+                            <th>订单状态</th>
                             <th>下单时间</th>
                             <th width="">操作</th>
                         </tr>
@@ -106,29 +126,35 @@
                                 for ($index = 0; $index < (10 - strlen($record->id . "")); $index++)
                                     $no = $no . "0";
                                 $no = $no . $record->id;
-                                $roomName = '';
+                                $roomName = '团购';
                                 $book = json_decode($record->book_info);
                                 $old_room_id = 0;
                                 $j = 0;
-                                foreach ($book as $it) {
-                                    if ($old_room_id == $it->room_id) continue;
-                                    $old_room_id = $it->room_id;
-                                    if ($j > 0) $roomName .= ',';
-                                    foreach ($rooms as $room) {
-                                        if ($it->room_id == $room->id) {
-                                            $roomName .= $room->room_name;
-                                            break;
+                                $endTime = $record->end_time;
+                                if ($record->book_type == '0') {
+                                    $roomName = '';
+                                    foreach ($book as $it) {
+                                        if ($old_room_id == $it->room_id) continue;
+                                        $old_room_id = $it->room_id;
+                                        if ($j > 0) $roomName .= ',';
+                                        foreach ($rooms as $room) {
+                                            if ($it->room_id == $room->id) {
+                                                $roomName .= $room->room_name;
+                                                break;
+                                            }
                                         }
+                                        $j++;
                                     }
-                                    $j++;
+                                    $endTime = (explode(' ', $record->end_time)[1]);
                                 }
                                 ?>
                                 <tr>
                                     <td><?php echo $no; ?></td>
+                                    <td><?php echo $bookType[$record->book_type]; ?></td>
                                     <td><?php echo $record->name; ?></td>
                                     <td><?php echo $record->phone; ?></td>
-                                    <td><?php echo $record->site_name . ' - ' . $roomName; ?><br>
-                                        <?php echo $record->start_time . ' - ' . (explode(' ', $record->end_time)[1]); ?>
+                                    <td width="40%"><?php echo $record->site_name . ' - ' . $roomName; ?><br>
+                                        <?php echo $record->start_time . ' - ' . $endTime; ?>
                                     </td>
                                     <td><?php echo '￥' . ($record->pay_cost); ?></td>
                                     <td><?php echo $bookingState[$record->state]; ?></td>
@@ -138,13 +164,30 @@
                                             查看 &nbsp;
                                         </a>
                                         <?php
-                                        if ($record->state == 0)
-                                            echo '<a href="#" onclick="cancel_booking(\'' . $record->id . '\','
+                                        $isUsed = false;
+                                        if ($record->book_type == '1') {
+                                            $book_info = json_decode($record->book_info);
+                                            foreach ($book_info as $item) {
+                                                if ($item->is_used == '0') continue;
+                                                $isUsed = true;
+                                            }
+                                        }
+                                        if($record->state == 3) $isUsed = true;
+                                        if (
+                                            ($record->state == 0) ||
+                                            ($record->book_type == 1 && $record->state == 5 && $record->condition == '1') ||
+                                            ($record->book_type == 1 && !$isUsed && $record->condition == '1')
+                                        ) {
+                                            echo '<a href="javascript:;" onclick="cancel_booking(\'' . $record->id . '\','
                                                 . '\'' . $record->user_id . '\','
                                                 . '\'' . $record->open_id . '\','
                                                 . '\'' . $record->out_trade_no . '\','
                                                 . '\'' . $record->pay_online . '\','
-                                                . ')">取消预订</a>';
+                                                . '\'' . $record->book_type . '\','
+                                                . ')">删除</a>';
+                                        } else {
+                                            echo '<a href="javascript:;" onclick="cancel_booking()" style="color: #888;">删除</a>';
+                                        }
                                         ?>
                                     </td>
                                 </tr>
@@ -177,9 +220,16 @@
         console.log("here");
         $("#toTime").val("");
     }
-    function cancel_booking(id, user_id, open_id, trade_no, fee){
+
+    function cancel_booking(id, user_id, open_id, trade_no, fee, book_type) {
+        if(!id) {
+            alert(' 该订单无法删除');
+            return;
+        }
         var refund_no = '1500220062' + Date.now()
-        if (confirm('是否取消此预订?')) {
+        if (confirm('是否取消此用户的订单?')) {
+            var url = baseURL + 'api/datamanage/cancelRoomBooking';
+            if (book_type == '1') url = baseURL + 'api/datamanage/cancelGroupBooking';
             if (parseFloat(fee) > 0) {
                 $.ajax({
                     type: 'post',
@@ -196,7 +246,7 @@
                     complete: function (res) {
                         $.ajax({
                             type: 'post',
-                            url: baseURL + 'api/datamanage/cancelRoomBooking',
+                            url: url,
                             contentType: 'application/json',
                             dataType: 'application/json',
                             data: JSON.stringify({booking_id: id, out_refund_no: refund_no}),
@@ -209,7 +259,7 @@
             } else {
                 $.ajax({
                     type: 'post',
-                    url: baseURL + 'api/datamanage/cancelRoomBooking',
+                    url: url,
                     contentType: 'application/json',
                     dataType: 'application/json',
                     data: JSON.stringify({booking_id: id, out_refund_no: refund_no}),

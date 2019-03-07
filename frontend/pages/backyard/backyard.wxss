@@ -18,6 +18,7 @@
     border: 2rpx solid #472E00;
     border-radius: 50%;
     z-index: 5;
+    background: #e6b53c;
 }
 
 .content-honey-text {
@@ -63,6 +64,14 @@
     left: 630rpx;
 }
 
+.content-calendar-imagebtn {
+    position: absolute;
+    width: 20%;
+    height: 100rpx;
+    top: 180rpx;
+    right: 0;
+}
+
 .content-bee-view {
     position: absolute;
     top: 150rpx;
@@ -73,14 +82,14 @@
 
 .content-leader-imagebtn {
     position: absolute;
-    top: 19%;
+    top: 300rpx;
     left: 80%;
     width: 21%;
-    height: 60rpx;
-    line-height: 60rpx;
-    background: #e6b53c;
-    color: black;
-    border: 1px solid black;
+    height: 55rpx;
+    line-height: 55rpx;
+    background: #ffd500;
+    color: #806000;
+    border: 2px solid #806000;
     border-top-left-radius: 50rpx;
     border-bottom-left-radius: 50rpx;
     text-align: center;

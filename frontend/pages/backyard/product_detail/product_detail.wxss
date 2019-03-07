@@ -1,4 +1,5 @@
 .container {
+    position: relative;
     height: auto;
     background-color: white;
 }
@@ -9,10 +10,12 @@
 }
 
 .product-detail {
-    width: auto;
+    position: relative;
+    width: 95%;
     height: 150rpx;
     background-color: white;
     padding-left: 30rpx;
+    overflow: hidden;
 }
 
 .product-name {
@@ -49,13 +52,52 @@
 }
 
 .product-type {
-    display: inline-block;
-    float: right;
-    margin-right: 31rpx;
+    position: absolute;
     font-family: PingFangSC-Regular;
     font-size: 26rpx;
     color: #888;
     letter-spacing: 0.56rpx;
+    text-align: right;
+    width: 150rpx;
+    height: 150rpx;
+    line-height: 1;
+    top: 0;
+    right: 20rpx;
+    overflow: hidden;
+    padding: 0;
+    margin: 0;
+}
+
+.product-type view,
+.product-type button {
+    position: relative;
+    display: inline-block;
+    width: 100rpx;
+    height: 30rpx;
+    padding: 0;
+    margin: 0;
+    text-align: center;
+    margin-top: 24rpx;
+    overflow: hidden;
+    font-size: 26rpx;
+}
+
+.product-type .favorite-status {
+    background: #e6b53c;
+    color: white;
+    padding: 6rpx 0;
+    line-height: 1;
+    border: 1px solid #e6b53c;
+    border-radius: 10rpx;
+    -webkit-border-radius: 10rpx;
+    -moz-border-radius: 10rpx;
+    -ms-border-radius: 10rpx;
+    -o-border-radius: 10rpx;
+}
+
+.product-type .favorite-status.active {
+    background: transparent;
+    color: #e6b53c;
 }
 
 .product-explain {
@@ -105,6 +147,27 @@
     font-size: 32rpx;
     color: #fff;
     letter-spacing: 1.54rpx;
+}
+
+.product-list-counter {
+    background: rgb(230, 0, 0);
+    position: absolute;
+    width: 50%;
+    height: 66rpx;
+    line-height: 64rpx;
+    top: 280rpx;
+    right: 0;
+    border-top-left-radius: 10rpx;
+    border-bottom-left-radius: 10rpx;
+    color: white;
+    font-size: 24rpx;
+    text-align: center;
+    padding: 0;
+    margin: 0;
+}
+
+.product-list-counter text {
+    padding: 0 2rpx;
 }
 
 @import "../../../wxParse/wxParse.wxss";

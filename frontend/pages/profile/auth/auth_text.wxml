@@ -1,12 +1,12 @@
 <view class='container'>
   <view class='auth-state' style='color: #e6b53c;'>认证中</view>
   <view>
-    <view class='auth-text'>*角色类型：场馆主</view>
-    <view class='auth-text'>*场馆名称：北京大学体育馆</view>
-    <view class='auth-text'>*馆主姓名：赵红</view>
+    <view class='auth-text'>*角色类型：商家</view>
+    <view class='auth-text'>*商家名称：北京大学体育馆</view>
+    <view class='auth-text'>*商家姓名：赵红</view>
     <view class='auth-text'>*联系方式：13868686886</view>
     <view class='auth-text-auto'>
-      <view class='text-auto1'>*场馆地址：</view>
+      <view class='text-auto1'>*商家地址：</view>
       <view class='text-auto2'>北京市海淀区这儿的街道那儿的楼九单元4栋1024</view>
     </view>
     <view class='auth-image-view'>

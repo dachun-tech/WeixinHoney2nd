@@ -59,9 +59,6 @@ Page({
         wx.showLoading({
             title: '加载中',
         })
-        setTimeout(function() {
-            wx.hideLoading()
-        }, 2000)
         this.setData({
             userInfo: app.globalData.userInfo,
             eventType: app.globalData.eventType,
@@ -168,6 +165,9 @@ Page({
 
                 console.log(that.data.event);
                 console.log(that.data.booking);
+            },
+            complete: function() {
+                wx.hideLoading({});
             }
         })
         wx.request({

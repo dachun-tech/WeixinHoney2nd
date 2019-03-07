@@ -8,7 +8,7 @@ Page({
      */
     data: {
         id: '',
-        book_date: '',
+        book_date: wx.getStorageSync('book_date'),
         img_black_start_src: '../../../image/star_n@2x.png',
         img_yellow_start_src: '../../../image/star_s@2x.png',
         count_yellowStar: 3,
@@ -21,9 +21,10 @@ Page({
         curUserId: 0,
         bookList: [],
         bookingState: ["已支付", "进行中", "已完成", "已取消"],
-        tmrID: 0,
+        _tmr: 0,
         isFirstInit: true,
         isPayProcessing: false,
+        remained_time: '10分0秒'
     },
 
     /**
@@ -34,6 +35,7 @@ Page({
         var that = this;
         that.data.options = option;
         that.data.curBossId = option.id;
+        that.data.curBookingId = option.book;
         that.setData({
             id: option.id, // applied user id
         })
@@ -42,17 +44,15 @@ Page({
     onShow: function() {
         var that = this;
         var option = that.data.options;
-        if (app.globalData.userInfo.user_id == 0) {
-            if (!that.data.isFirstInit) app.onLaunch();
-            clearTimeout(that.data.tmrID)
-            that.data.tmrID = setTimeout(function() {
-                that.data.isFirstInit = false;
-                if (!app.globalData.initDisabled)
-                    that.onShow();
-            }, 4000);
-        } else {
+        wx.showLoading({
+            title: '加载中',
+        })
+        if (true || app.globalData.userInfo.user_id == 0)
+            app.onInitialize(function() {
+                that.onInitStart(option);
+            })
+        else
             that.onInitStart(option);
-        }
     },
 
     onInitStart: function(options) {
@@ -60,40 +60,21 @@ Page({
 
         that.data.curUserId = app.globalData.userInfo.user_id;
 
-        var book_date = wx.getStorageSync('book_date');
-        var tDate = new Date(book_date + ' 00:00:00');
-        that.data.book_date = tDate.getFullYear() + '-' + (tDate.getMonth() + 1) + '-' + tDate.getDate();
-        that.data.bookList = wx.getStorageSync('book_info');
+        // var book_date = wx.getStorageSync('book_date');
+        // var tDate = new Date(book_date + ' 00:00:00');
+        // that.data.book_date = tDate.getFullYear() + '-' + (tDate.getMonth() + 1) + '-' + tDate.getDate();
+        // that.data.bookList = wx.getStorageSync('book_info');
 
-        this.setData({
-            eventType: app.globalData.eventType,
-            userRole: app.globalData.userRole,
-            bookingState: app.globalData.eventState,
-            eventState: app.globalData.eventState,
-            book_date: this.data.book_date,
-        });
+        // this.setData({
+        //     eventType: app.globalData.eventType,
+        //     userRole: app.globalData.userRole,
+        //     bookingState: app.globalData.eventState,
+        //     eventState: app.globalData.eventState,
+        //     book_date: this.data.book_date,
+        // });
         var id = this.data.curBossId;
+        clearInterval(that.data._tmr);
 
-        wx.request({
-            url: app.globalData.mainURL + 'api/getSiteDetail',
-            header: {
-                'content-type': 'application/json'
-            },
-            method: 'POST',
-            data: {
-                'boss_id': id,
-                'user_id': app.globalData.userInfo.user_id
-            },
-            success: function(res) {
-                console.log(res.data);
-                if (res.data.status) {
-                    that.data.site_info = res.data;
-                    that.setData({
-                        booking: that.data.site_info.site[0]
-                    })
-                }
-            }
-        })
         wx.request({
             url: app.globalData.mainURL + 'api/getUserDetail',
             header: {
@@ -104,7 +85,7 @@ Page({
                 'user_id': app.globalData.userInfo.user_id
             },
             success: function(res) {
-                console.log(res.data);
+                // console.log(res.data);
                 if (res.data.status) {
                     that.setData({
                         user: res.data.result[0]
@@ -112,25 +93,104 @@ Page({
 
                 }
             }
-        })
-        var bookList = that.data.bookList;
-        var totalPrice = 0;
-        for (var i = 0; i < bookList.length; i++) {
-            var item = bookList[i];
-            if (parseFloat(item.cost) < 0) continue;
-            totalPrice += parseFloat(item.cost);
-        }
-        totalPrice = totalPrice.toFixed(2);
-        totalPrice = parseFloat(totalPrice);
-        that.setData({
-            bookList: bookList
-        })
-        app.globalData.userInfo.honey = parseInt(app.globalData.userInfo.honey);
-        app.globalData.userInfo.amount = parseFloat(app.globalData.userInfo.amount);
-        that.prepare_payment(totalPrice, app.globalData.userInfo.honey, app.globalData.userInfo.amount, 2); // price, honey, wallet, pay_type(0-offline, 1-online pay)
-        // set swiper image
-    },
+        }); // set swiper image
 
+        wx.request({
+            url: app.globalData.mainURL + 'api/getSiteDetail',
+            header: {
+                'content-type': 'application/json'
+            },
+            method: 'POST',
+            data: {
+                'boss_id': id,
+                'user_id': app.globalData.userInfo.user_id,
+            },
+            success: function(res) {
+                //                console.log(res.data);
+                if (res.data.status) {
+                    that.data.site_info = res.data;
+                    that.setData({
+                        booking: that.data.site_info.site[0]
+                    })
+                    var totalBook = that.data.site_info.site_booking;
+                    var currentBook = totalBook.find(function(a) { return a.id == that.data.curBookingId });
+                    console.log(totalBook);
+                    var tDate = new Date(currentBook.start_time.replace(/-/g, '/'));
+                    that.data.book_date = tDate.getFullYear() + '-' + (tDate.getMonth() + 1) + '-' + tDate.getDate();
+                    that.data.bookList = JSON.parse(currentBook.book_info);
+                    that.data.currentBook = currentBook;
+
+                    that.setData({
+                        eventType: app.globalData.eventType,
+                        userRole: app.globalData.userRole,
+                        bookingState: app.globalData.eventState,
+                        eventState: app.globalData.eventState,
+                        book_date: that.data.book_date,
+                    });
+
+                    var bookList = that.data.bookList;
+                    var totalPrice = 0;
+                    for (var i = 0; i < bookList.length; i++) {
+                        var item = bookList[i];
+                        if (parseFloat(item.cost) < 0) continue;
+                        totalPrice += parseFloat(item.cost);
+                    }
+                    totalPrice = totalPrice.toFixed(2);
+                    totalPrice = parseFloat(totalPrice);
+                    that.setData({
+                        bookList: bookList
+                    })
+                    app.globalData.userInfo.honey = parseInt(app.globalData.userInfo.honey);
+                    app.globalData.userInfo.amount = parseFloat(app.globalData.userInfo.amount);
+                    app.globalData.userInfo.amount_withdraw = parseFloat(app.globalData.userInfo.amount_withdraw);
+                    that.prepare_payment(totalPrice, app.globalData.userInfo.honey, app.globalData.userInfo.amount_withdraw, 2); // price, honey, wallet, pay_type(0-offline, 1-online pay)
+                    var submit_time = new Date(currentBook.submit_time.replace(/-/g, '/') + '');
+                    submit_time.setTime(submit_time.getTime() + 600000);
+                    clearInterval(that.data._tmr);
+                    that.data._tmr = setInterval(function() {
+                        var curTime = new Date();
+                        var diff = parseInt((submit_time.getTime() - curTime.getTime()) / 1000);
+                        var min = parseInt(diff / 60);
+                        var sec = diff - min * 60;
+                        console.log(min + ':' + sec);
+                        if (diff < 0) {
+                            clearInterval(that.data._tmr);
+                            that.showWarningModal();
+                            return;
+                        }
+                        that.setData({
+                            remained_time: min + '分' + sec + '秒'
+                        })
+                    }, 1000);
+                }
+            },
+            complete: function() {
+                wx.hideLoading({});
+            }
+        });
+    },
+    onUnload: function() {
+        this.onHide();
+    },
+    onHide: function() {
+        clearInterval(this.data._tmr);
+        clearTimeout(this.data._tmr);
+    },
+    showWarningModal: function() {
+        wx.showModal({
+            title: '提示',
+            content: '该订单已经失效, 请重新下单',
+            showCancel: false,
+            // confirmText: '是',
+            // cancelText: '否',
+
+            success: function(res) {
+                if (res.confirm) {
+                    wx.navigateBack({ delta: 1 });
+                }
+            }
+        })
+    },
     //called when user clicked cancel booking button
     onclick_cancel_booking: function() {
 
@@ -139,76 +199,29 @@ Page({
             return;
         }
         wx.showModal({
-            content: '是否取消预订？',
+            content: '是否取消订单？',
             success: function(res) {
                 if (res.confirm) {
-                    var ordercode = that.data.booking.paid_price;
-                    var out_refund_no = app.globalData.mch_id + Date.now()
-                    if (false && that.data.booking.paid_price > 0.0) {
+                    var out_refund_no = app.globalData.mch_id + Date.now();
+                    wx.request({
+                        url: app.globalData.mainURL + 'api/datamanage/cancelRoomBooking',
+                        method: 'POST',
+                        header: {
+                            'content-type': 'application/json'
+                        },
+                        data: {
+                            booking_id: that.data.booking.id,
+                            out_refund_no: out_refund_no
+                        },
+                        success: function(res) {
 
-                        wx.login({
-                            success: function(res) {
-                                if (res.code) {
-                                    wx.request({
-                                        url: app.globalData.mainURL + 'api/refund',
-                                        data: {
-                                            id: wx.getStorageSync('openid'), //要去换取openid的登录凭证
-                                            fee: ordercode,
-                                            user_id: app.globalData.userInfo.user_id,
-                                            out_trade_no: that.data.booking.out_trade_no,
-                                            out_refund_no: out_refund_no
-                                        },
-                                        method: 'POST',
-                                        header: {
-                                            'content-type': 'application/json'
-                                        },
-                                        success: function(res) {
-
-                                            wx.request({
-                                                url: app.globalData.mainURL + 'api/datamanage/cancelRoomBooking',
-                                                method: 'POST',
-                                                header: {
-                                                    'content-type': 'application/json'
-                                                },
-                                                data: {
-                                                    booking_id: that.data.booking.id,
-                                                    out_refund_no: out_refund_no
-                                                },
-                                                success: function(res) {
-
-                                                    if (res.data.status == true) {
-                                                        wx.navigateBack({
-                                                            delta: 2
-                                                        })
-                                                    }
-                                                }
-                                            })
-                                        }
-                                    })
-                                }
+                            if (res.data.status == true) {
+                                wx.navigateBack({
+                                    delta: 2
+                                })
                             }
-                        });
-                    } else {
-                        wx.request({
-                            url: app.globalData.mainURL + 'api/datamanage/cancelRoomBooking',
-                            method: 'POST',
-                            header: {
-                                'content-type': 'application/json'
-                            },
-                            data: {
-                                booking_id: that.data.booking.id,
-                                out_refund_no: out_refund_no
-                            },
-                            success: function(res) {
-
-                                if (res.data.status == true) {
-                                    wx.navigateBack({
-                                        delta: 2
-                                    })
-                                }
-                            }
-                        })
-                    }
+                        }
+                    });
                 } else if (res.cancel) {}
             }
         })
@@ -230,6 +243,12 @@ Page({
     btn_write_comment: function(event) {
         wx.navigateTo({
             url: 'book_evaluation?id=' + this.data.booking.id + '&room_id=' + this.data.booking.room_id
+        })
+    },
+    on_Input_Phonenumber: function(e) {
+        this.data.user.phone = e.detail.value;
+        this.setData({
+            user: this.data.user
         })
     },
 
@@ -360,6 +379,23 @@ Page({
         var item_id = that.data.book_id;
         var book_mode = that.data.book_type;
 
+        if (this.data.user.phone.length == 0) {
+            wx.showToast({
+                title: '请填写手机号码',
+                icon: 'none'
+            })
+            return;
+        }
+        if (!app.checkValidPhone(this.data.user.phone)) {
+            wx.showToast({
+                title: '请填写正确的手机号码',
+                icon: 'none'
+            })
+            return;
+        }
+
+        that.data.formId = event.detail.formId;
+
         if (that.data.isPayProcessing) return;
         that.data.isPayProcessing = true;
 
@@ -392,6 +428,7 @@ Page({
                                     paySign: res.data.paySign,
                                     success: function(res) {
                                         if (res.errMsg.length <= 20) {
+                                            clearInterval(that.data._tmr);
                                             that.data.out_trade_no = out_trade_no;
                                             that.add_booking();
                                         }
@@ -434,6 +471,22 @@ Page({
             if (i != 0) info2 += ',';
             info2 += item.room_name + '(' + item.start + ' - ' + item.end + ')';
         }
+        var data = {
+            touser: wx.getStorageSync('openid'),
+            template_id: app.globalData.templateIds.order_start,
+            page: 'pages/profile/profile',
+            form_id: that.data.formId,
+            data: {
+                keyword1: { value: that.data.site_info.site[0].site_name, color: '#000' },
+                keyword2: { value: that.data.site_info.site[0].detail_address, color: '#000' },
+                keyword3: { value: that.data.currentBook.start_time, color: '#000' },
+                keyword4: { value: that.data.currentBook.end_time, color: '#000' },
+                keyword5: { value: that.data.price + '元', color: '#000' },
+                keyword6: { value: info2, color: '#000' },
+            },
+            color: '#ff0000',
+            emphasis_keyword: 'keyword1.DATA',
+        };
 
         wx.request({
             url: app.globalData.mainURL + 'api/datamanage/addRoomBooking',
@@ -442,16 +495,17 @@ Page({
                 'content-type': 'application/json'
             },
             data: {
-                user_id: app.globalData.userInfo.user_id,
-                book_date: that.data.book_date,
+                open_id: wx.getStorageSync('openid'),
+                user_info: JSON.stringify({
+                    name: that.data.user.nickname,
+                    phone: that.data.user.phone
+                }),
+                msg_data: data,
+                book_id: that.data.curBookingId,
                 share_day: share_day,
-                boss_id: that.data.curBossId,
-                book_info: that.data.bookList,
+                book_date: that.data.book_date,
                 pay_type: that.data.pay_type,
-                role: app.globalData.userInfo.role,
                 out_trade_no: that.data.out_trade_no,
-                phone: that.data.phone,
-                name: that.data.name,
 
                 wallet: that.data.wallet,
                 pay_cost: that.data.price,
@@ -485,11 +539,14 @@ Page({
                             'info2': info2,
                         },
                         success: function(res) {
+                            that.data.isPayProcessing = false;
+                            that.data.isfirstbtn = 0
+                            clearInterval(that.data._tmr);
+                            var userId = app.globalData.userInfo.user_id + '';
+                            app.globalData.userInfo.user_id = 0;
                             wx.redirectTo({
-                                url: 'booking_final?bid=' + that.data.curBossId + '&uid=' + app.globalData.userInfo.user_id + '&sday=' + share_day,
-                                success: function() {
-                                    that.data.isfirstbtn = 0
-                                }
+                                url: 'booking_final?bid=' + that.data.curBossId + '&uid=' + userId + '&sday=' + share_day,
+                                success: function() {}
                             })
                         },
                         complete: function() {
@@ -500,6 +557,7 @@ Page({
             }
         })
     },
+
 
     ////////////////////////////////////////////////////////////////////////
 

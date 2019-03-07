@@ -7,7 +7,9 @@ Page({
      * 页面的初始数据
      */
     data: {
-        favourite: []
+        favourite: [],
+        defaultAvatar: app.globalData.uploadURL + 'global/picture01@2x.png',
+        imgURL: app.globalData.uploadURL + 'global/success_n@2x.png',
     },
 
     /**
@@ -41,7 +43,7 @@ Page({
     btn_Clicked_Focus: function(event) {
         var that = this;
         wx.navigateTo({
-            url: '../../index/detail_gym/detail_gym?id=' + that.data.favourite[event.currentTarget.id].boss_id,
+            url: '../../index/detail_gym/detail_gym?id=' + that.data.favourite[event.currentTarget.id].boss_id + '&no=' + that.data.favourite[event.currentTarget.id].boss_no,
             success: function(res) {},
             fail: function(res) {},
             complete: function(res) {},
@@ -57,13 +59,12 @@ Page({
             },
             method: 'POST',
             data: {
-                'boss_id': that.data.favourite[event.currentTarget.id].boss_id,
-                'user_id': app.globalData.userInfo.user_id
+                'boss_id': 0, //that.data.favourite[event.currentTarget.id].boss_id,
+                'user_id': app.globalData.userInfo.user_id,
+                'boss_no': that.data.favourite[event.currentTarget.id].boss_no
             },
             success: function(res) {
-                wx.redirectTo({
-                    url: './my_focus'
-                })
+                that.onLoad();
             }
         })
     }

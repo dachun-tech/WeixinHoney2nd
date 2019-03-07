@@ -43,7 +43,7 @@
                                 <select class="form-control" id="searchRole" name="searchRole">
                                     <option value="10"<?php if ($searchRole == 10) echo ' selected'; ?>>角色类型</option>
                                     <option value="2"<?php if ($searchRole == 0) echo ' selected'; ?>>个人</option>
-                                    <option value="1"<?php if ($searchRole == 1) echo ' selected'; ?>>场馆主</option>
+                                    <option value="1"<?php if ($searchRole == 1) echo ' selected'; ?>>商家</option>
                                 </select>
                             </div>
                         </div>
@@ -57,11 +57,18 @@
                                 </select>
                             </div>
                         </div>
-                        <div class="col-xs-1 col-sm-2 form-inline">
+                        <div class="col-xs-1 col-sm-1 form-inline">
                             <div class="form-group area-search-control-view">
                                 <a class="btn btn-primary searchList"
                                    onclick="$('#searchList').submit();">查询
                                 </a>
+                            </div>
+                        </div>
+                        <div class="col-xs-1 col-sm-1 form-inline">
+                            <div class="form-group area-search-control-view">
+                                <input type="button" class="btn btn-primary searchList"
+                                       onclick="exportTable()" value="导出">
+                                </input>
                             </div>
                         </div>
                         <div class="col-xs-1 col-sm-1 form-inline">
@@ -94,7 +101,7 @@
                         <?php
                         if (!empty($eventList)) {
                             $i = 0;
-                            $eventRole = array('', '场馆主', '个人');
+                            $eventRole = array('', '商家', '个人');
                             $eventState = array('进行中', '已完成', '已取消');
                             foreach ($eventList as $record) {
                                 $i++;

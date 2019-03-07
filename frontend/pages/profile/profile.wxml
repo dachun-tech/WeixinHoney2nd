@@ -17,16 +17,16 @@
                 <view class="user_phone" bindtap="phone_call" data-id="{{userInfo.phone}}">{{userInfo.phone}}</view>            
             </view>
             <view class="user_detail">{{userInfo.person_sign}}</view>
-            <scroll-view scroll-x class="type_content">                
-                <view class="type_detail" >
-                    <view class="type" >运动项目</view>
+            <view style="overflow-x:auto;" scroll-x class="type_content">                
+                <view class="type_detail">
+                    <view class="type">运动项目</view>
                     <view class="counts">运动次数</view>
                 </view>
-                <view class="type_detail" wx:for="{{type_array}}" wx:key="{{index}}" >
-                    <view class="type" >{{event_types[item.type]}}</view>
+                <view class="type_detail" wx:for="{{type_array}}" wx:key="{{index}}">
+                    <view class="type">{{event_types[item.type]}}</view>
                     <view class="counts">{{item.count}}次</view>
                 </view>                
-            </scroll-view>
+            </view>
         </view>
     </view>
 
@@ -41,7 +41,7 @@
         </view>
         <view id="my_booking" class="list_item" bindtap='whichpress'>
             <image class="img_item" src="../../image/my_yd@2x.png" />
-            <view>我的预定</view>
+            <view>我的订单</view>
         </view>
         <view id="my_purse" class="list_item" bindtap='whichpress'>
             <image class="img_item" src="../../image/my_wallet@2x.png" />
@@ -65,7 +65,11 @@
         </view>
         <view wx:if="{{userInfo.role == 1 && userInfo.state==2}}" id="about_stadium" class="list_item" bindtap='whichpress'>
             <image class="img_item" src="../../image/my_cgzlll@2x.png" />
-            <view>场馆资料</view>
+            <view>商家资料</view>
+        </view>
+        <view wx:if="{{userInfo.role == 1 && userInfo.state==2}}" id="stadium_work" class="list_item" bindtap='whichpress'>
+            <image class="img_item" src="../../image/my_sjyy@2x.png" />
+            <view>商家运营</view>
         </view>
     </view>
 </view>

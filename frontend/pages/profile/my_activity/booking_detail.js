@@ -7,6 +7,7 @@ Page({
      * 页面的初始数据
      */
     data: {
+        uploadURL: app.globalData.uploadURL,
         img_black_start_src: '../../../image/star_n@2x.png',
         img_yellow_start_src: '../../../image/star_s@2x.png',
         count_yellowStar: 3,
@@ -49,6 +50,7 @@ Page({
                 var book = res.data.result[0];
                 if (book != null) {
                     var avatar = book.pic.split(",")[0];
+                    book.picture = book.pic.split(",");
                     book.avatar = app.globalData.uploadURL + avatar;
                     book.idshow = '0000000000'
                     book.idshow = book.idshow.slice(0, 10 - book.id.length) + book.id
@@ -107,12 +109,37 @@ Page({
 
     },
 
-    final_cancel: function() {
-        var that = this
+    final_cancel: function(event) {
+        var that = this;
+
+        that.data.formId = event.detail.formId;
+
+
         wx.showModal({
             content: '是否取消蜂约？',
             success: function(res) {
                 if (res.confirm) {
+
+                    var curDate = new Date();
+                    curDate = curDate.getFullYear() + '年' + (curDate.getMonth() + 1) + '月' + curDate.getDate() + '日 ' +
+                        app.makeNDigit(curDate.getHours()) + ':' + app.makeNDigit(curDate.getMinutes()) + ':' + app.makeNDigit(curDate.getSeconds());
+                    var serviceTime = that.data.event.start_time + ' ~ ' + that.data.event.end_time;
+                    var data = {
+                        touser: wx.getStorageSync('openid'),
+                        template_id: app.globalData.templateIds.pay_cancel,
+                        page: 'pages/profile/my_activity/my_activity',
+                        form_id: that.data.formId,
+                        data: {
+                            keyword1: { value: that.data.booking.name, color: '#000' },
+                            keyword2: { value: serviceTime, color: '#000' },
+                            keyword3: { value: that.data.booking.detail_address, color: '#000' },
+                            keyword4: { value: curDate, color: '#000' },
+                            keyword5: { value: app.globalData.userInfo.nickname, color: '#000' }
+                        },
+                        color: '#ff0000',
+                        emphasis_keyword: 'keyword1.DATA',
+                    };
+
                     if (that.data.booking.pay_type == "1") {
                         var ordercode = that.data.booking.pay_online;
                         var out_refund_no = app.globalData.mch_id + Date.now()
@@ -142,14 +169,14 @@ Page({
                                                 },
                                                 data: {
                                                     booking_id: that.data.booking.id,
-                                                    out_refund_no: out_refund_no
+                                                    out_refund_no: out_refund_no,
+                                                    open_id: wx.getStorageSync('openid'),
+                                                    msg_data: data,
                                                 },
                                                 success: function(res) {
 
                                                     if (res.data.status == true) {
-                                                        wx.navigateTo({
-                                                            url: './booking',
-                                                        })
+                                                        wx.navigateBack({ delta: 1 })
                                                     }
                                                 }
                                             })
@@ -169,12 +196,12 @@ Page({
                             },
                             data: {
                                 booking_id: that.data.booking.id,
+                                open_id: wx.getStorageSync('openid'),
+                                msg_data: data,
                             },
                             success: function(res) {
 
-                                wx.navigateTo({
-                                    url: './booking',
-                                })
+                                wx.navigateBack({ delta: 1 })
                             }
                         })
                     }

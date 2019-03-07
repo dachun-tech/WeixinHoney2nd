@@ -27,7 +27,7 @@
                         </thead>
                             <tr>
                                 <td>1</td>
-                                <td>场馆主创建一次活动，每有一个用户报名，可产生蜂蜜数</td>
+                                <td>商家创建一次活动，每有一个用户报名，可产生蜂蜜数</td>
                                 <td><input type="text" name="rule0" value="<?php echo $rule[0]->value;?>"/>&nbsp;&nbsp;ml</td>
                             </tr>
                             <tr>
@@ -42,7 +42,7 @@
                             </tr>
                             <tr>
                                 <td>4</td>
-                                <td>步数转化成蜂蜜</td>
+                                <td>后台给定的步数，每步兑换的蜂蜜</td>
                                 <td>1步=&nbsp;<input type="text" name="rule3" value="<?php echo $rule[3]->value;?>"/>&nbsp;&nbsp;ml</td>
                             </tr>
                             <tr>
@@ -89,6 +89,38 @@
                                 <td>
                                     <input type="text" name="rule12" value="<?php echo $rule[12]->value;?>"/>&nbsp;&nbsp;ml可抵
                                     <input type="text" name="rule13" value="<?php echo $rule[13]->value;?>"/>&nbsp;&nbsp;元
+
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>12</td>
+                                <td>商品开始兑换前（     ）分钟，通过微信活动通知提醒用户</td>
+                                <td>
+                                    <input type="text" name="rule14" value="<?php echo $rule[14]->value;?>"/>&nbsp;&nbsp;min
+
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>13</td>
+                                <td>每次签到获得多少蜂蜜</td>
+                                <td>
+                                    <input type="text" name="rule15" value="<?php echo $rule[15]->value;?>"/>&nbsp;&nbsp;ml
+
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>14</td>
+                                <td>用户每天得到的固定步数为</td>
+                                <td>
+                                    <input type="text" name="rule16" value="<?php echo $rule[16]->value;?>"/>&nbsp;&nbsp;步
+
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>15</td>
+                                <td>预定的商家、参加的蜂约、赛事培训开始前（   ）分钟，通过微信活动通知提醒用户</td>
+                                <td>
+                                    <input type="text" name="rule17" value="<?php echo $rule[17]->value;?>"/>&nbsp;&nbsp;min
 
                                 </td>
                             </tr>

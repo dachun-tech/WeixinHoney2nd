@@ -4,9 +4,10 @@ class feedback_model extends CI_Model
 {
 
     /**
-    *This is function to get feedbacks of event
-    */
-    function getFeedbacks($event_id, $userId = 0){
+     *This is function to get feedbacks of event
+     */
+    function getFeedbacks($event_id, $userId = 0)
+    {
 
         $this->db->select("user.avatar, user.nickname, feedback.*");
         $this->db->from("feedback, user");
@@ -27,14 +28,18 @@ class feedback_model extends CI_Model
 //            $this->db->order_by("feedback.submit_time", "desc");
             $query_item = $this->db->get();
             $child_array = array();
+
             //get child array
-            if (count($query_item->result()) > 0)
-            {
+            if (count($query_item->result()) > 0) {
                 $child_array = $query_item->result();
             }
-            $item->child_array= $child_array;
+            foreach ($child_array as $record){
+                $parent = $this->user_model->getUsernameById($record->parent_user);
+                if(count($parent)>0) $parent = $parent->nickname;
+                $record->parent_user_name = $parent;
+            }
 
-
+            $item->child_array = $child_array;
             //get favorite count
             $this->db->select("*");
             $this->db->from("favourite_feedback");
@@ -69,14 +74,11 @@ class feedback_model extends CI_Model
         $this->db->where('user_id', $user_id);
         $this->db->where("feedback_id", $feedback_id);
         $query = $this->db->get()->result();
-        if(count($query)>0)
-        {
+        if (count($query) > 0) {
             $this->db->where('user_id', $user_id);
             $this->db->where("feedback_id", $feedback_id);
             $this->db->delete("favourite_feedback");
-        }
-        else
-        {
+        } else {
             $info['user_id'] = $user_id;
             $info['feedback_id'] = $feedback_id;
             $this->db->insert("favourite_feedback", $info);
@@ -97,11 +99,11 @@ class feedback_model extends CI_Model
             left join event on  feedback.event_id = event.id
             where  feedback.event_id = event.id  ";
         if (!empty($searchText)) {
-            if(isset($searchStatus)){
+            if (isset($searchStatus)) {
                 if ($searchStatus == '0') {
-                    $query = $query." and (user.nickname LIKE '%" . $searchText . "%')";
+                    $query = $query . " and (user.nickname LIKE '%" . $searchText . "%')";
                 } else {
-                    $query = $query." and (event.name LIKE '%" . $searchText . "%')";
+                    $query = $query . " and (event.name LIKE '%" . $searchText . "%')";
                 }
             }
         }
@@ -122,20 +124,19 @@ class feedback_model extends CI_Model
             left join event on  feedback.event_id = event.id
             where  feedback.event_id = event.id  ";
         if (!empty($searchText)) {
-            if(isset($searchStatus)){
+            if (isset($searchStatus)) {
                 if ($searchStatus == '0') {
-                    $query = $query." and (user.nickname LIKE '%" . $searchText . "%')";
+                    $query = $query . " and (user.nickname LIKE '%" . $searchText . "%')";
                 } else {
-                    $query = $query." and (event.name LIKE '%" . $searchText . "%')";
+                    $query = $query . " and (event.name LIKE '%" . $searchText . "%')";
                 }
             }
         }
-        $query=$query." order by feedback.submit_time desc";
-        if($segment!=""){
-            $query = $query." limit ".$segment.", ".$page;
-        }
-        else{
-            $query = $query." limit 0, ".$page;
+        $query = $query . " order by feedback.submit_time desc";
+        if ($segment != "") {
+            $query = $query . " limit " . $segment . ", " . $page;
+        } else {
+            $query = $query . " limit 0, " . $page;
         }
         $result = $this->db->query($query);
         return $result->result();
@@ -143,8 +144,8 @@ class feedback_model extends CI_Model
 
     /**
      *This function is used to delete rating by id
-     *@param number id : id to delete
-     *@return boolean $result: state of delete
+     * @param number id : id to delete
+     * @return boolean $result: state of delete
      **/
     function deleteItem($id)
     {
@@ -154,9 +155,36 @@ class feedback_model extends CI_Model
     }
 
     /**
-    *This is function to add feedback to event
-    */
-    function addFeedback($info){
+     *This function is used to delete rating by id
+     * @param number id : id to delete
+     * @return boolean $result: state of delete
+     **/
+    function getItems($cond)
+    {
+        $this->db->select("*");
+        $this->db->from("feedback");
+        $this->db->where($cond);
+        $query = $this->db->get();
+        return $query->result();
+    }
+
+    /**
+     *This function is used to delete rating by id
+     * @param number id : id to delete
+     * @return boolean $result: state of delete
+     **/
+    function deleteItems($cond)
+    {
+        $this->db->where($cond);
+        $this->db->delete("feedback");
+        return true;
+    }
+
+    /**
+     *This is function to add feedback to event
+     */
+    function addFeedback($info)
+    {
         $this->db->insert('feedback', $info);
         return true;
     }

@@ -1,6 +1,6 @@
 <!--pages/profile/delivery/delivery.wxml-->
 <view class='containter'>
-  <scroll-view scroll-y class='postadd-view'>
+  <view style="overflow-y:auto;" scroll-y class='postadd-view'>
     <view wx:for="{{address}}" wx:for-item="receiver" wx:key="index">
       <view class='postman'>
         <view class='postman-info'>
@@ -22,7 +22,7 @@
         </view>
       </view>
     </view>
-  </scroll-view>
+  </view>
   <button class='btn-submit' bindtap="on_click_new">新增收货地址</button>
 </view>
 

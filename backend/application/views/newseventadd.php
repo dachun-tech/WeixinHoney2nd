@@ -418,8 +418,11 @@ else $is_train = 0;
                     <label> *<?=($is_train==0?'比赛':$type)?>时间 : </label>
                     <div class="input-group margin">
                         <input id="fromTime" name="fromTime" class="datepicker-inline form-control" size="16"
-                               placeholder="请选择"
-                               type="text" value="<?php if (isset($item_fromTime)) echo $item_fromTime; ?>" readonly="">
+                               placeholder="请选择" style="display: inline-block; width: 45%; float: none;"
+                               type="text" value="<?php if (isset($item_fromTime)) echo $item_fromTime; ?>" readonly="">到
+                        <input id="toTime" name="toTime" class="datepicker-inline form-control" size="16"
+                               placeholder="请选择" style="display: inline-block; width: 45%; float: none;"
+                               type="text" value="<?php if (isset($item_toTime)) echo $item_toTime; ?>" readonly="">
                     </div>
                     <div class="input-group margin"
                          style="color: red;"><?php if (isset($error_fromTime)) echo $error_fromTime; ?></div>
@@ -427,12 +430,12 @@ else $is_train = 0;
                 <div class="row form-inline">
                     <label> *报名截止时间 : </label>
                     <div class="input-group margin">
-                        <input id="toTime" name="toTime" class="datepicker-inline form-control" size="16"
+                        <input id="endTime" name="endTime" class="datepicker-inline form-control" size="16"
                                placeholder="请选择"
-                               type="text" value="<?php if (isset($item_toTime)) echo $item_toTime; ?>" readonly="">
+                               type="text" value="<?php if (isset($item_endTime)) echo $item_endTime; ?>" readonly="">
                     </div>
                     <div class="input-group margin"
-                         style="color: red;"><?php if (isset($error_toTime)) echo $error_toTime; ?></div>
+                         style="color: red;"><?php if (isset($error_endTime)) echo $error_endTime; ?></div>
                 </div>
                 <div class="row form-inline">
                     <label> *联系电话 : </label>
@@ -505,7 +508,7 @@ else $is_train = 0;
                          style="color: red;"><?php if (isset($error_type)) echo $error_payMode; ?></div>
                 </div>
                 <?php
-                $limit = ['姓名', '电话', '球队', '俱乐部', '性别', '身份证号', '所在城市', '所在大学院系', '职业', '微信号', '邮箱'];
+                $limit = ['姓名', '电话', '球队', '俱乐部', '性别', '身份证号', '所在城市', '所在大学院系', '职业', '微信号', '邮箱', '上传图片'];
                 ?>
                 <div class="row form-inline">
                     <label> *报名限制 : </label>
@@ -536,7 +539,7 @@ else $is_train = 0;
                         $j++;
                     }
                     ?>
-                    <input name="condition" style="display: none;" value="-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1"/>
+                    <input name="condition" style="display: none;" value="-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1"/>
                     <script>
                         $('input[type="radio"]').on('click', function () {
                             var ctrls = $('input[type="radio"]');
@@ -559,6 +562,16 @@ else $is_train = 0;
                         })
                     </script>
                 </div>
+                <div class="row form-inline">
+                    <label> *图片提示文字 : </label>
+                    <div class="input-group margin">
+                        <input name="imgprompt" type="text" class="form-control" placeholder="请输入"
+                               value="<?php if (isset($item_imgprompt)) echo $item_imgprompt; ?>" maxlength="50"
+                               style="margin: 0 ; padding: 0px 20px; width: 160px; vertical-align: middle"/>
+                    </div>
+                    <div class="input-group margin"
+                         style="color: red;"><?php if (isset($error_imgprompt)) echo $error_imgprompt; ?></div>
+                </div>
 
                 <div class="row form-inline">
                     <label> *<?= $type ?>介绍 : </label>
@@ -579,7 +592,7 @@ else $is_train = 0;
                                 <span>取消</span>
                             </a>
                             <input class="btn btn-primary form-control" value="确认发布" onclick="submit_form()"
-                                   style="width: 70px;">
+                                   style="width: 80px;">
                         </div>
                     </div>
                 </div>

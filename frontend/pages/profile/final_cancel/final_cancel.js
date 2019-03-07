@@ -4,10 +4,10 @@ const app = getApp()
 
 Page({
     data: {
-        image_cancel_success_src: '../../../image/success@2x.png',
+        image_cancel_success_src: app.globalData.uploadURL + 'global/success@2x.png',
         kind: 0,
         cancel_sucess_text: ["提交成功，钱款将在1-3个工作日到账", "取消成功，钱款将在1-3个工作日退回", "报名成功", "报名成功", "报名成功"],
-        title_text: ["提交成功", "取消成功", "活动报名", "我的预订", "赛事报名"],
+        title_text: ["提交成功", "取消成功", "活动报名", "我的订单", "赛事报名"],
     },
     onLoad: function(option) {
         var that = this;

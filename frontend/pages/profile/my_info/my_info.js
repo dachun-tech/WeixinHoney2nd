@@ -179,7 +179,7 @@ Page({
         var that = this;
         if (that.data.select_index == 40) {
             wx.showToast({
-                title: '请选择一种运动类型',
+                title: '请选择一种活动类型',
                 duration: 2000,
                 icon: 'none'
             })

@@ -7,6 +7,7 @@ Page({
      * 页面的初始数据
      */
     data: {
+        uploadURL: app.globalData.uploadURL,
         img_black_start_src: '../../../image/star_n@2x.png',
         img_yellow_start_src: '../../../image/star_s@2x.png',
         count_yellowStar: 3,
@@ -16,8 +17,8 @@ Page({
         bookingState: [],
         register_num: 0,
         bookingcanceltime: 1,
-        field_opt: ["姓名", "电话", "球队", "俱乐部", "性别", "身份证号", "所在城市", "所在大学院系", "职业", "微信号", "邮箱"],
-        val_opt: ["", "", "", "", "", "", "", "", "", "", ""],
+        field_opt: ["姓名", "电话", "球队", "俱乐部", "性别", "身份证号", "所在城市", "所在大学院系", "职业", "微信号", "邮箱", "上传图片"],
+        val_opt: ["", "", "", "", "", "", "", "", "", "", "", ""],
     },
 
     /**
@@ -47,8 +48,9 @@ Page({
                 var book = res.data.result[0];
                 if (book != null) {
                     var avatar = book.pic.split(",")[0];
+                    book.picture = book.pic.split(",");
                     book.avatar = app.globalData.uploadURL + avatar;
-                    book.idshow = '0000000000'
+                    book.idshow = '0000000000';
                     book.idshow = book.idshow.slice(0, 10 - book.id.length) + book.id
                     var time = book.start_time.split(':');
                     var register = res.data.register_num[0].register_num
@@ -69,9 +71,11 @@ Page({
                     for (var i = 0; i < condition.length; i++) {
                         if (parseInt(condition[i]) > -1) {
                             if (i == 4) book_info[i] = (book_info[i] == '2' ? '女' : '男');
+                            if (i == 11) book_info[i] = app.globalData.uploadURL + book_info[i];
                             if (book_info[i] == '') book_info[i] = '无';
                             customer_info.push({
                                 name: that.data.field_opt[i],
+                                isImg: (i == 11),
                                 value: book_info[i]
                             })
                         }
@@ -85,6 +89,15 @@ Page({
                     console.log(book.cost * book.reg_num)
                 }
             }
+        })
+    },
+
+    show_preview: function(e) {
+        var that = this
+        var url = e.currentTarget.dataset.src;
+        wx.previewImage({
+            current: url,
+            urls: [url],
         })
     },
 
@@ -103,5 +116,12 @@ Page({
             // })
 
 
+    },
+
+    //called when user go to detail gym page
+    go_to_place: function(event) {
+        wx.navigateTo({
+            url: '../../index/detail_new_event/detail_new_event?id=' + this.data.booking.event_id
+        })
     },
 })

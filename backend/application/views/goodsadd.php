@@ -52,6 +52,16 @@
                         <div class="input-group margin">ml</div>
                         <div class="input-group margin" style="color: red;"><?php if(isset($error_amount)) echo $error_amount; ?></div>
                     </div>
+                <div class="row form-inline">
+                    <label> 开始兑换时间 : </label>
+                    <div class="input-group margin">
+                        <input id="endTime" name="endTime" class="datepicker-inline form-control" size="16"
+                               placeholder="请选择"
+                               type="text" value="<?php if (isset($end_time)) echo $end_time; ?>" >
+                    </div>
+                    <div class="input-group margin"
+                         style="color: red;"><?php if (isset($error_endTime)) echo $error_endTime; ?></div>
+                </div>
                     <div class="row form-inline">
                         <label> *商品详情 : </label>
                                             <div name="summernote" id="summernote_1">
@@ -326,6 +336,11 @@
         $('#crop-image-panel').show();
         type=1;
         upload("upload_product_logo", 1, dest_width, dest_height);
+    });
+    $(function () {
+        $(".datepicker-inline").datetimepicker({
+            format: 'yyyy-mm-dd hh:ii'
+        });
     });
 </script>
 <script type="text/javascript" src="<?php echo base_url(); ?>assets/js/product_manage/goods.js"

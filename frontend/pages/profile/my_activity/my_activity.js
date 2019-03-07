@@ -7,6 +7,7 @@ Page({
      * 页面的初始数据
      */
     data: {
+        uploadURL: app.globalData.uploadURL,
         select_state: 0,
         select_active: "select",
         select_book: "",
@@ -77,6 +78,7 @@ Page({
                 var favor = res.data.favor;
                 if (event_buf != null) {
                     for (var index = 0; index < event_buf.length; index++) {
+                        event_buf[index].picture = event_buf[index].pic.split(',');
                         event_buf[index].pic = event_buf[index].pic.split(",")[0];
                         event_buf[index].favor_num = favor[index];
                         var tempdate
@@ -137,6 +139,7 @@ Page({
                 var favor = res.data.favor;
                 if (book != null) {
                     for (var index = 0; index < book.length; index++) {
+                        book[index].picture = book[index].pic.split(',');
                         book[index].pic = book[index].pic.split(",")[0];
                         book[index].avatar = app.globalData.uploadURL + book[index].pic;
                         var tempdate
@@ -398,10 +401,33 @@ Page({
         var no = event.currentTarget.id
         var that = this
 
+        that.data.formId = event.detail.formId;
+
         wx.showModal({
             content: '是否取消蜂约？',
             success: function(res) {
                 if (res.confirm) {
+
+                    var curDate = new Date();
+                    curDate = curDate.getFullYear() + '年' + (curDate.getMonth() + 1) + '月' + curDate.getDate() + '日 ' +
+                        app.makeNDigit(curDate.getHours()) + ':' + app.makeNDigit(curDate.getMinutes()) + ':' + app.makeNDigit(curDate.getSeconds());
+                    var serviceTime = that.data.booking[no].start_time + ' ~ ' + that.data.booking[no].end_time;
+                    var data = {
+                        touser: wx.getStorageSync('openid'),
+                        template_id: app.globalData.templateIds.pay_cancel,
+                        page: 'pages/profile/my_activity/my_activity',
+                        form_id: that.data.formId,
+                        data: {
+                            keyword1: { value: that.data.booking[no].name, color: '#000' },
+                            keyword2: { value: serviceTime, color: '#000' },
+                            keyword3: { value: that.data.booking[no].detail_address, color: '#000' },
+                            keyword4: { value: curDate, color: '#000' },
+                            keyword5: { value: app.globalData.userInfo.nickname, color: '#000' }
+                        },
+                        color: '#ff0000',
+                        emphasis_keyword: 'keyword1.DATA',
+                    };
+
 
                     if (that.data.booking[no].pay_type == "1") {
                         var ordercode = that.data.booking[no].pay_online;
@@ -433,7 +459,9 @@ Page({
                                                 },
                                                 data: {
                                                     booking_id: that.data.booking[no].id,
-                                                    out_refund_no: out_refund_no
+                                                    out_refund_no: out_refund_no,
+                                                    open_id: wx.getStorageSync('openid'),
+                                                    msg_data: data,
                                                 },
                                                 success: function(res) {
 
@@ -462,6 +490,8 @@ Page({
                             },
                             data: {
                                 booking_id: that.data.booking[no].id,
+                                open_id: wx.getStorageSync('openid'),
+                                msg_data: data,
                             },
                             success: function(res) {
 

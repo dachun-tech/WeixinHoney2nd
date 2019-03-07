@@ -12,28 +12,13 @@ Page({
         isSelectedTotal: '',
         mine: 0,
         rank_icon: ['../../image/leader-1st@2x.png', '../../image/leader-2nd@2x.png', '../../image/leader-3rd@2x.png', '../../image/blank.png'],
-        honey_icon: ['../../image/garden_sc_fm02@2x.png', '../../image/blank.png']
+        honey_icon: ['../../image/garden_sc_fm02@2x.png', '../../image/blank.png'],
+        calendar_icon: ['../../image/garden_mrqd@2x.png', '../../image/garden_yqd@2x.png'],
+        signed_status: 0,
+        uploadRoot: app.globalData.uploadURL
     },
     onLoad() {
         var that = app;
-        wx.getSetting({
-            success: function(res) {
-                var perm = res;
-                that.globalData.getWerunDataDisabled = !perm.authSetting['scope.werun'];
-
-                if (that.globalData.getWerunDataDisabled)
-                    wx.authorize({
-                        scope: 'scope.werun',
-                        success: function() {
-                            that.globalData.getWerunDataDisabled = false;
-                        },
-                        complete: function() {
-                            if (that.globalData.getWerunDataDisabled)
-                                that.go2Setting();
-                        }
-                    })
-            }
-        });
     },
     getUserModalHide: function() {
         this.setData({
@@ -55,9 +40,8 @@ Page({
 
                 that.globalData.getUserInfoDisabled = !perm.authSetting['scope.userInfo'];
                 that.globalData.getUserLocationDisabled = !perm.authSetting['scope.userLocation'];
-                that.globalData.getWerunDataDisabled = !perm.authSetting['scope.werun'];
 
-                if (!that.globalData.getUserInfoDisabled && !that.globalData.getUserLocationDisabled && !that.globalData.getWerunDataDisabled) {
+                if (!that.globalData.getUserInfoDisabled && !that.globalData.getUserLocationDisabled) {
                     _this.onPrepare();
                     return;
                 }
@@ -75,21 +59,14 @@ Page({
                             that.globalData.initDisabled = true;
                         },
                         complete: function() {
-                            wx.authorize({
-                                scope: 'scope.werun',
-                                fail: function() {
-                                    that.globalData.initDisabled = true;
-                                },
-                                complete: function() {
-                                    if (that.globalData.initDisabled)
-                                        that.go2Setting();
-                                    else {
-                                        that.globalData.getUserInfoDisabled = false;
-                                        _this.onPrepare();
-                                        app.globalData.isFirstLaunch = false;
-                                    }
-                                }
-                            })
+
+                            if (that.globalData.initDisabled)
+                                that.go2Setting();
+                            else {
+                                that.globalData.getUserInfoDisabled = false;
+                                _this.onPrepare();
+                                app.globalData.isFirstLaunch = false;
+                            }
                         }
                     });
                 }
@@ -98,17 +75,18 @@ Page({
     },
     onPrepare: function() {
         var that = this;
-        app.onInitialize();
-        if (app.globalData.userInfo.user_id == 0) {
-            clearTimeout(that.data.tmrID);
-            that.data.tmrID = setTimeout(function() {
-                that.onPrepare();
-            }, 1000);
-        } else {
-            that.onInitStart();
-        }
+        wx.showLoading({
+            title: '加载中',
+        })
+        var option = that.data.options;
+        if (app.globalData.userInfo.user_id == 0)
+            app.onInitialize(function() {
+                that.onInitStart(option);
+            })
+        else
+            that.onInitStart(option);
     },
-    onInitStart: function() {
+    onInitStart: function(option) {
         var that = this;
         app.checkDate(), wx.request({
             url: app.globalData.mainURL + "api/getBackyard",
@@ -121,9 +99,13 @@ Page({
             },
             success: function(res) {
                 that.data.mine = app.globalData.userInfo.user_id;
-                console.log(res);
+                app.globalData.honey_info.total_honey = res.data.honey;
                 var honey_info = app.globalData.honey_info;
-                honey_info.honeybox_array = [], console.log(honey_info)
+                honey_info.honeybox_array = [];
+                console.log(honey_info)
+                that.setData({
+                    signed_status: (res.data.sign) ? 1 : 0
+                })
                 if (res.data.status) {
                     var honeyList = res.data.result
                     for (var n = 0; n < honeyList.length; n++) {
@@ -151,7 +133,8 @@ Page({
                     });
                 app.globalData.honey_info = honey_info;
             }
-        }), console.log(app.globalData.daily_honey);
+        });
+        // console.log(app.globalData.daily_honey);
 
         wx.request({
             url: app.globalData.mainURL + 'api/getHoneyFriend',
@@ -163,7 +146,7 @@ Page({
                 'content-type': 'application/json'
             },
             success: function(res) {
-                console.log(res);
+                // console.log(res);                
                 if (res.data.status) {
                     that.data.friendList = res.data.data;
                 }
@@ -179,11 +162,14 @@ Page({
                     'content-type': 'application/json'
                 },
                 success: function(res) {
-                    console.log(res);
+                    // console.log(res);
                     if (res.data.status) {
                         that.data.friendList1 = res.data.data;
                     }
                     that.calculateNewFriends();
+                },
+                complete: function() {
+                    wx.hideLoading({});
                 },
             })
             // app.checkDate()
@@ -209,6 +195,12 @@ Page({
     On_click_comment: function() {
         wx.navigateTo({
             url: 'help/help',
+        })
+    },
+    On_click_calendar: function() {
+        // go to friend page
+        wx.navigateTo({
+            url: 'calendar',
         })
     },
     On_click_friend: function() {
@@ -258,7 +250,7 @@ Page({
         allList.push(that.data.friendList1);
         allList = allList[0];
         if (mineList.length == 0) return;
-        console.log(allList);
+        // console.log(allList);
         var filtered = new Array();
         var j = 0;
         for (var i = 0; i < mineList.length; i++) {
@@ -305,7 +297,7 @@ Page({
         if (allList.length == 0) return;
 
         // get my friend information   
-        console.log(allList);
+        // console.log(allList);
 
         var filtered = new Array();
         for (var i = 0; i < allList.length; i++) {
@@ -334,7 +326,7 @@ Page({
         var id = event.currentTarget.dataset.id;
         if (id == app.globalData.userInfo.user_id) return;
         var that = this;
-        console.log(id);
+        // console.log(id);
         if (that.data.isSelectedFav == 'cur') {
             wx.navigateTo({
                 url: 'backyard_friend?id=' + id + '&type=0'
@@ -361,12 +353,12 @@ Page({
         var honey = 0;
         var honey_info = wx.getStorageSync('honey_info');
         honey_info = app.globalData.honey_info;
-        console.log(honey_info.honeybox_array)
+        // console.log(honey_info.honeybox_array)
         for (var iter = 0; iter < honey_info.honeybox_array.length; iter++) {
             if (event.currentTarget.id * 1 == honey_info.honeybox_array[iter].start_time) {
                 selected = iter
-                console.log(event.currentTarget.id)
-                console.log(honey_info.honeybox_array[selected].start_time)
+                    // console.log(event.currentTarget.id)
+                    // console.log(honey_info.honeybox_array[selected].start_time)
                 honey = honey_info.honeybox_array[iter].honey * 1
                 break
             }
@@ -374,7 +366,7 @@ Page({
         var backyard_no = honey_info.honeybox_array[selected].no;
         if (app.globalData.daily_honey[1] >= app.globalData.rule[6].value) {
             var title = '您今天已经收获了' + app.globalData.rule[6].value + 'ml蜂蜜，明天再来哦'
-            console.log(title)
+                // console.log(title)
             wx.showToast({
                 title: title,
                 icon: 'none'
@@ -419,12 +411,12 @@ Page({
                 }
             })
         }
-        console.log(app.globalData.honey_info.honeybox_array)
+        // console.log(app.globalData.honey_info.honeybox_array)
     },
     onShareAppMessage: function(res) {
         console.log("SHARED")
         if (res.from === 'button') {
-            console.log(res.target)
+            // console.log(res.target)
         }
         var that = this;
 

@@ -35,13 +35,13 @@
 }
 
 .event-type-info {
-    width: calc(100%-26rpx);    
+    width: calc(100%-26rpx);
     padding: 40rpx;
-    padding-bottom:0;
-    padding-top:20rpx;
+    padding-bottom: 0;
+    padding-top: 20rpx;
 }
 
-.event-type {    
+.event-type {
     font-size: 32rpx;
     color: #333;
     letter-spacing: 0.68rpx;
@@ -59,8 +59,8 @@
     vertical-align: middle;
     display: inline-block;
     width: 640rpx;
-    height:40rpx;
-    line-height:40rpx;
+    height: 40rpx;
+    line-height: 40rpx;
 }
 
 .cost_img {
@@ -78,7 +78,7 @@
     vertical-align: middle;
     display: inline-block;
     padding-left: 20rpx;
-    line-height:40rpx;
+    line-height: 40rpx;
 }
 
 .phone_img {
@@ -87,7 +87,7 @@
     vertical-align: middle;
     display: inline-block;
     padding-left: 20rpx;
-    line-height:40rpx;
+    line-height: 40rpx;
 }
 
 .act_date {
@@ -105,13 +105,13 @@
 .date_content {
     display: inline-block;
     width: 49%;
-    text-align: center
+    text-align: center;
+    vertical-align: middle;
 }
 
 .date_top {
     font-size: 28rpx;
-    padding-bottom: 10rpx;
-    font-weight: bold;
+    font-weight: 500;
 }
 
 .date_bottom {
@@ -357,30 +357,33 @@
     padding-top: 10rpx;
     width: 100%;
     height: 30rpx;
+    text-align: right;
+    padding-bottom: 10rpx;
 }
 
-.fav_count {
-    float: right;
+.fav_count,
+.message_count,
+.fav_img,
+.message_img,
+.child_time,
+.message_back,
+.message_delete {
+    display: inline-block;
     padding-right: 30rpx;
+    vertical-align: middle;
+    font-size: 22rpx;
+    color: #888;
 }
 
-.fav_img {
-    float: right;
+.fav_img,
+.message_img {
     width: 30rpx;
     height: 30rpx;
     padding-right: 10rpx;
 }
 
 .message_img {
-    float: right;
-    width: 34rpx;
-    height: 30rpx;
-    padding-right: 10rpx;
-}
-
-.message_count {
-    float: right;
-    padding-right: 20rpx;
+    height: 25rpx;
 }
 
 .child_feedback {
@@ -396,6 +399,11 @@
     padding-top: 15rpx;
 }
 
+.message_back,
+.message_delete {
+    color: #604000;
+}
+
 .child_item {
     position: relative;
     width: 100%;
@@ -404,14 +412,18 @@
 
 .child_name {
     display: inline-block;
-    width: 100rpx;
+    width: auto;
     vertical-align: top;
     padding-left: 10rpx;
 }
 
+.child_name text {
+    padding-right: 10rpx;
+}
+
 .child_content {
     display: inline-block;
-    width: 500rpx;
+    width: 100%;
 }
 
 .child_comment {
@@ -419,13 +431,9 @@
 }
 
 .child_time_content {
-    position: relative
-}
-
-.child_time {
-    float: right;
-    font-size: 22rpx;
-    color: #888;
+    position: relative;
+    width: 100%;
+    text-align: right;
 }
 
 .limit_info {
@@ -557,7 +565,7 @@ button::after {
 .btn-personal-participate {
     float: right;
     width: 40%;
-    line-height: 106rpx;
+    line-height: 100rpx;
     background-color: #e6b53c;
     font-size: 30rpx;
     color: white;
@@ -602,22 +610,30 @@ canvas {
     position: absolute;
     transform: translate(-50%, -50%);
     left: 50%;
-    top: 50%;
-    width: 600rpx;
-    height: 900rpx;
-    line-height: 900rpx;
+    top: 43%;
+    width: 730rpx;
+    height: 960rpx;
+    line-height: 960rpx;
     z-index: 100;
+    -webkit-transform: translate(-50%, -50%);
+    -moz-transform: translate(-50%, -50%);
+    -ms-transform: translate(-50%, -50%);
+    -o-transform: translate(-50%, -50%);
 }
 
 .show_canvas1 {
     position: absolute;
     transform: translate(-50%, -50%);
     left: 50%;
-    top: 50%;
-    width: 600rpx;
-    height: 852rpx;
-    line-height: 852rpx;
+    top: 43%;
+    width: 730rpx;
+    height: 960rpx;
+    line-height: 960rpx;
     z-index: 100;
+    -webkit-transform: translate(-50%, -50%);
+    -moz-transform: translate(-50%, -50%);
+    -ms-transform: translate(-50%, -50%);
+    -o-transform: translate(-50%, -50%);
 }
 
 .canvas_image {
@@ -625,6 +641,62 @@ canvas {
     height: 100%;
     border-radius: 25rpx;
     position: absolute;
+}
+
+.input-message {
+    position: absolute;
+    background: rgba(0, 0, 0, 0.2);
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+}
+
+.input-area {
+    position: absolute;
+    bottom: 50%;
+    left: 0;
+    width: 100%;
+    height: 150rpx;
+    background: white;
+}
+
+.input-comment {
+    position: absolute;
+    left: 30rpx;
+    top: 20rpx;
+    width: calc(75% - 50rpx);
+    height: 90rpx;
+    background: #f0f0f0;
+    color: black;
+    font-size: 26rpx;
+    padding: 10rpx 20rpx;
+    overflow-x: hidden;
+    overflow-y: auto;
+    border-radius: 10rpx;
+    -webkit-border-radius: 10rpx;
+    -moz-border-radius: 10rpx;
+    -ms-border-radius: 10rpx;
+    -o-border-radius: 10rpx;
+}
+
+.input-comment-btn {
+    position: absolute;
+    bottom: 20rpx;
+    right: 30rpx;
+    width: 15%;
+    height: 70rpx;
+    line-height: 70rpx;
+    background: #e6b53c;
+    color: white;
+    font-size: 30rpx;
+    font-weight: 600;
+    text-align: center;
+    border-radius: 10rpx;
+    -webkit-border-radius: 10rpx;
+    -moz-border-radius: 10rpx;
+    -ms-border-radius: 10rpx;
+    -o-border-radius: 10rpx;
 }
 
 @import "../../profile/template/get_userinfo.wxss";

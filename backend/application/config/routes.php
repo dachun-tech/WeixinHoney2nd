@@ -91,6 +91,10 @@ $route['member'] = 'membermanage';
 $route['member/(:num)'] = 'membermanage';
 $route['memberListingByFilter'] = 'membermanage/memberListingByFilter';
 
+$route['message'] = 'message';
+$route['message/(:num)'] = 'message';
+$route['messageListingByFilter'] = 'message/itemListingByFilter';
+
 $route['exchange'] = 'exchange';
 $route['exchange/(:num)'] = 'exchange';
 $route['exchangeListingByFilter'] = 'exchange/exchangeListingByFilter';

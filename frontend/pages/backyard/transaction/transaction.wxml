@@ -22,7 +22,7 @@
   </view>
 
   <view wx:if="{{array.length == 0}}">
-    <image class='no-focus-image' src='../../../image/success_n@2x.png'></image>
+    <image class='no-focus-image' src='{{imgURL}}'></image>
     <view class='no-focus-text' style="font-weight: bold;"> 暂无数据！</view>
   </view>
 </view>

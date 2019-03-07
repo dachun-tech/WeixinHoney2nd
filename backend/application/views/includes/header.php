@@ -16,13 +16,13 @@
     <link rel="stylesheet" href="<?php echo base_url(); ?>assets/plugins/datetimepicker/bootstrap-datetimepicker.css">
 
     <link rel="stylesheet" href="<?php echo base_url(); ?>assets/plugins/select2/select2.min.css">
-    <link href="<?php echo base_url(); ?>assets/dist/css/AdminLTE.min.css" rel="stylesheet" type="text/css"/>
-    <link href="<?php echo base_url(); ?>assets/plugins/datepicker/bootstrap-datepicker3.min.css" rel="stylesheet"
-          type="text/css"/>
+    <link href="<?php echo base_url(); ?>assets/dist/css/AdminLTE.min.css" rel="stylesheet">
+    <link href="<?php echo base_url(); ?>assets/plugins/datepicker/bootstrap-datepicker3.min.css" rel="stylesheet">
+    <link href="<?php echo base_url(); ?>assets/plugins/datepickk/datepickk.css" rel="stylesheet">
     <!-- AdminLTE Skins. Choose a skin from the css/skins
          folder instead of downloading all of them to reduce the load. -->
-    <link href="<?php echo base_url(); ?>assets/dist/css/skins/_all-skins.css" rel="stylesheet" type="text/css"/>
-    <link href="<?php echo base_url(); ?>assets/dist/css/custom.css" rel="stylesheet" type="text/css"/>
+    <link href="<?php echo base_url(); ?>assets/dist/css/skins/_all-skins.css" rel="stylesheet">
+    <link href="<?php echo base_url(); ?>assets/dist/css/custom.css" rel="stylesheet">
 
     <style>
         .error {
@@ -118,7 +118,7 @@
                     style="<?php echo(($menu_acc != '') ? ($menu_acc->p_20 == '1' ? '' : 'display:none;') : 'display:none'); ?>">
                     <a href="<?php echo base_url(); ?>roombookingmanage">
                         <i class="fa fa-dashboard"></i>
-                        <span>预订列表</span>
+                        <span>订单管理</span>
                     </a>
                 </li>
                 <li class="treeview"
@@ -196,7 +196,7 @@
                         <li>
                             <a href="<?php echo base_url(); ?>template/0">
                                 <i class="fa fa-users"></i>
-                                场馆介绍模板
+                                商家介绍模板
                             </a>
                         </li>
                         <li>

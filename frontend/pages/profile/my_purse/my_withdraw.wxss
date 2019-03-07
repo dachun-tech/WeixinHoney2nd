@@ -10,6 +10,10 @@
     background-color: #e6b53c;
 }
 
+.cls_my_withdraw_title {
+    margin-top: 230rpx;
+}
+
 .cls_my_wallet_title_txt,
 .cls_my_withdraw_title_txt {
     position: absolute;
@@ -36,6 +40,14 @@
     font-size: 60rpx;
     color: #fff;
     letter-spacing: 0.71rpx;
+}
+
+.cls_my_wallet_title_txt {
+    top: 20rpx;
+}
+
+.cls_my_account_balance {
+    top: 60rpx;
 }
 
 .cls_my_withdraw_title {
@@ -66,6 +78,65 @@
 .cls_my_withdraw_balance {
     background: white;
     color: black;
+}
+
+.cls_my_withdraw_balance view {
+    position: absolute;
+    right: 0;
+    font-size: 26rpx;
+    color: #e6b53c;
+    top: 30rpx;
+}
+
+.cls_my_withdraw_info {
+    position: absolute;
+    margin: 0;
+    padding: 0;
+    left: 0;
+    top: 180rpx;
+    width: 100%;
+    height: auto;
+    background: transparent;
+    font-size: 24rpx;
+}
+
+.cls_my_withdraw_info .info-box {
+    position: relative;
+    left: 5%;
+    width: 90%;
+    height: auto;
+    background: white;
+    text-align: center;
+    box-shadow: 0px 3px 5px #ddd;
+    border-radius: 20rpx;
+    -webkit-border-radius: 20rpx;
+    -moz-border-radius: 20rpx;
+    -ms-border-radius: 20rpx;
+    -o-border-radius: 20rpx;
+}
+
+.cls_my_withdraw_info .info-desc {
+    position: relative;
+    left: 5%;
+    width: 90%;
+    height: auto;
+    text-align: center;
+    color: #999;
+    font-size: 22rpx;
+    margin-top: 34rpx;
+}
+
+.cls_my_withdraw_info .info-box .price-item {
+    position: relative;
+    display: inline-block;
+    margin: 36rpx 0;
+    width: 48%;
+}
+
+.cls_my_withdraw_info .info-box .price-item view:last-child {
+    margin: 20rpx 0 0;
+    font-size: 40rpx;
+    color: #66a500;
 }
 
 .cls_my_withdraw_amount {

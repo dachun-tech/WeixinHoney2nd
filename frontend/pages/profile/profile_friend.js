@@ -78,14 +78,6 @@ Page({
                                 _this.onPrepare();
                                 app.globalData.isFirstLaunch = false;
                             }
-                            // wx.authorize({
-                            //     scope: 'scope.werun',
-                            //     fail: function() {
-                            //         that.globalData.initDisabled = true;
-                            //     },
-                            //     complete: function() {
-                            //     }
-                            // })
                         }
                     });
                 }
@@ -94,17 +86,18 @@ Page({
     },
     onPrepare: function() {
         var that = this;
-        app.onInitialize();
-        if (app.globalData.userInfo.user_id == 0) {
-            clearTimeout(that.data.tmrID);
-            that.data.tmrID = setTimeout(function() {
-                that.onPrepare();
-            }, 1000);
-        } else {
-            that.onInitStart();
-        }
+        wx.showLoading({
+            title: '加载中',
+        })
+        var option = that.data.options;
+        if (app.globalData.userInfo.user_id == 0)
+            app.onInitialize(function() {
+                that.onInitStart(option);
+            })
+        else
+            that.onInitStart(option);
     },
-    onInitStart: function() {
+    onInitStart: function(option) {
         wx.showTabBar({});
         //Setting Nickname and avatar of User    
         var that = this;
@@ -152,7 +145,8 @@ Page({
                             type_array = res.data.result;
                         }
 
-                        var user_sports = that.data.userInfo.sport_type.split(',');
+                        var user_sports = [];
+                        if (that.data.userInfo.sport_type) user_sports = that.data.userInfo.sport_type.split(',');
                         var show_arr = [];
                         for (var i = 0; i < user_sports.length; i++) {
                             var item = { type: user_sports[i], count: 0 };
@@ -170,6 +164,9 @@ Page({
                         that.setData({ type_array: show_arr });
                     }
                 })
+            },
+            complete: function() {
+                wx.hideLoading({});
             }
         });
 

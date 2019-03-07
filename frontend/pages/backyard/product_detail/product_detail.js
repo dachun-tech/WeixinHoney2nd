@@ -9,8 +9,9 @@ Page({
     data: {
         id: 0,
         disable: 1,
-        btn_text: "立即兑换",
-        comment: ''
+        btn_text: "未开始兑换",
+        comment: '',
+        _tmr: 0
     },
 
     /**
@@ -74,15 +75,6 @@ Page({
                                 _this.onPrepare();
                                 app.globalData.isFirstLaunch = false;
                             }
-                            // wx.authorize({
-                            //     scope: 'scope.werun',
-                            //     fail: function() {
-                            //         that.globalData.initDisabled = true;
-                            //     },
-                            //     complete: function() {
-
-                            //     }
-                            // })
                         }
                     });
                 }
@@ -91,72 +83,158 @@ Page({
     },
     onPrepare: function() {
         var that = this;
-        app.onInitialize();
-        if (app.globalData.userInfo.user_id == 0) {
-            clearTimeout(that.data.tmrID);
-            that.data.tmrID = setTimeout(function() {
-                that.onPrepare();
-            }, 1000);
-        } else {
-            that.onInitStart();
-        }
+        var option = that.data.options;
+        wx.showLoading({
+            title: '加载中',
+        })
+        if (app.globalData.userInfo.user_id == 0)
+            app.onInitialize(function() {
+                that.onInitStart(option);
+            })
+        else
+            that.onInitStart(option);
     },
-    onInitStart: function() {
+    onInitStart: function(option) {
         var that = this;
         that.setData({
             user_id: app.globalData.userInfo.user_id
         })
         var options = that.data.options;
+        clearInterval(that.data._tmr);
         wx.request({
             url: app.globalData.mainURL + 'api/getGoodDetail',
             data: {
-                id: options.id
+                id: options.id,
+                user_id: app.globalData.userInfo.user_id
             },
             method: 'POST',
             header: {
                 'content-type': 'application/json'
             },
             success: function(res) {
-                console.log(res.data.result[0])
                 if (!res.data.status) return;
-                that.data.id = res.data.result[0].id
-                that.data.cost = res.data.result[0].cost
-                var comment = res.data.result[0].comment
-                WxParse.wxParse('comment', 'html', comment, that)
-                that.setData({ btn_text: "立即兑换", disable: 0 })
-                if (1 * res.data.result[0].cost > 1 * app.globalData.honey_info.total_honey) {
+
+                var curTime = Date.now();
+                that.data.product = res.data.result[0];
+                var item = that.data.product;
+
+                that.data.id = item.id;
+                that.data.cost = item.cost;
+                var comment = item.comment;
+                WxParse.wxParse('comment', 'html', comment, that);
+                that.setData({ btn_text: "立即兑换", disable: 0 });
+                var end_time = new Date(item.end_time.replace(/-/g, '/'));
+                if (end_time > curTime) {
+                    that.setData({ btn_text: "未开始兑换", disable: 1 })
+                } else if (1 * item.cost > 1 * app.globalData.honey_info.total_honey) {
                     that.setData({ btn_text: "蜂蜜不足", disable: 1 })
-                }
-                if (res.data.result[0].amount == 0) {
+                } else if (item.amount == 0) {
                     that.setData({ btn_text: "缺货", disable: 1 })
                 }
-                var url = app.globalData.uploadURL + res.data.result[0].pic;
-                res.data.result[0].pic = url
-                    /*
-                    if (res.data.result[0].amount == '0')
-                    {
-                      that.setData({ btn_text: "缺货", disable: 1})
-                    }
-                    */
-                that.data.product = res.data.result[0];
-                that.setData({ product: res.data.result[0] })
+                item.pic = app.globalData.uploadURL + item.pic;
+                /*
+                if (res.data.result[0].amount == '0')
+                {
+                  that.setData({ btn_text: "缺货", disable: 1})
+                }
+                */
+                that.updateCounter();
+                clearInterval(that.data._tmr);
+                that.data._tmr = setInterval(function() {
+                    that.updateCounter();
+                }, 1000);
+            },
+            fail: function() {},
+            complete: function() {
+                wx.hideLoading({});
+            }
+        })
+    },
+
+    updateCounter: function() {
+        var that = this;
+        var curTime = Date.now();
+        var item = that.data.product;
+        if (item.end_time) {
+            var end_time = Date.parse(item.end_time.replace(/-/g, '/'));
+            var diff = end_time - curTime;
+            if (diff < 0) diff = 0;
+            item.hrs = that.make2Digit(Math.floor(diff / 3600000));
+            diff = diff - item.hrs * 3600000;
+            item.mins = that.make2Digit(Math.floor(diff / 60000));
+            diff = diff - item.mins * 60000;
+            item.secs = that.make2Digit(Math.floor(diff / 1000));
+        }
+
+        that.setData({
+            product: item
+        })
+    },
+
+    setFavorite: function(e) {
+        var that = this;
+        var status = parseInt(e.currentTarget.dataset.status);
+        that.data.formId = e.detail.formId;
+
+        var data = {
+            touser: wx.getStorageSync('openid'),
+            template_id: app.globalData.templateIds.event_start,
+            form_id: that.data.formId,
+            page: 'pages/backyard/product_detail/product_detail?id=' + that.data.options.id,
+
+            // url: 'http://weixin.qq.com/download',
+            // miniprogram: {
+            //     appid: app.globalData.appid,
+            //     pagepath: 'pages/backyard/product_detail/product_detail?id=' + that.data.options.id,
+            // },
+            data: {
+                keyword1: { value: that.data.product.name, color: '#000' },
+                keyword2: { value: that.data.product.end_time, color: '#000' },
+                keyword3: { value: that.data.product.end_time, color: '#000' },
+                keyword4: { value: that.data.product.cost + 'ml兑换', color: '#000' },
+            },
+            color: '#ff0000',
+            emphasis_keyword: 'keyword1.DATA',
+        };
+
+        wx.request({
+            url: app.globalData.mainURL + 'api/datamanage/setFavouriteGoods',
+            data: {
+                goods_id: that.data.product.id,
+                user_id: app.globalData.userInfo.user_id,
+                open_id: wx.getStorageSync('openid'),
+                msg_data: data,
+                end_time: that.data.product.end_time
+            },
+            method: 'POST',
+            header: {
+                'content-type': 'application/json'
+            },
+            success: function(res) {
+                if (!res.data.status) return;
+
+                that.data.product.isFav = res.data.result;
+
+                that.updateCounter();
             },
             fail: function() {}
         })
+
     },
 
     /**
      * 生命周期函数--监听页面隐藏
      */
     onHide: function() {
-
+        var that = this;
+        clearInterval(that.data._tmr);
     },
 
     /**
      * 生命周期函数--监听页面卸载
      */
     onUnload: function() {
-
+        this.onHide();
     },
 
     /**
@@ -173,6 +251,13 @@ Page({
 
     },
 
+    make2Digit: function(num) {
+        num = parseInt(num);
+        if (num < 10) return '0' + num;
+        else return num;
+    },
+
+
     On_click_order: function() {
         var that = this
         wx.redirectTo({
@@ -188,6 +273,7 @@ Page({
 
         var title = "每天采集蜂蜜，免费兑换" + that.data.product.name + "哦";
 
+        title = '领取蜂蜜免费兑换' + that.data.product.name;
         return {
             title: title,
             path: '/pages/backyard/product_detail/product_detail?id=' + that.data.options.id,

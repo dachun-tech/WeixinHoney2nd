@@ -12,6 +12,7 @@ Page({
         friend_info: [],
         friend_id: 0,
         user_data: [],
+        uploadRoot: app.globalData.uploadURL
     },
     onLoad(option) {
         var that = this;
@@ -19,6 +20,9 @@ Page({
     },
     onShow: function() {
         var that = this;
+        wx.showLoading({
+            title: '加载中',
+        })
         app.checkDate(), wx.request({
             url: app.globalData.mainURL + "api/getBackyard",
             method: "POST",
@@ -29,9 +33,10 @@ Page({
                 user_id: that.data.friend_id
             },
             success: function(res) {
-                console.log(res);
+                console.log(res.data);
                 var honey_info = app.globalData.honey_info;
-                honey_info.honeybox_array = [], console.log(honey_info)
+                honey_info.honeybox_array = [];
+                // console.log(honey_info)
                 if (res.data.status) {
                     var honeyList = res.data.result
                     for (var n = 0; n < honeyList.length; n++) {
@@ -62,8 +67,12 @@ Page({
                         friend_id: that.data.friend_id,
                     })
                 app.globalData.honey_info = honey_info;
+            },
+            complete: function() {
+                wx.hideLoading({});
             }
-        }), console.log(app.globalData.daily_honey);
+        });
+        // console.log(app.globalData.daily_honey);
 
 
         wx.request({
@@ -81,7 +90,7 @@ Page({
                 if (that.data.pageType == 1)
                     friends = res.data.honeyNewFriend;
 
-                console.log(app.globalData.userInfo.user_id);
+                // console.log(app.globalData.userInfo.user_id);
                 that.setData({
                     userInfo: user[0]
                 });
@@ -108,7 +117,7 @@ Page({
     go2FriendProfile: function(event) {
         // go to friend's backyard page
         var id = event.currentTarget.dataset.id;
-        console.log(id);
+        // console.log(id);
         wx.redirectTo({
             url: '../profile/profile_friend?id=' + id + '&type=0'
         })
@@ -168,8 +177,8 @@ Page({
         for (var iter = 0; iter < honey_info.honeybox_array.length; iter++) {
             if (event.currentTarget.id * 1 == honey_info.honeybox_array[iter].start_time) {
                 selected = iter
-                console.log(event.currentTarget.id)
-                console.log(honey_info.honeybox_array[selected].start_time)
+                    // console.log(event.currentTarget.id)
+                    // console.log(honey_info.honeybox_array[selected].start_time)
                 honey = parseInt(honey_info.honeybox_array[iter].honey / 2);
                 break
             }
@@ -185,7 +194,7 @@ Page({
             return
         } else if (honey_info.honeybox_array[selected].receiver_id != 0) {
             var title = '这种蜂蜜不能由其他人获得'
-            console.log(title)
+                // console.log(title)
             wx.showToast({
                 title: title,
                 icon: 'none'
@@ -231,6 +240,6 @@ Page({
                 }
             })
         }
-        console.log(app.globalData.honey_info.honeybox_array)
+        // console.log(app.globalData.honey_info.honeybox_array)
     }
 })

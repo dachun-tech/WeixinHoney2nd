@@ -107,8 +107,9 @@ Page({
                 });
                 app.globalData.userInfo.honey = parseInt(app.globalData.userInfo.honey);
                 app.globalData.userInfo.amount = parseFloat(app.globalData.userInfo.amount);
+                app.globalData.userInfo.amount_withdraw = parseFloat(app.globalData.userInfo.amount_withdraw);
 
-                that.prepare_payment(0, app.globalData.userInfo.honey, app.globalData.userInfo.amount, parseInt(event_buf.pay_type));
+                that.prepare_payment(0, app.globalData.userInfo.honey, app.globalData.userInfo.amount_withdraw, parseInt(event_buf.pay_type));
 
 
                 var cost = 1 * that.data.event.cost
@@ -166,21 +167,23 @@ Page({
             })
             return ret;
         }
-        if (this.data.phonenumber.length == 0) {
-            x++
-            wx.showToast({
-                title: '请填写手机号码',
-                icon: 'none'
-            })
-            return ret;
-        }
-        if (!app.checkValidPhone(this.data.phonenumber)) {
-            x++
-            wx.showToast({
-                title: '请填写正确的手机号码',
-                icon: 'none'
-            })
-            return ret;
+        if (this.data.event.isPhone == 1) {
+            if (this.data.phonenumber.length == 0) {
+                x++
+                wx.showToast({
+                    title: '请填写手机号码',
+                    icon: 'none'
+                })
+                return ret;
+            }
+            if (!app.checkValidPhone(this.data.phonenumber)) {
+                x++
+                wx.showToast({
+                    title: '请填写正确的手机号码',
+                    icon: 'none'
+                })
+                return ret;
+            }
         }
         if (this.data.memcount > (this.data.event.limit - this.data.register_num) ||
             this.data.memcount > this.data.event.person_limit) {
@@ -410,6 +413,7 @@ Page({
         if (that.data.isPayProcessing) return;
         that.data.isPayProcessing = true;
 
+        that.data.formId = event.detail.formId;
         var type = that.data.pay_type;
         var item_id = that.data.book_id;
         var book_mode = that.data.book_type;
@@ -479,6 +483,26 @@ Page({
 
     add_booking: function() {
         var that = this;
+
+
+        var data = {
+            touser: wx.getStorageSync('openid'),
+            template_id: app.globalData.templateIds.pay_success,
+            page: 'pages/profile/profile',
+            form_id: that.data.formId,
+            data: {
+                keyword1: { value: that.data.event.eventName, color: '#000' },
+                keyword2: { value: that.data.event.detail_address, color: '#000' },
+                keyword3: { value: that.data.event.start_time, color: '#000' },
+                keyword4: { value: that.data.event.agent_name, color: '#000' },
+                keyword5: { value: that.data.event.limit, color: '#000' },
+                keyword6: { value: that.data.memcount, color: '#000' },
+                keyword7: { value: that.data.realname, color: '#000' },
+            },
+            color: '#ff0000',
+            emphasis_keyword: 'keyword1.DATA',
+        };
+
         wx.request({
             url: app.globalData.mainURL + 'api/addBooking',
             method: 'POST',
@@ -486,6 +510,8 @@ Page({
                 'content-type': 'application/json'
             },
             data: {
+                open_id: wx.getStorageSync('openid'),
+                msg_data: data,
                 user_id: that.data.user_id,
                 event_id: that.data.book_id,
                 reg_num: that.data.memcount,
@@ -511,6 +537,7 @@ Page({
                         that.data.isfirstbtn = 0
                     }
                 })
+                app.globalData.userInfo.user_id = 0;
             }
         })
     },

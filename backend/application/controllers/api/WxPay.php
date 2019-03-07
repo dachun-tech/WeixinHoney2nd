@@ -15,8 +15,9 @@ class WeixinPay {
     public $openid;  
     public $out_trade_no;  
     public $body;  
-    public $total_fee;  
-    function __construct($appid, $openid, $mch_id, $key,$out_trade_no,$body,$total_fee) {  
+    public $total_fee;
+    public $rootURL;
+    function __construct($appid, $openid, $mch_id, $key,$out_trade_no,$body,$total_fee, $rootURL) {
         $this->appid = $appid;  
         $this->openid = $openid;  
         $this->mch_id = $mch_id;  
@@ -24,7 +25,8 @@ class WeixinPay {
         $this->out_trade_no = $out_trade_no;  
         $this->body = $body;  
         $this->total_fee = $total_fee;  
-    }  
+        $this->rootURL = $rootURL;
+    }
   
   
     public function pay() {  
@@ -49,7 +51,7 @@ class WeixinPay {
             'total_fee' => $this->total_fee,  
 //            'spbill_create_ip' => $_SERVER['REMOTE_ADDR'], //终端IP  
             'spbill_create_ip' => $_SERVER['REMOTE_ADDR'], //终端IP  
-            'notify_url' => 'https://www.fengteam.cn/backend/api/notify', //通知地址  确保外网能正常访问  
+            'notify_url' => $this->rootURL.'api/notify', //通知地址  确保外网能正常访问
             'openid' => $this->openid, //用户id  
             'trade_type' => 'JSAPI'//交易类型  
         );  

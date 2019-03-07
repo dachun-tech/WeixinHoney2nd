@@ -2,7 +2,15 @@
   <view class="activity">
     <view id="{{item.id}}" bindtap="click_detail_event">
       <view class="activity-detail">
-        <image class="activity-picture" src="{{item.avatar}}"></image>
+        <view class="activity-picture">
+          <swiper class="swiper_box" autoplay="true" interval="3000" duration="300">
+              <block wx:for="{{item.picture}}" wx:key="index">
+                  <swiper-item>
+                      <image class="img-item" mode="aspectFill" src="{{uploadURL + item}}"></image>
+                  </swiper-item>
+              </block>
+          </swiper>
+        </view>
         <view class='activity-role'>
           <text class='activity-name' style="font-weight: bold;">{{item.name}}</text>
           <text class="activity-role-text">{{userRole[item.role]}}</text>

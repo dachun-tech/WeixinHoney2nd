@@ -11,10 +11,10 @@
     <!-- <image class='tab-detail-open' bindtap="On_click_modal_open" src='../../image/filter@2x.png'></image> -->
   </view>
   <!-- original event list -->
-  <scroll-view scroll-y class="activities" wx:if="{{active1 == 'active'}}">
+  <scroll-view class="activities" wx:if="{{active1 == 'active'}}" scroll-y>
     <view wx:for="{{filter_events}}" wx:item="item" wx:key="index">
       <view>
-        <template is="act-template" data="{{item, userRole, eventType, eventState,image_favs}}" />
+        <template is="act-template" data="{{item, userRole, eventType, eventState,image_favs, uploadUrl}}"></template>
       </view>
     </view>
   </scroll-view>
@@ -43,7 +43,7 @@
       <view class='index_table_search_item_view' style="left: 74%;width: 2rpx;height: 50%;top: 30%;background: #cccccc;"></view>
       <view bindtap="on_click_stylemenu" class='index_table_search_item_view' style='left:74.5%;width:25%'>
         <view class="filter_order" style='color:{{color_array[select_style_menu_state]}}'>
-          {{menu_style_index<33?sport_kind_text[menu_style_index]:menu_style_index<34?"全部":"运动类型"}}
+          {{menu_style_index<33?sport_kind_text[menu_style_index]:menu_style_index<34?"全部":"活动类型"}}
         </view>
         <cover-image class="img_up_arrow" src="{{menu_btn_array[select_style_menu_state]}}" style="left: 700rpx;"></cover-image>
       </view>
@@ -63,14 +63,14 @@
     </view>
     <!-- role menu content -->
     <view class="modal-dialog2" catchtouchmove="preventTouchMove" wx:if="{{select_role_menu_state}}">
-      <scroll-view scroll-y class='main-text1'>
+      <view style="overflow-y:auto;" class='main-text1'>
         <view style="position:relative" wx:for="{{menu_role_array}}" wx:key="index">
           <view class='display_show' bindtap="clicked_role_item" id="{{index}}" style="color:{{index==menu_role_index?color_array[1]:color_array[0]}}">
             {{item}}
           </view>
           <image src="../../image/check@2x.png" style="right: 30rpx;" class="img_check" wx:if="{{index==menu_role_index}}"/>
         </view>
-      </scroll-view>
+      </view>
     </view>
     <!-- time menu content -->
     <view class="modal-dialog3" catchtouchmove="preventTouchMove" wx:if="{{select_time_menu_state}}">
@@ -116,7 +116,7 @@
   <scroll-view scroll-y class="activities" wx:if="{{active2 == 'active'}}">
     <view wx:for="{{filter_new_events}}" wx:item="item" wx:key="index">
       <view>
-        <template is="event-template" data="{{item, userRole, eventType, eventState,image_favs,uploadUrl}}" />
+        <template is="event-template" data="{{item, userRole, eventType, eventState,image_favs,uploadUrl}}"></template>
       </view>
     </view>
   </scroll-view>
@@ -125,7 +125,7 @@
     <view class='index_table_search_view_new'>
       <view bindtap="on_click_ordermenu_new" class='index_table_search_item_view_new' style='left:0%;width:33%'>
         <view class="filter_order_new" style='color:{{color_array[select_new_order_menu_state]}}'>
-          {{menu_order_array[menu_new_order_index]}}
+          {{menu_order_array1[menu_new_order_index]}}
         </view>
         <cover-image class="img_up_arrow_new" src="{{menu_btn_array[select_new_order_menu_state]}}"></cover-image>
       </view>
@@ -137,7 +137,7 @@
       <view class='index_table_search_item_view_new' style='left: 66.5%;width: 2rpx;height: 50%;top: 30%;background: #cccccc;'></view>
       <view bindtap="on_click_stylemenu_new" class='index_table_search_item_view_new' style='left:66.5%;width:33%'>
         <view class="filter_order_new" style='color:{{color_array[select_new_style_menu_state]}}'>
-          {{menu_new_style_index<33?sport_kind_text[menu_new_style_index]:menu_new_style_index<34?"全部":"运动类型"}}
+          {{menu_new_style_index<33?sport_kind_text[menu_new_style_index]:menu_new_style_index<34?"全部":"活动类型"}}
         </view>
         <cover-image class="img_up_arrow_new" src="{{menu_btn_array[select_new_style_menu_state]}}" style="left: 678rpx;"></cover-image>
       </view>
@@ -147,7 +147,7 @@
     <!-- order menu content -->
     <view class="modal-dialog1" style="width: 250rpx;" catchtouchmove="preventTouchMove" wx:if="{{select_new_order_menu_state}}">
       <view class='main-text1'>
-        <view  style="position:relative" wx:for="{{menu_order_array}}" wx:key="index">
+        <view  style="position:relative" wx:for="{{menu_order_array1}}" wx:key="index">
           <view class='display_show' bindtap="clicked_order_item_new" id="{{index}}" style="color:{{index==menu_new_order_index?color_array[1]:color_array[0]}}">
             {{item}}
           </view>

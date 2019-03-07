@@ -41,9 +41,7 @@ Page({
             success: function(res) {
                 var tempprovince = res.data.result
                 tempprovince.unshift({ id: "0", province: "请选择省" })
-                _this.setData({
-                    province: tempprovince,
-                })
+                _this.data.province = tempprovince
             }
         })
 

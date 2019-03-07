@@ -36,7 +36,7 @@
                         <tr>
                             <td><?php echo $eventDetail[0]->name; ?></td>
                             <td><?php echo $eventDetail[0]->username; ?></td>
-                            <td><?php echo ($eventDetail[0]->role==1)?"场馆主":"个人"; ?></td>
+                            <td><?php echo ($eventDetail[0]->role==1)?"商家":"个人"; ?></td>
                             <td><a href="<?php echo base_url().'eventDetail/'.$eventDetail[0]->id; ?>">查看</a></td>
                         </tr>
                         </tbody>

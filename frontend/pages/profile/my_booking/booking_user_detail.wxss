@@ -31,6 +31,7 @@
     font-size: 32rpx;
     display: inline-block;
     vertical-align: middle;
+    width: 95%;
 }
 
 .booking-role-text {
@@ -55,7 +56,7 @@
 
 .address_content {
     display: inline-block;
-    width: 80%;
+    width: 90%;
 }
 
 .booking-address {
@@ -69,7 +70,7 @@
     display: inline-block;
     font-size: 26rpx;
     font-family: "PingFangSC-Regular";
-    width: 80%;
+    width: 85%;
     vertical-align: top;
     padding-bottom: 5rpx;
     text-decoration: underline;
@@ -116,6 +117,14 @@
     padding-left: 12rpx;
     font-size: 30rpx;
     font-family: PingFangSC-Semi;
+    vertical-align: middle;
+}
+
+.real-phone-input {
+    margin-left: 5rpx;
+    width: auto;
+    display: inline-block;
+    vertical-align: middle;
 }
 
 .cancel-button {
@@ -297,8 +306,7 @@
     width: 100%;
     height: auto;
     background: white;
-    padding-top: 20rpx;
-    padding-left: 30rpx;
+    padding: 20rpx 30rpx 10rpx;
     margin-top: 2px;
 }
 
@@ -326,12 +334,16 @@
 .book-item {
     position: relative;
     display: inline-block;
-    width: calc(35vw);
-    border-radius: 10rpx;
+    width: 85%;
+    border-radius: 8rpx;
     border: 1px solid #e6b53c;
-    margin: 5rpx;
+    margin: 2rpx 0;
     padding: 0;
     height: 1rem;
+    -webkit-border-radius: 8rpx;
+    -moz-border-radius: 8rpx;
+    -ms-border-radius: 8rpx;
+    -o-border-radius: 8rpx;
 }
 
 .book-title,
@@ -343,7 +355,7 @@
     background: #e6b53c;
     color: white;
     text-align: center;
-    font-size: 24rpx;
+    font-size: 22rpx;
 }
 
 .book-time {
@@ -351,4 +363,13 @@
     width: 64%;
     background: transparent;
     color: #e6b53c;
+}
+
+.time-display {
+    position: relative;
+    width: 100%;
+    text-align: center;
+    font-size: 26rpx;
+    margin: 50rpx 0 150rpx;
+    background: transparent;
 }

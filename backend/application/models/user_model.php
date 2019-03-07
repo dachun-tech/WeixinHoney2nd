@@ -121,23 +121,23 @@ class user_model extends CI_Model
         return $result;
     }
 
-	function getUserDetailById1($userId)
+    function getUserDetailById1($userId)
     {
         $this->db->select("*");
         $this->db->from("user");
         $this->db->where("no", $userId);
-        $query = $this->db->get();        
+        $query = $this->db->get();
         $result = $query->result();
         return $result;
     }
 
-	function getTypeListById($userId)
+    function getTypeListById($userId)
     {
         $this->db->select("event.type as type, count(booking.id) AS count");
         $this->db->from("booking");
         $this->db->join("event", "event.id=booking.event_id");
         $this->db->where('booking.user_id', $userId);
-		$this->db->where('booking.state', '1');
+        $this->db->where('booking.state', '1');
         $this->db->group_by("event.type");
         $query = $this->db->get();
         $result = $query->result();
@@ -277,7 +277,7 @@ class user_model extends CI_Model
         return TRUE;
     }
 
-	/**
+    /**
      * This function is used to update the user information
      * @param array $userInfo : This is users updated information
      * @param number $userId : This is user id
@@ -345,9 +345,9 @@ class user_model extends CI_Model
      */
     function getStateByOpenId($open_id)
     {
-        $this->db->select("user.*, binding.amount");
+        $this->db->select("user.*, binding.amount, binding.amount_withdraw");
         $this->db->from("user");
-		$this->db->join("binding", "user.no = binding.user_id", 'left');
+        $this->db->join("binding", "user.no = binding.user_id", 'left');
         $this->db->where("user.open_id", $open_id);
         $query = $this->db->get();
         return $query->result();
@@ -360,15 +360,15 @@ class user_model extends CI_Model
      */
     function getFavouriteSite($userId)
     {
-        $this->db->select("boss.site_name, boss.detail_address, boss.boss_id");
+        $this->db->select("boss.site_name, boss.detail_address, boss.boss_id, boss.no as boss_no");
         $this->db->select("user.phone, user.avatar");
         $this->db->select("provinces.province, cities.city, areas.area");
         $this->db->from("favourite");
-        $this->db->join("boss", "boss.boss_id = favourite.boss_id");
-        $this->db->join("user", "favourite.boss_id = user.no");
-        $this->db->join("provinces", "provinces.id = boss.province");
-        $this->db->join("cities", "cities.id = boss.city");
-        $this->db->join("areas", "areas.id = boss.area");
+        $this->db->join("boss", "boss.no = favourite.boss_no",'left');
+        $this->db->join("user", "boss.boss_id = user.no",'left');
+        $this->db->join("provinces", "provinces.id = boss.province",'left');
+        $this->db->join("cities", "cities.id = boss.city",'left');
+        $this->db->join("areas", "areas.id = boss.area",'left');
         $this->db->where("favourite.user_id", $userId);
         $query = $this->db->get();
         return $query->result();
@@ -379,20 +379,23 @@ class user_model extends CI_Model
      * @param number $user_id : this is id of user
      * @param number $boss_id : this is id of site
      */
-    function cancelFavouriteSite($userId, $bossId)
+    function cancelFavouriteSite($userId, $bossId, $bossNo = 0)
     {
         $this->db->select("no");
         $this->db->from("favourite");
         $this->db->where("user_id", $userId);
-        $this->db->where("boss_id", $bossId);
+        if ($bossNo != 0)
+            $this->db->where("boss_no", $bossNo);
+        else
+            $this->db->where("boss_id", $bossId);
         $result = $this->db->get()->result();
         if (count($result) > 0) {
-            $this->db->where('user_id', $userId);
-            $this->db->where('boss_id', $bossId);
+            $this->db->where('no', $result[0]->no);
             $this->db->delete('favourite');
         } else {
             $info['user_id'] = $userId;
             $info['boss_id'] = $bossId;
+            $info['boss_no'] = $bossNo;
             $this->db->insert('favourite', $info);
         }
         return true;
@@ -404,11 +407,15 @@ class user_model extends CI_Model
      * @param string $nickname : This is nickname of user
      * @return array $result: this is the array of information
      */
-    function addAllowPic($user_id, $userInfo)
+    function addAllowPic($user_id, $userInfo, $boss_no)
     {
-        $result = $this->db->query("select no from boss where boss_id=" . $user_id)->result();
+        $result = null;
+        if ($boss_no > 0)
+            $result = $this->db->query("select no from boss where no=" . $boss_no)->result();
+        else
+            $result = $this->db->query("select no from boss where boss_id=" . $user_id)->result();
         if (count($result) > 0) {
-            $this->db->where("boss_id", $user_id);
+            $this->db->where("no", $result[0]->no);
             $this->db->update("boss", $userInfo);
         } else {
             $userInfo['boss_id'] = $user_id;
@@ -423,11 +430,14 @@ class user_model extends CI_Model
      * @param string $nickname : This is nickname of user
      * @return array $result: this is the array of information
      */
-    function addIDPic($user_id, $userInfo)
+    function addIDPic($user_id, $userInfo, $boss_no)
     {
-        $result = $this->db->query("select no from boss where boss_id=" . $user_id)->result();
+        if ($boss_no > 0)
+            $result = $this->db->query("select no from boss where no=" . $boss_no)->result();
+        else
+            $result = $this->db->query("select no from boss where boss_id=" . $user_id)->result();
         if (count($result) > 0) {
-            $this->db->where("boss_id", $user_id);
+            $this->db->where("no", $result[0]->no);
             $this->db->update("boss", $userInfo);
         } else {
             $userInfo['boss_id'] = $user_id;
@@ -455,9 +465,20 @@ class user_model extends CI_Model
      * @param int $amount : This is amount of honey
      * @return boolean $result: this is status of adding
      */
+    function addHoney($amount, $user_id)
+    {
+        $this->db->query("update user set honey = honey + " . (1 * $amount) . " where no = " . $user_id);
+        return true;
+    }
+
+    /**
+     * This function is used to add honey
+     * @param int $amount : This is amount of honey
+     * @return boolean $result: this is status of adding
+     */
     function catchHoney($amount, $user_id, $daily_honey)
     {
-        $this->db->query("update user set honey=" . (1 * $amount) . ", daily_honey='" . $daily_honey . "' where no=$user_id");
+        $this->db->query("update user set honey=" . (1 * $amount) . ", daily_honey='" . $daily_honey . "' where no=" . $user_id);
         return true;
     }
 
@@ -473,6 +494,7 @@ class user_model extends CI_Model
         $result = $this->db->query("update user set honey=honey-" . (1 * $amount[0]->cost) . " where no=" . $user_id);
         return $result;
     }
+
     /**
      * This function is used to sub honey
      * @param int $user_id : This is amount of honey
@@ -482,11 +504,11 @@ class user_model extends CI_Model
     function removeHoney($user_id, $honey)
     {
         $rules = $this->db->query("select * from rule ")->result();
-        $userInfo = $this->db->query("select * from user where no = ".$user_id)->row();
+        $userInfo = $this->db->query("select * from user where no = " . $user_id)->row();
         $result = $this->member_state_model->getMemberState($user_id);
         $honey_unit = $rules[8]->value;
         $honey_price_unit = $rules[9]->value;
-        if($result != null){
+        if ($result != null) {
             $honey_unit = $rules[10]->value;
             $honey_price_unit = $rules[11]->value;
         }
@@ -502,7 +524,7 @@ class user_model extends CI_Model
      */
     function getUsernameById($id)
     {
-        $this->db->select('name');
+        $this->db->select('name, nickname');
         $this->db->from('user');
         $this->db->where('no', $id);
         $query = $this->db->get();

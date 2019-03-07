@@ -152,6 +152,7 @@ class eventmanage extends basecontroller
 //        $info['detail_address'] = $this->input->post('address');
         $info['start_time'] = $this->input->post('fromTime');
         $info['end_time'] = $this->input->post('toTime');
+        $info['final_time'] = $this->input->post('endTime');
 
         $info['limit'] = $this->input->post('limit');
 //        $info['comment'] = $this->input->post('comment');
@@ -159,7 +160,9 @@ class eventmanage extends basecontroller
         $info['reg_time'] = date("Y-m-d H:i:s");
         $info['agent_phone'] = $this->input->post('agent_phone');
         $info['condition'] = $this->input->post('condition');
+
         $info['comment'] = $this->input->post('contents');
+        $info['imgprompt'] = $this->input->post('imgprompt');
         $info['is_train'] = $this->input->post('is_train');
 
 
@@ -206,12 +209,12 @@ class eventmanage extends basecontroller
             $this->global['error_address'] = "请填写比赛地点";
             $error++;
         }
-        if ($info['start_time'] == '') {
+        if ($info['start_time'] == '' || $info['end_time'] == '') {
             $this->global['error_fromTime'] = "请选择比赛时间";
             $error++;
         }
-        if ($info['end_time'] == '') {
-            $this->global['error_toTime'] = "请选择报名截止时间";
+        if ($info['final_time'] == '') {
+            $this->global['error_endTime'] = "请选择报名截止时间";
             $error++;
         }
         if ($info['pay_type'] == '-1' || $info['pay_type'] == '') {
@@ -291,6 +294,7 @@ class eventmanage extends basecontroller
             $this->global['item_address'] = $info['detail_address'];
             $this->global['item_fromTime'] = $info['start_time'];
             $this->global['item_toTime'] = $info['end_time'];
+            $this->global['item_endTime'] = $info['final_time'];
             $this->global['item_payMode'] = $info['pay_type'];
             $this->global['comment'] = $info['comment'];
             $this->global['item_phone'] = $info['agent_phone'];

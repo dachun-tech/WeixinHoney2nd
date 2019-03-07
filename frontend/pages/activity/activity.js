@@ -40,9 +40,12 @@ Page({
             "价格最低",
             "价格最高",
         ],
+        menu_order_array1: [
+            "全国"
+        ],
         menu_role_array: [
             "不限",
-            "场馆主",
+            "商家",
             "个人",
         ],
         events: [],
@@ -131,15 +134,6 @@ Page({
                                 _this.onPrepare();
                                 app.globalData.isFirstLaunch = false;
                             }
-                            // wx.authorize({
-                            //     scope: 'scope.werun',
-                            //     fail: function() {
-                            //        // that.globalData.initDisabled = true;
-                            //     },
-                            //     complete: function() {
-
-                            //     }
-                            // })
                         }
                     });
                 }
@@ -148,19 +142,19 @@ Page({
     },
     onPrepare: function() {
         var that = this;
-        app.onInitialize();
-        if (app.globalData.userInfo.user_id == 0) {
-            clearTimeout(that.data.tmrID);
-            that.data.tmrID = setTimeout(function() {
-                that.onPrepare();
-            }, 1000);
-        } else {
-            that.onInitStart();
-        }
+        var option = that.data.options;
+        wx.showLoading({
+            title: '加载中',
+        })
+        if (app.globalData.userInfo.user_id == 0)
+            app.onInitialize(function() {
+                that.onInitStart(option);
+            })
+        else
+            that.onInitStart(option);
     },
-    onInitStart: function() {
+    onInitStart: function(option) {
         var that = this;
-        app.getUserDetail(app.globalData.open_id_info);
         that.data.starttime = '开始时间'
         that.data.endtime = '结束时间'
 
@@ -168,226 +162,131 @@ Page({
             starttime: that.data.starttime,
             endtime: that.data.endtime,
         })
+        var currentCity = wx.getStorageSync('currentCity');
 
-        if (app.globalData.searchlat == 0) {
-            app.getLocation();
-            that.data.tmrID = setTimeout(function() {
-                that.onInitStart();
-            }, 1000);
-        } else {
-            var longitude = app.globalData.searchlong;
-            var latitude = app.globalData.searchlat;
-            that.setData({
-                longitude: longitude,
-                latitude: latitude
-            })
-            var url = 'https://restapi.amap.com/v3/geocode/regeo?key=8eb63e36d0b6d7d29a392503a4a80f6c&location=' + longitude + ',' + latitude + '&poitype=&radius=&extensions=all&batch=false&roadlevel=0';
-            wx.request({
-                url: url,
-                success: function(res) {
-                    var city = res.data.regeocode.addressComponent.city
-                    var province = res.data.regeocode.addressComponent.province
-                    console.log(res)
-                    wx.request({
-                        url: app.globalData.mainURL + 'api/getEventsByProvince',
-                        method: 'POST',
-                        header: {
-                            'content-type': 'application/json'
-                        },
-                        data: {
-                            city: city,
-                            province: province,
-                            user_id: app.globalData.userInfo.user_id
-                        },
-                        success: function(res) {
-                            console.log('events: ');
-                            console.log(res.data);
-                            var event_buf = res.data.result;
-                            if (event_buf != null) {
-                                for (var index = 0; index < event_buf.length; index++) {
-                                    var time = event_buf[index].start_time.split(':');
-                                    event_buf[index].start_time = time[0] + ':' + time[1];
-                                    time = event_buf[index].end_time.split(':');
-                                    event_buf[index].end_time = time[0] + ':' + time[1];
-                                    var start_date = event_buf[index].start_time.split(' ')
-                                    event_buf[index].start_time_now = Date.parse(start_date[0].replace(/-/g, '/'))
+        var longitude = currentCity.user_longitude;
+        var latitude = currentCity.user_latitude;
+        var city = currentCity.city;
+        var province = currentCity.province;
+        that.updateEventLists(longitude, latitude, city, province);
+    },
+    updateEventLists: function(longitude, latitude, city, province) {
+        var that = this;
+        that.data.longitude = longitude;
+        that.data.latitude = latitude;
+        wx.request({
+            url: app.globalData.mainURL + 'api/getEventsByProvince',
+            method: 'POST',
+            header: {
+                'content-type': 'application/json'
+            },
+            data: {
+                city: city,
+                province: province,
+                user_id: app.globalData.userInfo.user_id
+            },
+            success: function(res) {
+                if (!res.data.status) return;
+                var eventCities = res.data.eventCities;
+                var menu_order_array1 = ["全国"];
+                var menu_new_order_index = 0;
 
-                                    //get remained days and hours
-                                    var cur_date = new Date();
-                                    console.log(event_buf[index].end_time.replace(/-/g, '/'));
-                                    var end_date = new Date(event_buf[index].end_time.replace(/-/g, '/'));
-                                    var timeDiff = end_date.getTime() - cur_date.getTime();
-                                    var diffhours = Math.floor(timeDiff / (1000 * 3600));
-                                    var remain_day = Math.floor(diffhours / 24);
-                                    var remain_hour = diffhours - remain_day * 24;
-                                    event_buf[index].remain_day = remain_day;
-                                    event_buf[index].remain_hour = remain_hour;
-                                    if (remain_day < 10) {
-                                        event_buf[index].remain_day = "0" + remain_day;
-                                    }
-                                    if (remain_hour < 10) {
-                                        event_buf[index].remain_hour = "0" + remain_hour;
-                                    }
-
-
-                                    event_buf[index].end_time_now = Date.parse(event_buf[index].end_time.replace(/-/g, '/'))
-                                    if (event_buf[index].current_member == null) {
-                                        event_buf[index].current_member = 0;
-                                    }
-
-                                    if (event_buf[index].name.length > 14) {
-                                        var name = event_buf[index].name
-                                        name = name.slice(0, 14) + '...'
-                                        event_buf[index].name = name
-                                    }
-                                    if (event_buf[index].organizer_id != '0' && event_buf[index].name.length > 10) {
-                                        var name = event_buf[index].name
-                                        name = name.slice(0, 10) + '...'
-                                        event_buf[index].name = name
-                                    }
-                                    event_buf[index].favor = res.data.favor[index];
-                                    event_buf[index].distance = that.getDistanceFromLatLonInKm(that.data.latitude, that.data.longitude, event_buf[index].latitude, event_buf[index].longitude);
-                                    if (event_buf[index].distance > 1) {
-                                        event_buf[index].distance_str = (1.0 * event_buf[index].distance).toFixed(1) + "km";
-                                    } else {
-                                        event_buf[index].distance_str = 1000 * event_buf[index].distance + "m";
-                                    }
-                                    var pic_array = event_buf[index].pic.split(",")
-                                    event_buf[index].pic_array = pic_array;
-                                }
-                                console.log(event_buf);
-                                var old_event_array = [];
-                                var new_event_array = [];
-                                old_event_array = event_buf.filter(item => (item.owner == "1"))
-                                new_event_array = event_buf.filter(item => (item.owner == "0"))
-                                that.setData({
-                                    events: old_event_array,
-                                    new_events: new_event_array,
-                                    favor: res.data.favor,
-                                    userInfo: app.globalData.userInfo,
-                                    eventType: app.globalData.eventType,
-                                    userRole: app.globalData.userRole,
-                                    eventState: app.globalData.eventState
-                                })
-                                that.all_filter_item();
-                                that.all_filter_events();
-                            }
-                        }
-                    })
+                for (var i = 0; i < eventCities.length; i++) {
+                    var item = eventCities[i];
+                    menu_order_array1.push(item.city_name);
+                    if (item.city_name == city)
+                        menu_new_order_index = i + 1;
                 }
-            })
-        }
-        // wx.getLocation({
-        //     type: 'gcj02',
-        //     success: function(res) {
-        //         wx.showModal({
-        //             title: 'got location success',
-        //             showCancel: false,                
-        //         })
-        //         var longitude = res.longitude;
-        //         var latitude = res.latitude;
-        //         that.setData({
-        //             longitude: res.longitude,
-        //             latitude: res.latitude
-        //         })
-        //         var url = 'https://restapi.amap.com/v3/geocode/regeo?key=8eb63e36d0b6d7d29a392503a4a80f6c&location=' + longitude + ',' + latitude + '&poitype=&radius=&extensions=all&batch=false&roadlevel=0';
-        //         wx.request({
-        //             url: url,
-        //             success: function(res) {
-        //                 var city = res.data.regeocode.addressComponent.city
-        //                 var province = res.data.regeocode.addressComponent.province
-        //                 console.log(res)
-        //                 wx.request({
-        //                     url: app.globalData.mainURL + 'api/getEventsByProvince',
-        //                     method: 'POST',
-        //                     header: {
-        //                         'content-type': 'application/json'
-        //                     },
-        //                     data: {
-        //                         city: city,
-        //                         province: province,
-        //                         user_id: app.globalData.userInfo.user_id
-        //                     },
-        //                     success: function(res) {
-        //                         console.log('events: ');
-        //                         console.log(res.data);
-        //                         var event_buf = res.data.result;
-        //                         if (event_buf != null) {
-        //                             for (var index = 0; index < event_buf.length; index++) {
-        //                                 var time = event_buf[index].start_time.split(':');
-        //                                 event_buf[index].start_time = time[0] + ':' + time[1];
-        //                                 time = event_buf[index].end_time.split(':');
-        //                                 event_buf[index].end_time = time[0] + ':' + time[1];
-        //                                 var start_date = event_buf[index].start_time.split(' ')
-        //                                 event_buf[index].start_time_now = Date.parse(start_date[0].replace(/-/g, '/'))
+                that.setData({
+                    menu_order_array1: menu_order_array1,
+                    menu_new_order_index: menu_new_order_index,
+                    eventCities: eventCities
+                });
+                var event_buf = res.data.result;
+                if (event_buf != null) {
+                    for (var index = 0; index < event_buf.length; index++) {
+                        var time = event_buf[index].start_time.split(':');
+                        event_buf[index].start_time = time[0] + ':' + time[1];
+                        time = event_buf[index].end_time.split(':');
+                        event_buf[index].end_time = time[0] + ':' + time[1];
+                        var start_date = event_buf[index].start_time.split(' ')
+                        event_buf[index].start_time_now = Date.parse(start_date[0].replace(/-/g, '/'))
 
-        //                                 //get remained days and hours
-        //                                 var cur_date = new Date();
-        //                                 console.log(event_buf[index].end_time.replace(/-/g, '/'));
-        //                                 var end_date = new Date(event_buf[index].end_time.replace(/-/g, '/'));
-        //                                 var timeDiff = end_date.getTime() - cur_date.getTime();
-        //                                 var diffhours = Math.floor(timeDiff / (1000 * 3600));
-        //                                 var remain_day = Math.floor(diffhours / 24);
-        //                                 var remain_hour = diffhours - remain_day * 24;
-        //                                 event_buf[index].remain_day = remain_day;
-        //                                 event_buf[index].remain_hour = remain_hour;
-        //                                 if (remain_day < 10) {
-        //                                     event_buf[index].remain_day = "0" + remain_day;
-        //                                 }
-        //                                 if (remain_hour < 10) {
-        //                                     event_buf[index].remain_hour = "0" + remain_hour;
-        //                                 }
+                        //get remained days and hours
+                        var cur_date = new Date();
+                        console.log(event_buf[index].end_time.replace(/-/g, '/'));
+                        var end_date = new Date(event_buf[index].end_time.replace(/-/g, '/'));
+                        if (event_buf[index].owner == 0)
+                            end_date = new Date(event_buf[index].final_time.replace(/-/g, '/'));
+                        var timeDiff = end_date.getTime() - cur_date.getTime();
+                        if (timeDiff < 0) timeDiff = 0;
+                        var diffhours = Math.floor(timeDiff / (1000 * 3600));
+                        var remain_day = Math.floor(diffhours / 24);
+                        var remain_hour = diffhours - remain_day * 24;
+                        event_buf[index].remain_day = remain_day;
+                        event_buf[index].remain_hour = remain_hour;
+                        if (remain_day < 10 && remain_day >= 0) {
+                            event_buf[index].remain_day = "0" + remain_day;
+                        }
+                        if (remain_hour < 10) {
+                            event_buf[index].remain_hour = "0" + remain_hour;
+                        }
 
+                        event_buf[index].end_time_now = Date.parse(event_buf[index].end_time.replace(/-/g, '/'))
+                        if (event_buf[index].current_member == null) {
+                            event_buf[index].current_member = 0;
+                        }
 
-        //                                 event_buf[index].end_time_now = Date.parse(event_buf[index].end_time.replace(/-/g, '/'))
-        //                                 if (event_buf[index].current_member == null) {
-        //                                     event_buf[index].current_member = 0;
-        //                                 }
-        //                                 if (event_buf[index].name.length > 15) {
-        //                                     var name = event_buf[index].name
-        //                                     name = name.slice(0, 15) + '...'
-        //                                     event_buf[index].name = name
-        //                                 }
-        //                                 event_buf[index].favor = res.data.favor[index];
-        //                                 event_buf[index].distance = that.getDistanceFromLatLonInKm(that.data.latitude, that.data.longitude, event_buf[index].latitude, event_buf[index].longitude);
-        //                                 if (event_buf[index].distance > 1) {
-        //                                     event_buf[index].distance_str = (1.0 * event_buf[index].distance).toFixed(1) + "km";
-        //                                 } else {
-        //                                     event_buf[index].distance_str = 1000 * event_buf[index].distance + "m";
-        //                                 }
-        //                                 var pic_array = event_buf[index].pic.split(",")
-        //                                 event_buf[index].pic_array = pic_array;
-        //                             }
-        //                             console.log(event_buf);
-        //                             var old_event_array = [];
-        //                             var new_event_array = [];
-        //                             old_event_array = event_buf.filter(item => (item.owner == "1"))
-        //                             new_event_array = event_buf.filter(item => (item.owner == "0"))
-        //                             that.setData({
-        //                                 events: old_event_array,
-        //                                 new_events: new_event_array,
-        //                                 favor: res.data.favor,
-        //                                 userInfo: app.globalData.userInfo,
-        //                                 eventType: app.globalData.eventType,
-        //                                 userRole: app.globalData.userRole,
-        //                                 eventState: app.globalData.eventState
-        //                             })
-        //                             that.all_filter_item();
-        //                             that.all_filter_events();
-        //                         }
-        //                     }
-        //                 })
-        //             }
-        //         })
-        //     },
-        //     fail: function(error) {
-        //         wx.showModal({
-        //             title: JSON.stringify(error),
-        //             showCancel: false,                
-        //         })
-        //     },
+                        var item = event_buf[index];
+                        if (item.owner == 0) {
+                            var start = new Date(item.start_time.replace(/-/g, '/'));
+                            var end = new Date(item.end_time.replace(/-/g, '/'));
+                            item.start_time = start.getFullYear() + '年' + (start.getMonth() + 1) + '月' + start.getDate() + '日';
+                            item.end_time = end.getFullYear() + '年' + (end.getMonth() + 1) + '月' + end.getDate() + '日';
+                        }
 
-        // })
+                        if (event_buf[index].name.length > 14) {
+                            var name = event_buf[index].name;
+                            name = name.slice(0, 14) + '...';
+                            event_buf[index].name = name
+                        }
+                        if (event_buf[index].organizer_id != '0' && event_buf[index].name.length > 14) {
+                            var name = event_buf[index].name;
+                            name = name.slice(0, 14) + '...';
+                            event_buf[index].name = name
+                        }
+                        event_buf[index].favor = res.data.favor[index];
+                        event_buf[index].distance = that.getDistanceFromLatLonInKm(that.data.latitude, that.data.longitude, event_buf[index].latitude, event_buf[index].longitude);
+                        if (event_buf[index].distance > 1) {
+                            event_buf[index].distance_str = (1.0 * event_buf[index].distance).toFixed(1) + "km";
+                        } else {
+                            event_buf[index].distance_str = 1000 * event_buf[index].distance + "m";
+                        }
+                        var pic_array = event_buf[index].pic.split(",")
+                        event_buf[index].pic_array = pic_array;
+                    }
+                    // console.log(event_buf);
+                    var old_event_array = [];
+                    var new_event_array = [];
+                    old_event_array = event_buf.filter(item => (item.owner == "1"))
+                    new_event_array = event_buf.filter(item => (item.owner == "0"))
+                    that.setData({
+                        events: old_event_array,
+                        new_events: new_event_array,
+                        favor: res.data.favor,
+                        userInfo: app.globalData.userInfo,
+                        eventType: app.globalData.eventType,
+                        userRole: app.globalData.userRole,
+                        eventState: app.globalData.eventState
+                    })
+                    that.all_filter_item();
+                    that.all_filter_events();
+                }
+            },
+            complete: function() {
+                wx.hideLoading({});
+            }
+        })
     },
 
     selectTab: function(e) {
@@ -466,10 +365,20 @@ Page({
 
     getDistanceFromLatLonInKm: function(lat1, lon1, lat2, lon2) {
         var R = 6371; // Radius of the earth in km
+        if (lat1 == lat2 && lon1 == lon2) return "0.0";
+
+        // var theta = lon1 - lon2;
+        // var dist = Math.sin(this.deg2rad(lat1)) * Math.sin(this.deg2rad(lat2)) +
+        //     Math.cos(this.deg2rad(lat1)) * Math.cos(this.deg2rad(lat2)) * Math.cos(this.deg2rad(theta));
+        // dist = Math.acos(dist);
+        // console.log(lat1, lat2, lon1, lon2);
+        // var miles = this.rad2deg(dist) * 60 * 1.1515;
+        // return (miles * 1.609344).toFixed(3);
+
+
         var dLat = this.deg2rad(lat2 - lat1); // deg2rad below
         var dLon = this.deg2rad(lon2 - lon1);
-        var a =
-            Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+        var a = Math.sin(dLat / 2) * Math.sin(dLat / 2) +
             Math.cos(this.deg2rad(lat1)) * Math.cos(this.deg2rad(lat2)) *
             Math.sin(dLon / 2) * Math.sin(dLon / 2);
         var c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
@@ -478,7 +387,11 @@ Page({
     },
 
     deg2rad: function(deg) {
-        return deg * (Math.PI / 180)
+        return deg * (Math.PI / 180);
+    },
+
+    rad2deg: function(rad) {
+        return rad * (180 / Math.PI);
     },
 
     compare_distance: function(a, b) {
@@ -486,6 +399,14 @@ Page({
             return -1;
         if (a.distance > b.distance)
             return 1;
+        return 0;
+    },
+
+    compare_regTime: function(a, b) {
+        if (a.reg_time < b.reg_time)
+            return 1;
+        if (a.reg_time > b.reg_time)
+            return -1;
         return 0;
     },
     compare_price_low_first: function(a, b) {
@@ -570,7 +491,7 @@ Page({
         } else {
             time_array = style_array;
         }
-
+        that.setData({ filter_events: [] });
         //get order arrays
         if (order_index == 1) {
             // search by nearest from me
@@ -659,7 +580,6 @@ Page({
             endtime: event.detail.value
         })
     },
-
     //change date range
     on_click_range_time: function(event) {
         this.setData({
@@ -696,9 +616,6 @@ Page({
         })
         this.all_filter_item();
     },
-
-
-
     // new event functions
     on_click_ordermenu_new: function() {
         var that = this;
@@ -799,10 +716,10 @@ Page({
             filter_new_events: []
         });
         setTimeout(function() {
-            if (order_index == 1) {
+            if (true || order_index == 1) {
                 // search by nearest from me
                 that.setData({
-                    filter_new_events: time_array.sort(that.compare_distance)
+                    filter_new_events: time_array.sort(that.compare_regTime)
                 });
             } else if (order_index == 2) {
                 //search by lowest score 
@@ -826,14 +743,21 @@ Page({
 
     clicked_order_item_new: function(event) {
         var that = this;
+        var id = parseInt(event.currentTarget.id);
         this.setData({
             select_new_menu_state: 0,
             select_new_order_menu_state: 0,
             select_new_time_menu_state: 0,
             select_new_style_menu_state: 0,
-            menu_new_order_index: event.currentTarget.id
+            menu_new_order_index: id + ''
         });
-        that.all_filter_events();
+        if (id == 0) {
+            that.updateEventLists(that.data.longitude, that.data.latitude, '', '');
+        } else {
+            if (that.data.eventCities.length == 0) return;
+            var cityData = that.data.eventCities[id - 1];
+            that.updateEventLists(that.data.longitude, that.data.latitude, cityData.city_name, cityData.province_name);
+        }
     },
     clicked_style_item_new: function(event) {
         this.setData({
@@ -911,12 +835,12 @@ Page({
     onShareAppMessage: function(res) {
         console.log("SHARED")
         if (res.from === 'button') {
-            console.log(res.target)
+            // console.log(res.target)
         }
-
+        var title = '找场馆、约伙伴、参加赛事，就用蜂去吧';
         var that = this;
         return {
-            title: '我的信息',
+            title: title,
             path: '/pages/activity/activity?active2=' + that.data.active2,
             success: function(res) {},
             fail: function(res) {}

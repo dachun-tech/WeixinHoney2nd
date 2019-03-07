@@ -142,7 +142,8 @@
     padding-top: 80rpx;
 }
 
-.view_place {
+.view_place,
+.share_wechat {
     width: 50%;
     border-radius: 15rpx;
     position: relative;
@@ -155,29 +156,6 @@
     vertical-align: middle;
     line-height: 70rpx;
     font-size: 30rpx;
-}
-
-button:after {
-    outline: none;
-    border: none;
-}
-
-.share_wechat {
-    width: 50.6%;
-    border-radius: 15rpx;
-    position: relative;
-    color: #e6b53c;
-    border: 1rpx solid;
-    border-color: #e6b53c;
-    display: inline-block;
-    margin: 15rpx;
-    height: 74rpx;
-    vertical-align: middle;
-    line-height: 64rpx;
-}
-
-button:after {
-    border: none;
 }
 
 .img_share {
@@ -337,7 +315,7 @@ button:after {
 .book-item {
     position: relative;
     display: inline-block;
-    width: calc(35vw);
+    width: calc(70vw);
     border-radius: 10rpx;
     border: 1px solid #e6b53c;
     margin: 5rpx;
@@ -348,7 +326,7 @@ button:after {
 .book-title,
 .book-time {
     position: absolute;
-    width: 35%;
+    width: 38%;
     height: 1rem;
     line-height: 1rem;
     background: #e6b53c;
@@ -358,8 +336,8 @@ button:after {
 }
 
 .book-time {
-    left: 35%;
-    width: 64%;
+    left: 38%;
+    width: 61%;
     background: transparent;
     color: #e6b53c;
 }

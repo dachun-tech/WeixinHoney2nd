@@ -6,7 +6,7 @@ Page({
      * 页面的初始数据
      */
     data: {
-
+        _tmr: 0
     },
 
     /**
@@ -25,8 +25,9 @@ Page({
             },
             success: function(res) {
                 if (!res.data.status) return;
-                console.log(res.data.result);
-                that.setData({ product_array: res.data.result })
+                var products = res.data.result;
+                that.data.product_array = products;
+                that.updateCounter();
             },
             fail: function() {
 
@@ -86,15 +87,6 @@ Page({
                                 _this.onPrepare();
                                 app.globalData.isFirstLaunch = false;
                             }
-                            // wx.authorize({
-                            //     scope: 'scope.werun',
-                            //     fail: function() {
-                            //         that.globalData.initDisabled = true;
-                            //     },
-                            //     complete: function() {
-
-                            //     }
-                            // })
                         }
                     });
                 }
@@ -103,32 +95,89 @@ Page({
     },
     onPrepare: function() {
         var that = this;
-        app.onInitialize();
-        if (app.globalData.userInfo.user_id == 0) {
-            clearTimeout(that.data.tmrID);
-            that.data.tmrID = setTimeout(function() {
-                that.onPrepare();
-            }, 1000);
-        } else {
-            that.onInitStart();
+        var option = that.data.options;
+        wx.showLoading({
+            title: '加载中',
+        })
+        if (app.globalData.userInfo.user_id == 0)
+            app.onInitialize(function() {
+                that.onInitStart(option);
+            })
+        else
+            that.onInitStart(option);
+    },
+    onInitStart: function(option) {
+        var that = this;
+        clearInterval(that.data._tmr);
+        wx.request({
+            url: app.globalData.mainURL + 'api/datamanage/getFavouriteGoods',
+            data: {
+                user_id: app.globalData.userInfo.user_id
+            },
+            method: 'POST',
+            header: {
+                'content-type': 'application/json'
+            },
+            success: function(res) {
+                if (!res.data.status) return;
+                var favorites = res.data.result;
+                var allList = that.data.product_array;
+                var myList = [];
+                for (var i = 0; i < allList.length; i++) {
+                    var item = allList[i];
+                    var favItem = favorites.find(function(a) { return (a.goods_id == item.id); });
+                    if (favItem) item.isFav = 1;
+                    else item.isFav = 0;
+                }
+                that.updateCounter();
+                clearInterval(that.data._tmr);
+                that.data._tmr = setInterval(function() {
+                    that.updateCounter();
+                }, 1000);
+            },
+            fail: function() {
+
+            },
+            complete: function() {
+                wx.hideLoading({});
+            }
+        })
+    },
+
+    updateCounter: function() {
+        var that = this;
+        var products = that.data.product_array;
+        var curTime = Date.now();
+        for (var i = 0; i < products.length; i++) {
+            var item = products[i];
+            if (item.end_time) {
+                var end_time = Date.parse(item.end_time.replace(/-/g, '/'));
+                var diff = end_time - curTime;
+                if (diff < 0) diff = 0;
+                item.hrs = that.make2Digit(Math.floor(diff / 3600000));
+                diff = diff - item.hrs * 3600000;
+                item.mins = that.make2Digit(Math.floor(diff / 60000));
+                diff = diff - item.mins * 60000;
+                item.secs = that.make2Digit(Math.floor(diff / 1000));
+            }
         }
+        that.setData({
+            product_array: products
+        })
     },
-    onInitStart: function() {
-
-    },
-
     /**
      * 生命周期函数--监听页面隐藏
      */
     onHide: function() {
-
+        var that = this;
+        clearInterval(that.data._tmr);
     },
 
     /**
      * 生命周期函数--监听页面卸载
      */
     onUnload: function() {
-
+        this.onHide();
     },
 
     /**
@@ -144,7 +193,11 @@ Page({
     onReachBottom: function() {
 
     },
-
+    make2Digit: function(num) {
+        num = parseInt(num);
+        if (num < 10) return '0' + num;
+        else return num;
+    },
 
     On_click_product: function(query) {
         wx.navigateTo({
@@ -154,7 +207,7 @@ Page({
     onShareAppMessage: function(res) {
         console.log("SHARED")
         if (res.from === 'button') {
-            console.log(res.target)
+            // console.log(res.target)
         }
         var that = this;
 

@@ -3,14 +3,14 @@
 class boss_model extends CI_Model
 {
 
-    function addNewBoss($bossInfo, $user_id)
+    function addNewBoss($bossInfo, $user_id = -1)
     {
         $result = $this->db->query("select no from boss where boss_id=" . $user_id)->result();
         if (count($result) > 0) {
             $this->db->where("boss_id", $user_id);
             $this->db->update("boss", $bossInfo);
         } else {
-            $userInfo['boss_id'] = $user_id;
+            if ($user_id != -1) $bossInfo['boss_id'] = $user_id;
             $this->db->insert("boss", $bossInfo);
         }
         return true;
@@ -25,6 +25,19 @@ class boss_model extends CI_Model
     function editboss($bossInfo, $bossId)
     {
         $this->db->where('bossId', $bossId);
+        $this->db->update('boss', $bossInfo);
+
+        return TRUE;
+    }
+
+    /**
+     * This function is used to update the boss information
+     * @param array $bossInfo : This is bosss updated information
+     * @param number $bossId : This is boss id
+     */
+    function rewriteBoss($bossInfo, $bossNo)
+    {
+        $this->db->where('no', $bossNo);
         $this->db->update('boss', $bossInfo);
 
         return TRUE;
@@ -61,17 +74,21 @@ class boss_model extends CI_Model
      * @param number $bossId : This is boss id
      * @return array $result :  information of the site
      */
-    function getSiteDetail($bossId, $userId)
+    function getSiteDetail($bossId, $userId = 0, $bossNo = 0)
     {
         $this->db->select("boss.*,user.phone");
         $this->db->select("provinces.province, cities.city, areas.area");
+        $this->db->select("boss.province as province_id, boss.city as city_id, boss.area as area_id ");
         $this->db->from("boss");
         $this->db->join("provinces", "provinces.id = boss.province");
         $this->db->join("cities", "cities.id = boss.city");
         $this->db->join("areas", "areas.id = boss.area");
         $this->db->join("user", "user.no = boss.boss_id");
-        $this->db->join("event", 'event.organizer_id = boss.boss_id', 'left');
-        $this->db->where("boss.boss_id", $bossId);
+        $this->db->join("event", 'event.organizer_id = boss.boss_id and event.organizer_id != 0', 'left');
+        if ($bossId != '0')
+            $this->db->where("boss.boss_id", $bossId);
+        else
+            $this->db->where("boss.no", $bossNo);
         $query = $this->db->get();
 
         $bossItem = $query->row();
@@ -88,7 +105,7 @@ class boss_model extends CI_Model
         }
         $bossItem->rating_amount = $rating_amount;
         $bossItem->point = $point;
-        $bossItem->favourite_count = $this->getFavouriteCount($bossItem->boss_id);
+        $bossItem->favourite_count = $this->getFavouriteCount($bossItem->boss_id, $bossItem->no);
         $sportType = $bossItem->site_type_detail;
         $sportType = explode(',', $sportType);
 
@@ -114,6 +131,7 @@ class boss_model extends CI_Model
      */
     function getSiteRoomData($bossId)
     {
+        if ($bossId == 0) return array();
         $this->db->select("*");
         $this->db->from('room');
         $this->db->where('boss_id', $bossId);
@@ -146,8 +164,94 @@ class boss_model extends CI_Model
      * @param number $bossId : This is boss id
      * @return array $result :  information of the site
      */
-    function getSiteBookData($bossId, $user_id)
+    function getBossRoomData($bossId)
     {
+        if ($bossId == 0) return array();
+        $this->db->select("*");
+        $this->db->from('room_updated');
+        $this->db->where('boss_id', $bossId);
+        $this->db->where('active_date >= ', date("Y-m-d"));
+        $this->db->order_by('active_date', 'asc');
+        $query = $this->db->get();
+
+        return $query->result();
+    }
+
+    /**
+     * This function is used to get the detailed information of site
+     * @param number $bossId : This is boss id
+     * @return array $result :  information of the site
+     */
+    function updateBossRoomData($item, $isClear = false)
+    {
+        $bossId = $item->boss_id;
+        $reqRoomInfo = json_decode($item->room_info);
+        if ($bossId == 0) return array();
+        $this->db->select("*");
+        $this->db->from('room_updated');
+        $this->db->where('boss_id', $bossId);
+        $this->db->where('info_type', $item->info_type);
+        $this->db->where('active_date', $item->active_date);
+        $result = $this->db->get()->row();
+        if (count($result) == 0) {
+            if (!$isClear && count($reqRoomInfo) > 0) {
+                $this->db->insert('room_updated', $item);
+                $result = $this->db->insert_id();
+            }
+        } else {
+            if ($isClear) {
+                $dbRoomInfo = json_decode($result->room_info);
+                $targetRoomInfo = array();
+                foreach ($dbRoomInfo as $dbRoom) {
+                    $isExist = false;
+                    if (count($reqRoomInfo) > 0) {
+                        foreach ($reqRoomInfo as $reqRoom) {
+                            if ($dbRoom->room_id != $reqRoom->room_id) continue;
+                            if ($dbRoom->start_time != $reqRoom->start_time) continue;
+                            if ($dbRoom->end_time != $reqRoom->end_time) continue;
+                            $isExist = true;
+                            break;
+                        }
+                    }
+                    if ($isExist) continue;
+                    array_push($targetRoomInfo, $dbRoom);
+                }
+            } else {
+                $dbRoomInfo = json_decode($result->room_info);
+                if (count($reqRoomInfo) > 0) {
+                    foreach ($reqRoomInfo as $reqRoom) {
+                        array_push($dbRoomInfo, $reqRoom);
+                    }
+                }
+                $targetRoomInfo = $dbRoomInfo;
+            }
+            if(count($targetRoomInfo)>0) {
+                $item->room_info = json_encode($targetRoomInfo);
+                $this->db->set($item);
+                $this->db->where('boss_id', $item->boss_id);
+                $this->db->where('info_type', $item->info_type);
+                $this->db->where('active_date', $item->active_date);
+                $this->db->update('room_updated');
+            }else{
+                $this->db->where('boss_id', $item->boss_id);
+                $this->db->where('info_type', $item->info_type);
+                $this->db->where('active_date', $item->active_date);
+                $this->db->delete('room_updated');
+            }
+            $result = $result->id;
+        }
+
+        return $result;
+    }
+
+    /**
+     * This function is used to get the detailed information of site
+     * @param number $bossId : This is boss id
+     * @return array $result :  information of the site
+     */
+    function getSiteBookData($bossId, $user_id = 0)
+    {
+        if ($bossId == 0) return array();
         $this->db->select("*");
         $this->db->from("room_booking");
         $this->db->where("boss_id", $bossId);
@@ -183,12 +287,12 @@ class boss_model extends CI_Model
     }
 
     /*this function is for get place detail from event id*/
-    function getSiteDetailFromRoomId($roomId)
+    function getSiteDetailFromRoomId($bookId)
     {
         $this->db->select("boss.*");
         $this->db->from("boss");
         $this->db->join("room_booking", 'room_booking.boss_id = boss.boss_id');
-        $this->db->where("room_booking.id", $roomId);
+        $this->db->where("room_booking.id", $bookId);
         $query = $this->db->get();
         $result = array();
         $result = $query->result();
@@ -222,23 +326,29 @@ class boss_model extends CI_Model
      * @param number $bossId : This is the id of boss of the wanted site
      * @return boolean $result : state of the site
      */
-    function isFavourite($userId, $bossId)
+    function isFavourite($userId, $bossId, $bossNo = 0)
     {
         $this->db->select("no");
         $this->db->from("favourite");
         $this->db->where("user_id", $userId);
-        $this->db->where("boss_id", $bossId);
+        if ($bossNo != 0)
+            $this->db->where("boss_no", $bossNo);
+        else
+            $this->db->where("boss_id", $bossId);
         $query = $this->db->get();
         $result = $query->result();
         return (count($result) > 0) ? true : false;
     }
 
-    function isFavouriteState($userId, $bossId)
+    function isFavouriteState($userId, $bossId, $bossNo = 0)
     {
         $this->db->select("no");
         $this->db->from("favourite");
         $this->db->where("user_id", $userId);
-        $this->db->where("boss_id", $bossId);
+        if ($bossNo != 0)
+            $this->db->where("boss_no", $bossNo);
+        else
+            $this->db->where("boss_id", $bossId);
         $query = $this->db->get();
         $result = $query->result();
         return (count($result) > 0) ? 1 : 0;
@@ -249,11 +359,15 @@ class boss_model extends CI_Model
      * @param number $bossId : This is the id of boss of the wanted site
      * @return number $result : count of the favourite
      */
-    function getFavouriteCount($bossId)
+    function getFavouriteCount($bossId, $bossNo = 0)
     {
+//        if ($bossId == 0) return 0;
         $this->db->select("no");
         $this->db->from("favourite");
-        $this->db->where("boss_id", $bossId);
+        if ($bossNo != 0)
+            $this->db->where("boss_no", $bossNo);
+        else
+            $this->db->where("boss_id", $bossId);
         $query = $this->db->get();
         $result = $query->result();
         return count($result);
@@ -292,6 +406,7 @@ class boss_model extends CI_Model
      */
     function getSiteStatus($bossId)
     {
+        if ($bossId == 0) return array();
         $this->db->select("*");
         $this->db->from("boss");
         $this->db->where("boss_id", $bossId);
@@ -361,7 +476,10 @@ class boss_model extends CI_Model
 
     function getActivityByBoss($boss_id)
     {
-        $this->db->select("event.id, event.pic, event.name, event.type, event.start_time, event.end_time, event.state, event.cost,provinces.province, cities.city, areas.area, event.detail_address, user.role, user.avatar, sum(booking.reg_num) as register_num");
+        if ($boss_id == 0) return null;
+        $this->db->select("event.id, event.pic, event.name, event.type, event.start_time, event.end_time");
+        $this->db->select("event.state, event.cost,provinces.province, cities.city, areas.area, event.detail_address");
+        $this->db->select("user.role, user.avatar, sum(booking.reg_num) as register_num");
         $this->db->from("event");
         $this->db->join("provinces", "provinces.id=event.province");
         $this->db->join("cities", "cities.id=event.city");
@@ -384,7 +502,7 @@ class boss_model extends CI_Model
 
     function getSiteByDistanceApi($longitude, $latitude, $userId, $city_id = 0)
     {
-        $query = $this->db->query('select boss_id, site_name, longitude, latitude, site_type, area 
+        $query = $this->db->query('select no, boss_id, site_name, longitude, latitude, site_type, area 
             from boss 
             where site_type > -1 and (( 6371 * acos( cos( radians(' . $latitude . ') ) * cos( radians( latitude) )
                     * cos( radians(longitude) - radians(' . $longitude . ')) + sin(radians(' . $latitude . '))
@@ -392,24 +510,38 @@ class boss_model extends CI_Model
 
         $response_array = array();
         foreach ($query->result() as $item) {
-
-            $isFavourite = $this->isFavouriteState($userId, $item->boss_id);
-
             $site_icon = "map_icon.png";
             $picture_array = array();
             $picture_array = $this->getSitePictures($item->boss_id);
             if (count($picture_array) > 0) {
                 $site_icon = $picture_array[0]->picture;
             }
-            $area_name = $this->getAreaName($item->area);
-            $event_array = $this->getActivityByBoss($item->boss_id);
-            $event_state = 0;
-            if (count($event_array) > 0) {
-                $event_state = 1;
-            }
 
-            $point = number_format((float)$this->getSiteRatingPoint($item->boss_id), 1, '.', '');
-            $favouriteCount = $this->getFavouriteCount($item->boss_id);
+            $area_name = $this->getAreaName($item->area);
+            $isFavourite = 0;
+            $event_state = 0;
+            $point = 0;
+            $favouriteCount = 0;
+            $room_state = 0;
+            $bossgroup_state = 0;
+            $isFavourite = $this->isFavouriteState($userId, $item->boss_id, $item->no);
+            $favouriteCount = $this->getFavouriteCount($item->boss_id, $item->no);
+            if ($item->boss_id != 0) {
+                $event_array = $this->db->query("select id from event where state = 0 and organizer_id = " . $item->boss_id)->row();
+                if (count($event_array) > 0) {
+                    $event_state = 1;
+                }
+                $point = number_format((float)$this->getSiteRatingPoint($item->boss_id), 1, '.', '');
+
+                $room_array = $this->db->query("select id from room where boss_id = " . $item->boss_id)->row();
+                if (count($room_array) > 0) {
+                    $room_state = 1;
+                }
+                $bossgroup_array = $this->db->query("select no from bossgroup where boss_id = " . $item->boss_id)->row();
+                if (count($bossgroup_array) > 0) {
+                    $bossgroup_state = 1;
+                }
+            }
             $distance = $this->distance($latitude, $longitude, $item->latitude, $item->longitude, "K");
             $show_distance_str = "0km";
             if ($distance > 1) {
@@ -417,11 +549,13 @@ class boss_model extends CI_Model
             } else {
                 $show_distance_str = intval($distance * 1000) . "m";
             }
-            $response_data = array('boss_id' => $item->boss_id, 'site_name' => $item->site_name,
+            $picture = $this->getSitePictures($item->boss_id);
+            $response_data = array('boss_no' => $item->no, 'boss_id' => $item->boss_id, 'site_name' => $item->site_name,
                 'longitude' => $item->longitude, 'latitude' => $item->latitude, 'site_type' => $item->site_type,
                 'site_icon' => $site_icon, 'point' => $point, 'event_state' => $event_state,
+                'room_state' => $room_state, 'bossgroup_state' => $bossgroup_state,
                 'areaId' => $item->area, 'areaName' => $area_name, 'isfavourite' => $isFavourite,
-                'favourite_count' => $favouriteCount, 'show_distance_str' => $show_distance_str,
+                'favourite_count' => $favouriteCount, 'show_distance_str' => $show_distance_str, 'picture' => $picture,
                 'distance' => number_format((float)$distance, 1, '.', ''));
             array_push($response_array, $response_data);
         }
@@ -430,7 +564,7 @@ class boss_model extends CI_Model
 
     function distance($lat1, $lon1, $lat2, $lon2, $unit)
     {
-        if($lon1==$lon2 && $lat1==$lat2) return 0;
+        if ($lon1 == $lon2 && $lat1 == $lat2) return 0;
         $theta = $lon1 - $lon2;
         $dist = sin(deg2rad($lat1)) * sin(deg2rad($lat2)) + cos(deg2rad($lat1)) * cos(deg2rad($lat2)) * cos(deg2rad($theta));
         $dist = acos($dist);

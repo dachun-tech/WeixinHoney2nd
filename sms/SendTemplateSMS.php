@@ -46,6 +46,12 @@ if($sms_code == '-1'){
 	$message = array($info1, $info2);
 	sendTemplateSMS($phoneNumber, $message, '340828');
 }
+else if($sms_code == '-2'){
+	$info1 = $data->{'info1'};
+	$info2 = $data->{'info2'};
+	$message = array($info1, $info2);
+	sendTemplateSMS($phoneNumber, $message, '413570');
+}
 else{
 //手机号码，替换内容数组，模板ID
 	$message = array($sms_code, '十分钟');

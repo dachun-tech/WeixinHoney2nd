@@ -10,6 +10,9 @@ Page({
         province: [],
         nickname: '',
         user_role: "个人",
+        role: 2, // 0-无，1-商家，2-个人
+        method: 'new',
+
         user: {
             name: "",
             phone: "",
@@ -22,7 +25,6 @@ Page({
 
         },
         hide: 0,
-        role: 2,
         overimagecount: 0,
         longitude: 0,
         latitude: 0,
@@ -46,7 +48,8 @@ Page({
         check_auth_image1: 0,
         check_auth_image2: 0,
         disable: 1,
-        istrue: 0
+        istrue: 0,
+        _tmr: 0
     },
 
     On_clicked_role: function() {
@@ -59,9 +62,14 @@ Page({
      * 生命周期函数--监听页面加载
      */
     onLoad: function(options) {
+        this.data.options = options;
+        // },
+        // onShow: function() {
         this.setData({
             userRole: app.globalData.userRole
         })
+        if (this.data.options.id == undefined) this.data.options.id = -1;
+        var options = this.data.options;
         var method = options.method;
         this.setData({
             nickname: app.globalData.userInfo.nickname,
@@ -70,11 +78,9 @@ Page({
             url: app.globalData.mainURL + 'api/getProvinces',
             success: function(res) {
                 var tempprovince = res.data.result
-                tempprovince.unshift({ id: "0", province: "请选择省" })
-                _this.setData({
-                    province: tempprovince,
-                    member_state: app.globalData.userInfo.isVIP
-                })
+                tempprovince.unshift({ id: "0", province: "请选择省" });
+                _this.data.province = tempprovince;
+                _this.data.member_state = app.globalData.userInfo.isVIP;
             }
         })
         if (!app.globalData.userInfo.nickname) {
@@ -157,20 +163,78 @@ Page({
                     }
                 }
             })
+        } else if (options.id != -1) {
+            if (method == "rewrite") {
+                this.setData({ disable: 0 })
+                this.data.check_image = 1
+                this.data.check_auth_image1 = 1
+                this.data.check_auth_image2 = 1
+            }
+            that.setData({
+                role: 1,
+                user_role: that.data.userRole[1],
+                istrue: 1
+            })
+            if (options.id != 0) {
+                wx.request({
+                    url: app.globalData.mainURL + 'api/getSiteDetail',
+                    method: 'POST',
+                    header: {
+                        'content-type': 'application/json'
+                    },
+                    data: {
+                        user_id: app.globalData.userInfo.user_id,
+                        boss_id: 0,
+                        boss_no: options.id
+                    },
+                    success: function(res) {
+                        console.log(res)
+                        if (res.data.status == true) {
+                            var user_info = res.data.site[0];
+                            method = 'rewrite';
+                            that.setData({
+                                province_name: user_info.province,
+                                city_name: user_info.city,
+                                area_name: user_info.area,
+                                province_id: user_info.province_id,
+                                city_id: user_info.city_id,
+                                area_id: user_info.area_id,
+                                select_location_text: user_info.detail_address,
+                                longitude: user_info.longitude,
+                                latitude: user_info.latitude,
+                                detail_address: user_info.detail_address
+                            });
+
+                            user_info.name = '';
+                            user_info.phone = '';
+                            user_info.id_no = '';
+
+                            user_info.allow_pic = "../../../image/zhizhao.png"
+                            user_info.id_pic1 = "../../../image/sfz@2x.png"
+                            user_info.id_pic2 = "../../../image/sfb@2x.png"
+
+                            that.setData({
+                                user: user_info,
+                                method: method
+                            })
+
+                        }
+                    }
+                })
+            }
         }
     },
 
     on_click_radio: function(e) {
         if (this.data.method == "new" || this.data.method == 'rewrite') {
-            if (e.currentTarget.id == "radio2") {
-                this.data.user_role = "个人"
+            if (e.currentTarget.id == "radio2") { // 个人
                 this.data.role = 2;
                 this.data.istrue = 0;
-            } else {
+            } else { // 商家
                 this.data.role = 1;
                 this.data.istrue = 1;
-                this.data.user_role = "场馆主"
             }
+            this.data.user_role = this.data.userRole[this.data.role];
             this.setData({ istrue: this.data.istrue })
             this.setData({ role: this.data.role })
             this.setData({ user_role: this.data.user_role })
@@ -219,7 +283,8 @@ Page({
                     },
                     success: function(res) {
                         if (res.result != "fail") {
-                            var interval = setInterval(function() {
+                            clearInterval(that.data._tmr);
+                            that.data._tmr = setInterval(function() {
                                 that.setData({
                                     second_count: (that.data.second_count - 1)
                                 })
@@ -228,7 +293,7 @@ Page({
                                         second_count: 60,
                                         sms_state: 0
                                     })
-                                    clearInterval(interval);
+                                    clearInterval(that.data._tmr);
                                 }
                             }, 1000)
                             that.setData({
@@ -246,6 +311,13 @@ Page({
                 })
             }
         }
+    },
+    onUnload: function() {
+        this.onHide();
+    },
+    onHide: function() {
+        var that = this;
+        clearInterval(that.data._tmr);
     },
     On_click_map: function(e) {
         // if (this.data.method == 'edit') return
@@ -343,7 +415,6 @@ Page({
                 count: 1,
                 success: function(res) {
                     if (res.tempFiles[0].size > 10485760) {
-
                         wx.showToast({
                             title: '图片太大，无法上传！',
                             icon: 'none',
@@ -362,6 +433,7 @@ Page({
                         name: 'file',
                         formData: {
                             'user_id': app.globalData.userInfo.user_id,
+                            'boss_no': that.data.options.id
                         },
                         success: function(res) {
                             console.log(res);
@@ -398,6 +470,7 @@ Page({
                         name: 'file',
                         formData: {
                             'user_id': app.globalData.userInfo.user_id,
+                            'boss_no': that.data.options.id
                         },
                         success: function() {}
                     })
@@ -429,6 +502,7 @@ Page({
                         name: 'file',
                         formData: {
                             'user_id': app.globalData.userInfo.user_id,
+                            'boss_no': that.data.options.id
                         },
                         success: function(res) {}
                     })
@@ -453,7 +527,7 @@ Page({
                 if (that.data.user.site_name.length == 0) {
                     invalid++;
                     wx.showToast({
-                        title: '请填写场馆名称',
+                        title: '请填写商家名称',
                         duration: 3000,
                         icon: 'none'
                     })
@@ -462,7 +536,7 @@ Page({
                 if (that.data.user.site_name.length > 20) {
                     invalid = invalid + 1
                     wx.showToast({
-                        title: '场馆名称不应超过20个字',
+                        title: '商家名称不应超过20个字',
                         duration: 3000,
                         icon: 'none'
                     })
@@ -471,7 +545,7 @@ Page({
                 if (that.data.user.name.length == 0) {
                     invalid = invalid + 1
                     wx.showToast({
-                        title: '请填写馆主姓名',
+                        title: '请填写商家姓名',
                         duration: 3000,
                         icon: 'none'
                     })
@@ -480,7 +554,7 @@ Page({
                 if (that.data.user.name.length > 4) {
                     invalid = invalid + 1
                     wx.showToast({
-                        title: '馆主姓名不应超过4个字',
+                        title: '商家姓名不应超过4个字',
                         duration: 3000,
                         icon: 'none'
                     })
@@ -553,7 +627,7 @@ Page({
                 if (that.data.select_location_text == '') {
                     invalid = invalid + 1
                     wx.showToast({
-                        title: '请在地图上选择场馆地点',
+                        title: '请在地图上选择商家地点',
                         duration: 3000,
                         icon: 'none'
                     })
@@ -562,7 +636,7 @@ Page({
                 if (that.data.longitude == 0) {
                     invalid = invalid + 1
                     wx.showToast({
-                        title: '请在地图上选择场馆地点',
+                        title: '请在地图上选择商家地点',
                         duration: 3000,
                         icon: 'none'
                     })
@@ -609,14 +683,10 @@ Page({
                     })
 
                 } else {
-
                     wx.showLoading({
                         title: '加载中',
                         mask: true,
                     })
-                    setTimeout(function() {
-                        wx.hideLoading()
-                    }, 1000)
                     app.globalData.role = 1
                     app.globalData.state = 1
                     wx.request({
@@ -628,6 +698,7 @@ Page({
                         data: {
                             role: 1,
                             user_id: app.globalData.userInfo.user_id,
+                            boss_no: that.data.options.id,
                             name: that.data.user.name,
                             phone: that.data.user.phone,
                             site_name: that.data.user.site_name,
@@ -639,14 +710,16 @@ Page({
                             latitude: that.data.latitude,
                             id_no: that.data.user.id_no
                         },
-                        success: function(res) {}
-
+                        success: function(res) {},
+                        complete: function() {
+                            wx.hideLoading({});
+                        }
                     })
-                    console.log(that.data.user.allow_pic)
-                    app.globalData.userInfo.state = 1
-                    app.globalData.userInfo.name = that.data.user.name
-                    app.globalData.userInfo.phone = that.data.user.phone
-                    app.globalData.userInfo.role = 1
+                    console.log(that.data.user.allow_pic);
+                    app.globalData.userInfo.state = 1;
+                    app.globalData.userInfo.name = that.data.user.name;
+                    app.globalData.userInfo.phone = that.data.user.phone;
+                    app.globalData.userInfo.role = 1;
                     wx.redirectTo({
                         url: './auth-text/auth_text',
                     })

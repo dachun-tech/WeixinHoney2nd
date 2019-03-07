@@ -78,7 +78,7 @@
       </view>
     </view>
     <view class="before_complete" wx:else>
-      <view bindtap="go_to_place" class="view_place">查看场馆</view>   
+      <view bindtap="go_to_place" class="view_place">查看商家</view>   
     </view>
   </view>
   <view style="height:100rpx;"></view>

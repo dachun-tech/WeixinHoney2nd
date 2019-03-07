@@ -5,7 +5,7 @@
   </view>
   <view class='phonenumber-view'>
     <text class='phonenumber-text'>联系电话:</text>
-    <input class='phonenumber-input' type='number' bindinput='on_blur_phonenumber' placeholder='请输入电话号码' value="{{address.phone}}" />
+    <input type='number' class='phonenumber-input' bindinput='on_blur_phonenumber' placeholder='请输入电话号码' value="{{address.phone}}" />
   </view>  
   <view class='event-view' bindtap='On_click_map'>
     <text>收货地址:</text>
@@ -16,7 +16,7 @@
   
   <view class='mail-view'>
     <text class='mail-text'>邮政编码：</text>
-    <input class='mail-input' type="number" bindinput='on_blur_mail' placeholder='请输入邮政编码' value="{{address.email}}" />
+    <input type="digit" class='mail-input' bindinput='on_blur_mail' placeholder='请输入邮政编码' value="{{address.email}}" />
   </view>
   <button class='submit_btn' bindtap='on_click_submit'>保存</button>
 </view>

@@ -16,16 +16,16 @@
         {{honey_list[honey_id]}}ml
         <image class="arrow-btn" src="../../../image/btn_updown@2x.png" />
       </view>
-      <view class="honey-price" bindtap="payment_check"  data-type="honey" >
+      <view class="honey-price" bindtap="payment_check"  data-type="honey">
         抵￥{{(honey_id * 1 + 1) * honey_price_unit}}
         <image class="pay-check-status"src="{{chk_imgs[check_honey]}}"/>
       </view>
     </view>
-    <scroll-view class="honey-select" wx:if="{{select_honey==1}}" scroll-y="{{true}}">
+    <view style="overflow-y:auto;" class="honey-select" wx:if="{{select_honey==1}}" scroll-y="{{true}}">
       <view class="honey-item" wx:for="{{honey_list}}" data-id="{{index}}" bindtap="select_honey_price">
         {{honey_list[index]}}ml
       </view>
-    </scroll-view>
+    </view>
     <view class="wallet-row">
       <view class="info-label">钱包余额(可用余额￥{{wallet}})</view>
       <view class="wallet-price" bindtap="payment_check"  data-type="wallet">

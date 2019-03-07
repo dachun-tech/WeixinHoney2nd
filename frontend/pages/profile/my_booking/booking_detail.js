@@ -11,7 +11,10 @@ Page({
         img_black_start_src: '../../../image/star_n@2x.png',
         img_yellow_start_src: '../../../image/star_s@2x.png',
         count_yellowStar: 3,
-        booking: {},
+        booking: {
+            pay_cost: 0,
+            pay_honey: 0
+        },
         eventType: [],
         userRole: [],
         bookingState: ["已支付", "进行中", "已完成", "已取消"],
@@ -80,14 +83,6 @@ Page({
                                 _this.onPrepare();
                                 app.globalData.isFirstLaunch = false;
                             }
-                            // wx.authorize({
-                            //     scope: 'scope.werun',
-                            //     fail: function() {
-                            //         that.globalData.initDisabled = true;
-                            //     },
-                            //     complete: function() {
-                            //     }
-                            // })
                         }
                     });
                 }
@@ -96,17 +91,18 @@ Page({
     },
     onPrepare: function() {
         var that = this;
-        app.onInitialize();
-        if (app.globalData.userInfo.user_id == 0) {
-            clearTimeout(that.data.tmrID);
-            that.data.tmrID = setTimeout(function() {
-                that.onPrepare();
-            }, 1000);
-        } else {
-            that.onInitStart();
-        }
+        wx.showLoading({
+            title: '加载中',
+        })
+        var option = that.data.options;
+        if (app.globalData.userInfo.user_id == 0)
+            app.onInitialize(function() {
+                that.onInitStart(option);
+            })
+        else
+            that.onInitStart(option);
     },
-    onInitStart: function() {
+    onInitStart: function(option) {
         var that = this;
         var id = that.data.id;
 
@@ -194,6 +190,9 @@ Page({
                         booking: book
                     })
                 }
+            },
+            complete: function() {
+                wx.hideLoading({});
             }
         })
     },
@@ -259,13 +258,13 @@ Page({
         }
         var that = this;
         var sport = parseInt(that.data.booking.site_type);
-        var title = "这家" + app.globalData.eventType[sport] + "场馆不错哦, 快来预定吧";
+        var title = "这家" + app.globalData.eventType[sport] + "商家不错哦, 快来预定吧";
         if (sport == 28)
-            title = "这家" + app.globalData.eventType[sport] + "场馆不错哦, 快来购买吧"
+            title = "这家" + app.globalData.eventType[sport] + "商家不错哦, 快来购买吧"
         else if (sport == 31)
-            title = "这家综合运动场馆不错哦, 快来预定吧"
+            title = "这家综合运动商家不错哦, 快来预定吧"
         else if (sport == 32)
-            title = "这家运动场馆不错哦, 快来预定吧"
+            title = "这家运动商家不错哦, 快来预定吧"
 
         return {
             title: title,

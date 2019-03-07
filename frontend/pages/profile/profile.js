@@ -65,14 +65,6 @@ Page({
                                 _this.onPrepare();
                                 app.globalData.isFirstLaunch = false;
                             }
-                            // wx.authorize({
-                            //     scope: 'scope.werun',
-                            //     fail: function() {
-                            //         that.globalData.initDisabled = true;
-                            //     },
-                            //     complete: function() {
-                            //     }
-                            // })
                         }
                     });
                 }
@@ -81,20 +73,20 @@ Page({
     },
     onPrepare: function() {
         var that = this;
-        app.onInitialize();
-        if (app.globalData.userInfo.user_id == 0) {
-            clearTimeout(that.data.tmrID);
-            that.data.tmrID = setTimeout(function() {
-                that.onPrepare();
-            }, 1000);
-        } else {
-            that.onInitStart();
-        }
+        wx.showLoading({
+            title: '加载中',
+        })
+        var option = that.data.options;
+        if (app.globalData.userInfo.user_id == 0)
+            app.onInitialize(function() {
+                that.onInitStart(option);
+            })
+        else
+            that.onInitStart(option);
     },
-    onInitStart: function() {
+    onInitStart: function(option) {
         var that = this;
         wx.showTabBar({})
-        wx.hideLoading();
         wx.request({
             url: app.globalData.mainURL + 'api/getUserDetail',
             method: 'POST',
@@ -139,9 +131,11 @@ Page({
                         }
                         that.data.type_array = show_arr;
                         that.setData({ type_array: show_arr });
-
                     }
                 })
+            },
+            complete: function() {
+                wx.hideLoading({});
             }
         });
     },
@@ -173,10 +167,6 @@ Page({
                     url: 'my_booking/booking'
                 });
                 break;
-
-
-
-
             case 'my_purse':
                 wx.navigateTo({
                     url: 'my_purse/my_purse'
@@ -212,6 +202,11 @@ Page({
             case 'about_stadium':
                 wx.navigateTo({
                     url: 'register_stadium/register_stadium',
+                })
+                break;
+            case 'stadium_work':
+                wx.navigateTo({
+                    url: 'stadium_work/stadium_work',
                 })
                 break;
             default:

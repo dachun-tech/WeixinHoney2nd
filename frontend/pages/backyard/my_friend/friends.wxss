@@ -103,10 +103,10 @@ view {
 
 .friend-navigator {
     position: absolute;
-    right: 7rpx;
+    right: 10rpx;
     transform: translateY(-50%);
     height: 75%;
-    width: 40rpx;
+    width: 50rpx;
     background: #ddd;
     color: #333;
     border-radius: 30rpx;
@@ -117,9 +117,9 @@ view {
 .nav-item {
     position: relative;
     display: inline-block;
-    height: 1rem;
-    line-height: 1.1rem;
+    height: 1.8rem;
+    line-height: 1.9rem;
     text-align: center;
     width: 100%;
-    font-size: 25rpx;
+    font-size: 34rpx;
 }

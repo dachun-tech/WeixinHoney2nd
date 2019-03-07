@@ -6,11 +6,26 @@
     <text class="cls_my_account_balance">¥{{account_balance}}</text>
   </view>
 
+  <view class="cls_my_withdraw_info">
+    <view class="info-box">
+      <view class="price-item" style="border-right: 1px solid #eee;">
+        <view>可提现</view>
+        <view>￥{{available_balance}}</view>
+      </view>      
+      <view class="price-item">
+        <view>不可提现</view>
+        <view style="color: red;">￥{{remained_balance}}</view>
+      </view>    
+    </view>
+    <view class="info-desc">提示：未消费订单和蜂约活动的费用在用户消费完成后才可提现</view>
+  </view>
+
   <view class="cls_my_withdraw_title">
     <text class="cls_my_withdraw_title_txt">提现金额</text>
     <view class="cls_my_withdraw_balance">¥
-      <input class="cls_my_withdraw_amount" bindinput="on_Input_Cost" bindfocus="on_Input_Cost_Click" bindblur="on_Input_Cost_Blur" value="{{cost}}"></input>
-      </view>    
+      <input type="digit" class="cls_my_withdraw_amount" data-type="input" bindinput="on_Input_Cost" bindfocus="on_Input_Cost_Click" bindblur="on_Input_Cost_Blur" value="{{cost}}"></input>
+      <view bindtap="on_Input_Cost" data-type="all" data-value="{{available_balance}}">全部提现</view>
+    </view>    
   </view>
 
   <view class="cls_my_withdrawal" bindtap='on_Clicked_Cost'>
@@ -39,7 +54,7 @@
       <text class='modal-idcard-text'>身份证号</text>
       <text class='modal-idcard-input'>{{id_no_hidden}}</text>
     </view>
-    <input type="number" bindinput="on_Input_Cost" class='input-cost' value="{{ms_errormsg}}" placeholder='输入提现金额'></input>
+    <input type="digit" bindinput="on_Input_Cost" class='input-cost' value="{{ms_errormsg}}" placeholder='输入提现金额'></input>
     <text class='modal-alert'>注：账户余额满100元后才可提现</text>
     <view class='modal-footer'>
       <view bindtap="onCancel" class='modal-cancel'>

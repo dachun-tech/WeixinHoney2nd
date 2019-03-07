@@ -38,7 +38,7 @@ Page({
                 'content-type': 'application/json'
             },
             success: function(res) {
-                console.log(res);
+                console.log(res.data);
                 if (res.data.status) {
                     that.data.friendList = res.data.data;
                     that.calculateNewFriends();
@@ -52,7 +52,7 @@ Page({
         var id = event.currentTarget.dataset.id;
         var friendList = that.data.friendList;
         // id: one of a~z, friendList:all of userlist.
-        console.log(id);
+        // console.log(id);
         that.setData({
             filterItem: id
         })
@@ -76,7 +76,7 @@ Page({
             if (filtered[i].filter_character == filter_character) filtered[i].filter_character = '';
             else filter_character = filtered[i].filter_character;
         }
-        console.log(filtered);
+        // console.log(filtered);
         that.setData({
             friendList: filtered
         });
@@ -87,7 +87,7 @@ Page({
         var that = this;
         var id = event.currentTarget.dataset.id;
         if (id == undefined) return;
-        console.log(that.data.friendList)
+        // console.log(that.data.friendList)
         wx.navigateTo({
             url: '../../profile/profile_friend?id=' + id + '&type=1'
         })

@@ -8,11 +8,11 @@
   <view class='help'>
     <view class='title'>注意</view>
     <view class='normal-text'>
-      <text>1、蜂巢地图采蜜:</text>用户可以收集在蜂巢地图场馆活动产生的蜂蜜。采集范围与你当日走路里程微信步数同步，假如你今天走了1公里，则你可以收集方圆 1公里的蜂蜜。</view>
+      <text>1、蜂巢地图采蜜:</text>用户可以收集在蜂巢地图商家活动产生的蜂蜜。采集范围与你当日走路里程微信步数同步，假如你今天走了1公里，则你可以收集方圆 1公里的蜂蜜。</view>
     <view class='normal-text'>
       <text>2、微信步数采蜜:</text>每天7点同步微信运动产生的步数数据，会在你的后花园内产生蜂蜜。步数越多，蜂蜜越多。</view>
     <view class='normal-text'>
-      <text> 3、参加活动产生蜂蜜:</text>如果你参加了场馆或者好友组织的活动，则在你的后花园会产生一定数量的蜂蜜。</view>
+      <text> 3、参加活动产生蜂蜜:</text>如果你参加了商家或者好友组织的活动，则在你的后花园会产生一定数量的蜂蜜。</view>
   </view>
   <view class='help'>
     <view class='title'>注意</view>

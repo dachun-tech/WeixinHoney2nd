@@ -105,7 +105,7 @@ if ($pageType == 'news') {
                                         <option value="10"<?php if ($searchRole == 10) echo ' selected'; ?>>角色类型
                                         </option>
                                         <option value="2"<?php if ($searchRole == 0) echo ' selected'; ?>>个人</option>
-                                        <option value="1"<?php if ($searchRole == 1) echo ' selected'; ?>>场馆主</option>
+                                        <option value="1"<?php if ($searchRole == 1) echo ' selected'; ?>>商家</option>
                                     </select>
                                 </div>
                             </div>
@@ -146,6 +146,13 @@ if ($pageType == 'news') {
                                 </button>
                             </div>
                         </div>
+                        <div class="col-xs-1 col-sm-1 form-inline">
+                            <div class="form-group area-search-control-view">
+                                <input type="button" class="btn btn-primary searchList"
+                                       onclick="exportTable()" value="导出">
+                                </input>
+                            </div>
+                        </div>
                         <?php
                         if ($pageType == 'news') {
                             ?>
@@ -177,6 +184,7 @@ if ($pageType == 'news') {
                                 <th>报名费</th>
                                 <th>已报名人数</th>
                                 <th><?=$type?>状态</th>
+                                <th>报名状态</th>
                                 <th>操作</th>
                             </tr>
                             <?php
@@ -200,9 +208,9 @@ if ($pageType == 'news') {
                         <?php
                         if (!empty($eventList)) {
                             $i = 0;
-                            $eventRole = array('', '场馆主', '个人');
+                            $eventRole = array('', '商家', '个人');
                             $eventState = array('进行中', '已完成', '已取消');
-                            $usedState = array('进行中', '已报名');
+                            $usedState = array('报名中', '已截止');
                             $newsState = array('进行中', '已结束');
                             foreach ($eventList as $record) {
                                 $i++;
@@ -211,18 +219,21 @@ if ($pageType == 'news') {
                                     <tr>
                                         <td><?php echo $i; ?></td>
                                         <td><?php echo $record->name; ?></td>
-                                        <td><?php echo $record->start_time; ?></td>
+                                        <td><?php echo $record->start_time.'到<br>'.$record->end_time; ?></td>
                                         <td><?php echo $eventType[($record->type)]; ?></td>
-                                        <td><?php echo $record->end_time; ?></td>
+                                        <td><?php echo $record->final_time; ?></td>
                                         <td><?php echo $record->cost; ?></td>
                                         <td><?php echo($record->current_member == '' ? '0' : $record->current_member); ?></td>
                                         <td><?php echo $newsState[$record->state]; ?></td>
+                                        <td><?php echo $usedState[$record->is_used]; ?></td>
                                         <td class="text-center">
+                                            <a onclick="setOnTop('<?php echo $record->id; ?>')">
+                                                置顶
+                                            </a>
                                             <a href="<?php echo base_url() . 'newseventDetail/' . $record->id; ?>">
                                                 <?=$type?>详情
                                             </a>
-                                            <a data-eventid="<?php echo $record->id; ?>"
-                                               onclick="confirmDelete('<?php echo $record->id; ?>')">
+                                            <a onclick="confirmDelete('<?php echo $record->id; ?>')">
                                                 删除 &nbsp;
                                             </a>
                                         </td>
@@ -241,8 +252,7 @@ if ($pageType == 'news') {
                                             <a href="<?php echo base_url() . 'eventDetail/' . $record->id; ?>">
                                                 活动详情 &nbsp;
                                             </a>
-                                            <a data-eventid="<?php echo $record->id; ?>"
-                                               onclick="confirmDelete('<?php echo $record->id; ?>')">
+                                            <a onclick="confirmDelete('<?php echo $record->id; ?>')">
                                                 删除 &nbsp;
                                             </a>
                                         </td>

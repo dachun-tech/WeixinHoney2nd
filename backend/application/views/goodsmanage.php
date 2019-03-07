@@ -54,6 +54,7 @@
                             <th>消耗蜂蜜</th>
                             <th>库存</th>
                             <th>新增时间</th>
+                            <th>开始兑换时间</th>
                             <th>状态</th>
                             <th width="">操作</th>
                         </tr>
@@ -68,6 +69,7 @@
                                     <td><?php echo $record->cost; ?></td>
                                     <td><?php echo $record->amount; ?></td>
                                     <td><?php echo $record->add_time; ?></td>
+                                    <td><?php echo $record->end_time; ?></td>
                                     <td><?php echo $record->state?"已上架":"已下架"; ?></td>
                                     <td class="text-center">
                                         <a href="<?php echo base_url().'goodsDetail/'.$record->id; ?>">

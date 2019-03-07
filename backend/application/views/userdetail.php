@@ -6,7 +6,7 @@
         </h1>
     </section>
     <?php
-    $userRole = array('无', '场馆', '个人');
+    $userRole = array('无', '商家', '个人');
     $userState = array('未认证', '认证中', '认证通过', '认证未通过');
     $genderStr = array('男', '女');
     ?>
@@ -36,7 +36,7 @@
                 echo '<label class="col-sm-4" id="nickname">';
                 $i = 0;
                 foreach ($typeList as $item) {
-                    if ($item->type == null) continue;
+                    if ($item->type == null || $item->type == '') continue;
                     if ($i != 0) echo ',';
                     echo $eventType[$item->type];
                     $i++;
@@ -61,38 +61,52 @@
             </div>
             <div class="row custom-info-row">
                 <label class="col-sm-2">年龄:</label>
-                <label class="col-sm-4" id="nickname"><?php echo $userDetail[0]->age; ?>岁</label>
+                <label class="col-sm-4"><?php echo $userDetail[0]->age; ?>岁</label>
             </div>
             <div class="row custom-info-row">
                 <label class="col-sm-2">性别:</label>
-                <label class="col-sm-4" id="nickname"><?php echo ($userDetail[0]->gender == 0) ? '男' : '女'; ?></label>
+                <label class="col-sm-3"><?php echo ($userDetail[0]->gender == 0) ? '男' : '女'; ?></label>
             </div>
             <div class="row custom-info-row">
                 <label class="col-sm-2">个性签名:</label>
-                <label class="col-sm-4" id="nickname"><?php echo $userDetail[0]->person_sign; ?></label>
+                <label class="col-sm-3"><?php echo $userDetail[0]->person_sign; ?></label>
+                <div class="col-sm-4" id="datepicker-sign" style="width: 400px;"></div>
             </div>
             <div class="row custom-info-row">
                 <label class="col-sm-2">名片被分享次数:</label>
-                <label class="col-sm-4" id="nickname"><?php echo $userDetail[0]->shared_count; ?></label>
+                <label class="col-sm-3"><?php echo $userDetail[0]->shared_count; ?></label>
+                <?php if($userDetail[0]->role == '1') {?>
+                <label class="col-sm-2">钱包余额:</label>
+                <label class="col-sm-4"><?php echo($walletInfo[0]->wallet); ?>元</label>
+                <?php } ?>
             </div>
             <div class="row custom-info-row">
                 <label class="col-sm-2">是不会员:</label>
-                <label class="col-sm-4" id="nickname"><?php echo ($isMember[0]->state == null) ? '否' : '是'; ?></label>
+                <label class="col-sm-3"><?php echo ($isMember[0]->state == null) ? '否' : '是'; ?></label>
+                <?php if($userDetail[0]->role == '1') {?>
+                <label class="col-sm-2">可提现:</label>
+                <label class="col-sm-4"><?php echo($walletInfo[0]->withdraw); ?>元</label>
+                <?php } ?>
             </div>
             <div id="tip" class="row custom-info-row">
                 <label class="col-sm-2">禁用状态:</label>
-                <label class="col-sm-4"
-                       id="forbidden"><?php echo $userDetail[0]->forbidden ? '已禁用' : '未禁用'; ?></label>
+                <label class="col-sm-3"><?php echo $userDetail[0]->forbidden ? '已禁用' : '未禁用'; ?></label>
+                <?php if($userDetail[0]->role == '1') {?>
+                <label class="col-sm-2">不可提现:</label>
+                <label class="col-sm-4"><?php echo $walletInfo[0]->wallet - $walletInfo[0]->withdraw; ?>元</label>
+                <?php } ?>
             </div>
             <div class="row custom-info-row">
                 <label class="col-sm-2">现有蜂蜜量:</label>
-                <label class="col-sm-4" id="honey">
-                    <?php echo $userDetail[0]->honey . "ml"; ?>
-                </label>
+                <label class="col-sm-3"><?php echo $userDetail[0]->honey . "ml"; ?></label>
+                <?php if($userDetail[0]->role == '1') {?>
+                <label class="col-sm-2">已提现:</label>
+                <label class="col-sm-4"><?php echo $walletInfo[0]->total_withdraw; ?>元</label>
+                <?php } ?>
             </div>
             <div class="row custom-info-row">
                 <label class="col-sm-2">蜂蜜使用记录:</label>
-                <div class="col-sm-4">
+                <div class="col-sm-6">
                     <table class="table table-bordered area-result-view">
                         <thead>
                         <tr style="background-color: lightslategrey;">
@@ -139,11 +153,11 @@
                 ?>
                 <div class="row custom-info-row">
                     <label class="col-sm-2">认证角色:</label>
-                    <label class="col-sm-4" id="role"><?php echo $userRole[$userDetail[0]->role]; ?></label>
+                    <label class="col-sm-4"><?php echo $userRole[$userDetail[0]->role]; ?></label>
                 </div>
                 <div id="tip" class="row custom-info-row">
                     <label class="col-sm-2"> 认证状态:</label>
-                    <label class="col-sm-4" id="state"><?= $userState[$userDetail[0]->state] ?></label>
+                    <label class="col-sm-4"><?= $userState[$userDetail[0]->state] ?></label>
                 </div>
                 <?php
             }
@@ -153,7 +167,7 @@
                 ?>
                 <div class="row custom-info-row">
                     <label class="col-sm-2">真实姓名:</label>
-                    <label class="col-sm-4" id="nickname"><?php echo $userDetail[0]->name; ?></label>
+                    <label class="col-sm-4"><?php echo $userDetail[0]->name; ?></label>
                 </div>
                 <?php
             }
@@ -162,19 +176,19 @@
             if ($userDetail[0]->role == 1) {
                 ?>
                 <!--<div class="row custom-info-row">
-                    <label class="col-sm-2">场馆名称:</label>
+                    <label class="col-sm-2">商家名称:</label>
                     <label class="col-sm-4" id="nickname"><?php echo $userDetail[0]->site_name; ?></label>
                 </div>-->
                 <div class="row custom-info-row">
                     <label class="col-sm-2">馆主姓名:</label>
-                    <label class="col-sm-4" id="site_name"><?php echo $userDetail[0]->name; ?></label>
+                    <label class="col-sm-4"><?php echo $userDetail[0]->name; ?></label>
                 </div>
                 <?php
             }
             ?>
             <div class="row custom-info-row">
                 <label class="col-sm-2">联系电话:</label>
-                <label class="col-sm-4" id="phone"><?php echo $userDetail[0]->phone; ?></label>
+                <label class="col-sm-4"><?php echo $userDetail[0]->phone; ?></label>
             </div>
             <?php
             if ($userDetail[0]->role == 1) {
@@ -202,9 +216,8 @@
             if ($userDetail[0]->role == 1) {
                 ?>
                 <div class="row custom-info-row">
-                    <label class="col-sm-2">场馆地址:</label>
-                    <label class="col-sm-4"
-                           id="site_address"><?php echo $userDetail[0]->detail_address; ?></label>
+                    <label class="col-sm-2">商家地址:</label>
+                    <label class="col-sm-4"><?php echo $userDetail[0]->detail_address; ?></label>
                 </div>
                 <div class="row custom-info-row">
                     <label class="col-sm-2">营业执照:</label>
@@ -229,7 +242,35 @@
 </div>
 
 
+<script src="<?php echo base_url(); ?>assets/plugins/datepickk/datepickk.js"></script>
 <!-- Course Management JS-->
-<script type="text/javascript" src="<?php echo base_url(); ?>assets/js/shop.js" charset="utf-8"></script>
-<script type="text/javascript" src="<?php echo base_url(); ?>assets/js/jquery.qrcode.js" charset="utf-8"></script>
-<script type="text/javascript" src="<?php echo base_url(); ?>assets/js/qrcode.js" charset="utf-8"></script>
+<script>
+
+    var now = new Date();
+    var signItems = JSON.parse('<?= json_encode($signInfo);?>');
+    var highlight = [];
+    for (var i = 0; i < signItems.length; i++) {
+        var item = signItems[i];
+        var sign_month = item.sign_month.replace(/-/g,'/').substr(0,7);
+        var sign_info = JSON.parse(item.sign_info);
+        for(var j=0; j< sign_info.length; j++){
+            var dateInfo = sign_info[j];
+            if(dateInfo == 0) continue;
+            highlight.push({
+                start: new Date(sign_month+'/'+(j+1)+' 00:00:00'),
+                end: new Date(sign_month+'/'+(j+1)+' 23:00:00'),
+                backgroundColor: '#008fbf',
+                color: '#fff'
+            })
+        }
+    }
+    var demoPicker = new Datepickk({
+        container: document.querySelector('#datepicker-sign'),
+        inline: true,
+        range: true,
+        lang: 'cn',
+        highlight: highlight
+    });
+
+
+</script>

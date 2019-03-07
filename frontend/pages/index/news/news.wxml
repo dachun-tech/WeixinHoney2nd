@@ -26,6 +26,11 @@
       <block wx:if="{{item.type==18}}">用户{{item.name}}退订了{{item.event_type}}，请知晓!</block>
       <block wx:if="{{item.type==19}}">用户{{item.name}}解除了与您的蜂友关系，请知晓!</block>
       <block wx:if="{{item.type==20}}">用户{{item.name}}请求添加您为蜂友，请前往后花园查看!</block>
+      <block wx:if="{{item.type==21}}">您已经成功购买了{{item.event_type}}!</block>
+      <block wx:if="{{item.type==22}}">用户{{item.name}}购买了您的{{item.event_type}}!</block>
+      <block wx:if="{{item.type==23}}">您取消了{{item.event_type}}!</block>
+      <block wx:if="{{item.type==24}}">用户{{item.name}}取消了您的{{item.event_type}}!</block>
+      <block wx:if="{{item.type==25}}">您退订了{{item.event_type}}，退款已经收到，请注意查收!</block>
     </view>
   </view>
 </view>

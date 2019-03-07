@@ -16,9 +16,12 @@ Page({
         train_type: ["赛事", "培训"],
         btnstrarray: ["确认参加", "确认支付"],
         isfirstbtn: 0,
-        field_opt: ["姓名", "电话", "球队", "俱乐部", "性别", "身份证号", "所在城市", "所在大学院系", "职业", "微信号", "邮箱"],
-        val_opt: ["", "", "", "", "", "", "", "", "", "", ""],
+        field_opt: ["姓名", "电话", "球队", "俱乐部", "性别", "身份证号", "所在城市", "所在大学院系", "职业", "微信号", "邮箱", "上传照片"],
+        val_opt: ["", "", "", "", "", "", "", "", "", "", "", ""],
+        uploadImg: '../../../image/shop_license.png',
+        check_image: 0,
         isPayProcessing: false,
+        comment: ''
     },
     onLoad: function(param) {
         var that = this;
@@ -116,8 +119,9 @@ Page({
 
                 app.globalData.userInfo.honey = parseInt(app.globalData.userInfo.honey);
                 app.globalData.userInfo.amount = parseFloat(app.globalData.userInfo.amount);
+                app.globalData.userInfo.amount_withdraw = parseFloat(app.globalData.userInfo.amount_withdraw);
 
-                that.prepare_payment(0, app.globalData.userInfo.honey, app.globalData.userInfo.amount, parseInt(event_buf.pay_type)); // price, honey, wallet, pay_type(0-offline, 1-online pay)
+                that.prepare_payment(0, app.globalData.userInfo.honey, app.globalData.userInfo.amount_withdraw, parseInt(event_buf.pay_type)); // price, honey, wallet, pay_type(0-offline, 1-online pay)
                 var cost = 1 * that.data.event.cost
                 if (cost == 0) {
                     that.data.total_cost = 0;
@@ -141,6 +145,31 @@ Page({
             val_opt: that.data.val_opt
         })
     },
+
+    On_click_uploadimage: function(e) {
+        var that = this;
+        wx.chooseImage({
+            count: 1,
+            success: function(res) {
+                if (res.tempFiles[0].size > 10485760) {
+
+                    wx.showToast({
+                        title: '图片太大，无法上传！',
+                        icon: 'none',
+                        duration: 3000
+                    });
+                    return;
+                    that.data.overimagecount++;
+                }
+                that.data.val_opt[11] = res.tempFilePaths[0];
+                that.setData({
+                    uploadImg: res.tempFilePaths[0],
+                    val_opt: that.data.val_opt
+                })
+            },
+        })
+    },
+
     on_Input_Memcount: function(event) {
         this.setData({ memcount: event.detail.value });
         var cost = (1 * event.detail.value) * (1 * this.data.event.cost)
@@ -166,16 +195,22 @@ Page({
             if (item == -1 || item == 0) continue;
             if (val_in.length == 0) {
                 x++;
-                if (i == 4)
+                if (i == 4) {
                     wx.showToast({
                         title: '请选择您的' + that.data.field_opt[i],
                         icon: 'none'
                     })
-                else
+                } else if (i == 11) {
+                    wx.showToast({
+                        title: '请选择您的' + that.data.event.imgprompt + '照片',
+                        icon: 'none'
+                    })
+                } else {
                     wx.showToast({
                         title: '请填写您的真实' + that.data.field_opt[i],
                         icon: 'none'
                     })
+                }
                 break;
             }
             if (i == 0 && val_in.length > 20) {
@@ -431,9 +466,10 @@ Page({
     perform_pay: function(event) {
         var that = this;
         if (that.checkValidation() == false) return;
-
         if (that.data.isPayProcessing) return;
         that.data.isPayProcessing = true;
+
+        that.data.formId = event.detail.formId;
 
         var type = that.data.pay_type;
         var item_id = that.data.book_id;
@@ -507,6 +543,27 @@ Page({
     add_booking: function() {
         var that = this;
 
+        var data = {
+            touser: wx.getStorageSync('openid'),
+            template_id: app.globalData.templateIds.event_start,
+            page: 'pages/profile/profile',
+            form_id: that.data.formId,
+            // url: 'http://weixin.qq.com/download',
+            // miniprogram: {
+            //     appid: app.globalData.appid,
+            //     pagepath: 'pages/profile/profile',
+            // },
+            // form_id: that.data.formId,
+            data: {
+                keyword1: { value: that.data.event.eventName, color: '#000' },
+                keyword2: { value: that.data.event.start_time, color: '#000' },
+                keyword3: { value: that.data.event.end_time, color: '#000' },
+                keyword4: { value: that.data.event.detail_address, color: '#000' },
+            },
+            color: '#ff0000',
+            emphasis_keyword: 'keyword1.DATA',
+        };
+
         wx.request({
             url: app.globalData.mainURL + 'api/addBooking',
             method: 'POST',
@@ -514,6 +571,8 @@ Page({
                 'content-type': 'application/json'
             },
             data: {
+                open_id: wx.getStorageSync('openid'),
+                msg_data: data,
                 user_id: that.data.user_id,
                 event_id: that.data.book_id,
                 reg_num: that.data.memcount,
@@ -531,12 +590,32 @@ Page({
                 description: that.data.comment
             },
             success: function(res) {
-                that.data.isPayProcessing = false;
                 that.data.isfirstbtn = 0;
-                wx.redirectTo({
-                    url: '../../profile/final_cancel/final_cancel?type=4&event=' + that.data.book_id,
-                    success: function() {}
-                })
+                that.data.isPayProcessing = false;
+                var book_id = res.data.book_id;
+                if (that.data.val_opt[11] == '') {
+                    wx.redirectTo({
+                        url: '../../profile/final_cancel/final_cancel?type=4&event=' + that.data.book_id,
+                        success: function() {}
+                    })
+                } else {
+                    wx.uploadFile({
+                        url: app.globalData.mainURL + 'api/datamanage/addBookingPic',
+                        filePath: that.data.val_opt[11],
+                        name: 'file',
+                        formData: {
+                            'book_id': book_id,
+                            'book_info': JSON.stringify(that.data.val_opt)
+                        },
+                        success: function(res) {
+                            wx.redirectTo({
+                                url: '../../profile/final_cancel/final_cancel?type=4&event=' + that.data.book_id,
+                                success: function() {}
+                            })
+                        }
+                    })
+                }
+                app.globalData.userInfo.user_id = 0;
             }
         })
     },

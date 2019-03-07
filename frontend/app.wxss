@@ -18,3 +18,14 @@
 page {
     background-color: #F4F4F4;
 }
+
+button::after {
+    outline: none;
+    border: none;
+}
+
+button {
+    box-sizing: unset;
+    overflow: unset;
+    padding: 0;
+}

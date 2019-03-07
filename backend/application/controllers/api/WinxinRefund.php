@@ -11,17 +11,19 @@ class WinXinRefund{
     public $key;  
     public $openid;  
     public $outTradeNo;
-    public $totalFee;  
-    function __construct($appid, $mch_id, $openid,$outTradeNo,$totalFee,$outRefundNo,$refundFee, $key){///////////////////////////////////////
-      //初始化退款类需要的变量
-      $this->appid = $appid;
-      $this->mch_id = $mch_id;
-      $this->openid = $openid;
-      $this->outTradeNo = $outTradeNo;
-      $this->totalFee = $totalFee;
-      $this->outRefundNo = $outRefundNo;
-      $this->refundFee = $refundFee;
-      $this->key = $key;
+    public $totalFee;
+
+    function __construct($appid, $mch_id, $openid, $outTradeNo, $totalFee, $outRefundNo, $refundFee, $key)
+    {///////////////////////////////////////
+        //初始化退款类需要的变量
+        $this->appid = $appid;
+        $this->mch_id = $mch_id;
+        $this->openid = $openid;
+        $this->outTradeNo = $outTradeNo;
+        $this->totalFee = $totalFee;
+        $this->outRefundNo = $outRefundNo;
+        $this->refundFee = $refundFee;
+        $this->key = $key;
     } 
     public function refund(){
       //对外暴露的退款接口

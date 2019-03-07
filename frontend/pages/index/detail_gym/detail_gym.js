@@ -3,6 +3,7 @@ Page({
     data: {
         site: [],
         rooturl: "../../../",
+        uploadURL: app.globalData.uploadURL,
         event: [],
         isFavourite: false,
         pictures: [],
@@ -21,7 +22,7 @@ Page({
             srcImage_3: '../../../image/star-3.png',
             srcImage_4: '../../../image/star-4.png',
 
-            score: 4.3,
+            score: 5,
             srcImage: '',
         },
         tmrID: 0,
@@ -83,14 +84,6 @@ Page({
                                 _this.onPrepare();
                                 app.globalData.isFirstLaunch = false;
                             }
-                            // wx.authorize({
-                            //     scope: 'scope.werun',
-                            //     fail: function() {
-                            //         that.globalData.initDisabled = true;
-                            //     },
-                            //     complete: function() {
-                            //     }
-                            // })
                         }
                     });
                 }
@@ -99,18 +92,18 @@ Page({
     },
     onPrepare: function() {
         var that = this;
-        app.onInitialize();
-        if (app.globalData.userInfo.user_id == 0) {
-            clearTimeout(that.data.tmrID);
-            that.data.tmrID = setTimeout(function() {
-                that.onPrepare();
-            }, 1000);
-        } else {
-            that.onInitStart();
-        }
+        wx.showLoading({
+            title: '加载中',
+        })
+        var option = that.data.options;
+        if (app.globalData.userInfo.user_id == 0)
+            app.onInitialize(function() {
+                that.onInitStart(option);
+            })
+        else
+            that.onInitStart(option);
     },
-    onInitStart: function() {
-        var options = this.data.options;
+    onInitStart: function(options) {
         this.setData({
             eventType: app.globalData.eventType,
             userRole: app.globalData.userRole,
@@ -119,6 +112,11 @@ Page({
         });
         var id = options.id;
         var that = this;
+
+        that.setData({
+            isAuthorized: (app.globalData.userInfo.state != 0)
+        })
+
         wx.request({
                 url: app.globalData.mainURL + 'api/getSiteDetail',
                 header: {
@@ -127,6 +125,7 @@ Page({
                 method: 'POST',
                 data: {
                     'boss_id': id,
+                    'boss_no': options.no,
                     'user_id': app.globalData.userInfo.user_id
                 },
                 success: function(res) {
@@ -135,10 +134,11 @@ Page({
                         var favor = res.data.favor;
                         if (site_buf != null) {
                             if (site_buf.point == null) site_buf.point = 0;
+                            if (parseFloat(site_buf.point) == 0.0) site_buf.point = 5;
                             if (site_buf.fav_state == null) site_buf.fav_state = 0;
                             else site_buf.fav_state = 1;
                             var star = that.data.starparam;
-                            star.score = site_buf.point * 1;
+                            star.score = (site_buf.point * 1).toFixed(1) * 1;
                             that.setData({
                                 starparam: star
                             })
@@ -149,6 +149,8 @@ Page({
                             for (var index = 0; index < picture.length; index++) {
                                 images[index] = app.globalData.uploadURL + picture[index].picture
                             }
+                        } else {
+                            images[0] = app.globalData.uploadURL + app.globalData.default_stadium_img[0].picture;
                         }
                         var event_buf = res.data.event;
                         for (var index = 0; index < event_buf.length; index++) {
@@ -164,11 +166,14 @@ Page({
                         var filtered_favor = [];
                         for (var index = 0; index < event_buf.length; index++) {
                             var iitem = event_buf[index];
+                            if (iitem.organizer_id == 0) continue;
                             if (iitem.organizer_id != site_buf.boss_id) continue;
+                            if (iitem.state == 2) continue;
                             if (iitem.register_num == null) {
                                 iitem.register_num = 0;
                             }
                             iitem.favor = favor[index];
+                            iitem.picture = iitem.pic.split(',');
                             filtered_event.push(iitem);
                         }
                         console.log(filtered_event);
@@ -179,15 +184,34 @@ Page({
                         */
                         // if (site_buf.site_name.length > 6)
                         //     site_buf.site_name = site_buf.site_name.substr(0, 6) + '...';
+
+                        var bossgroup = res.data.bossgroup;
+                        var site_bossgroup = [];
+                        for (var i = 0; i < bossgroup.length; i++) {
+                            var item = bossgroup[i];
+                            if (item.status == '3' || item.status == '2') continue;
+                            // var pictures = [];
+                            // var group_desc = JSON.parse(item.group_desc);
+                            // for (var j = 0; j < group_desc.length; j++) {
+                            //     pictures.push(group_desc[j].img);
+                            // }
+                            item.picture = images;
+                            site_bossgroup.push(item);
+                        }
                         that.setData({
                             site: site_buf,
+                            site_room: (res.data.site_room.length > 0),
                             rooturl: that.data.rooturl,
                             pictures: images,
                             isFavourite: is_favourite,
                             event: filtered_event,
-                            image_favs: that.data.image_favs
+                            image_favs: that.data.image_favs,
+                            bossgroup: site_bossgroup
                         })
                     }
+                },
+                complete: function() {
+                    wx.hideLoading({});
                 }
             })
             // set swiper image
@@ -211,6 +235,12 @@ Page({
             url: '../detail_event/detail_event?id=' + event.currentTarget.id,
         })
     },
+
+    click_detail_bossgroup: function(event) {
+        wx.navigateTo({
+            url: '../detail_bossgroup/detail_bossgroup?id=' + event.currentTarget.id,
+        })
+    },
     on_Clicked_Comment: function(event) {
         if (this.data.site.rating_amount == "0") return;
         wx.navigateTo({
@@ -218,8 +248,6 @@ Page({
         })
     },
     on_click_favourite: function() {
-
-
         var that = this;
         wx.request({
             url: app.globalData.mainURL + 'api/cancelFavouriteSite',
@@ -229,7 +257,8 @@ Page({
             },
             data: {
                 'user_id': app.globalData.userInfo.user_id,
-                'boss_id': that.data.site.boss_id
+                'boss_id': 0, //that.data.site.boss_id,
+                'boss_no': that.data.site.no
             },
             success: function(res) {
                 var site_buf = that.data.site
@@ -253,14 +282,17 @@ Page({
 
         var that = this;
         var sport = parseInt(that.data.site.site_type);
-        var title = "这家" + app.globalData.eventType[sport] + "场馆不错哦, 快来预定吧";
+        var title = "这家" + app.globalData.eventType[sport] + "商家不错哦, 快来预定吧";
         if (sport == 28)
-            title = "这家" + app.globalData.eventType[sport] + "场馆不错哦, 快来购买吧"
+            title = "这家" + app.globalData.eventType[sport] + "商家不错哦, 快来购买吧"
         else if (sport == 31)
-            title = "这家综合运动场馆不错哦, 快来预定吧"
+            title = "这家综合运动商家不错哦, 快来预定吧"
         else if (sport == 32)
-            title = "这家运动场馆不错哦, 快来预定吧"
+            title = "这家运动商家不错哦, 快来预定吧"
+        var point = that.data.site.point * 1;
+        if (point == 0) point = 5;
 
+        title = that.data.site.site_name + ', 电话: ' + this.data.site.phone + '';
         return {
             title: title,
             path: '/pages/index/detail_gym/detail_gym?id=' + that.data.site.boss_id +
@@ -280,9 +312,14 @@ Page({
     },
     go_home: function() {
         var that = this;
-        console.log(that.data);
         wx.switchTab({
             url: '../index',
+        })
+    },
+    go_claim: function() {
+        var that = this;
+        wx.navigateTo({
+            url: '../../profile/auth/auth?id=' + that.data.site.no,
         })
     },
     goto_mapView: function() {

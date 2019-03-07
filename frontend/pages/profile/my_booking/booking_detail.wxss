@@ -51,6 +51,13 @@
 
 .time_content {
     line-height: 40rpx;
+    display: flex;
+    justify-content: center;
+}
+
+.time_content view {
+    flex: auto;
+    align-self: flex-end;
 }
 
 .booking-place {
@@ -89,10 +96,11 @@
 }
 
 .booking-fav-text {
-    display: inline-block;
-    float: right;
+    /* display: inline-block; */
+    /* float: right; */
     vertical-align: middle;
-    line-height: 38rpx;
+    text-align: right;
+    /* line-height: 38rpx; */
     margin-right: 20rpx;
     font-family: PingFangSC-Regular;
     font-size: 24rpx;
@@ -173,6 +181,8 @@ button:after {
     border: none;
 }
 
+
+/* 
 .share_wechat {
     width: 40.6%;
     border-radius: 15rpx;
@@ -184,8 +194,8 @@ button:after {
     margin: 15rpx 60rpx;
     height: 74rpx;
     vertical-align: middle;
-    line-height: 64rpx;
-}
+    line-height: 74rpx;
+} */
 
 .img_share {
     width: 50rpx;

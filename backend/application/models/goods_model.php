@@ -21,7 +21,7 @@ class goods_model extends CI_Model
     {
         $this->db->select("pic");
         $this->db->from("goods_pic");
-        $this->db->where("good_id", $goodsId);
+        $this->db->where("goods_id", $goodsId);
         $query = $this->db->get();
         return $query->result();
     }
@@ -32,7 +32,7 @@ class goods_model extends CI_Model
      */
     function getGoodsList()
     {
-        $this->db->select("avatar, name, cost, id");
+        $this->db->select("avatar, name, cost, id, end_time");
         $this->db->from("goods");
         $this->db->where("state", 1);
         $this->db->where("isDeleted", 0);
@@ -46,7 +46,7 @@ class goods_model extends CI_Model
      */
     function getGoodDetail($goodId)
     {
-        $this->db->select("avatar, name,pic, cost, id, amount, comment");
+        $this->db->select("avatar, name,pic, cost, id, end_time, amount, comment");
         $this->db->from("goods");
         $this->db->where("isDeleted", 0);
         $this->db->where("id", $goodId);

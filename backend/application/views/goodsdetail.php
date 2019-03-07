@@ -43,11 +43,16 @@
                         <label> *消耗蜂蜜 : </label>
                         <div class="input-group margin">
                             <input name="price" type="text" id="product_name" class="form-control"
-                                   value="<?php echo ($goods!=null) ? $goods[0]->cost : ''; ?>" disabled
-                                   /> 
+                                   value="<?php echo ($goods!=null) ? $goods[0]->cost : ''; ?>" disabled />
                         </div>
+                        <div class="input-group margin">ml</div>
+                    </div>
+                    <div class="row form-inline">
+                        <label> 开始兑换时间 : </label>
                         <div class="input-group margin">
-                            ml
+                            <input id="endTime" name="endTime" class="datepicker-inline form-control" size="16"
+                                   placeholder="请选择"
+                                   type="text" value="<?php echo ($goods!=null) ? $goods[0]->end_time : ''; ?>" disabled>
                         </div>
                     </div>
                     <div class="row form-inline">

@@ -1,8 +1,15 @@
 <!-- User Activity Detail Viewer -->
 <view class="container">
-  <scroll-view scroll-y class='postadd-view'>
+  <view style="overflow-y:auto;" scroll-y class='postadd-view'>
           
-    <swiper class="personal-img-wrapper" indicator-dots="true" autoplay="true" interval="3000" duration="300">
+    <swiper class="personal-img-wrapper" wx:if="{{pictures.length==1}}" autoplay="true" interval="3000" duration="300">
+      <block wx:for="{{pictures}}" wx:key="index">
+        <swiper-item>
+          <image class="personal-event-img" mode="aspectFill" src="{{item}}" id="{{index}}"/>
+        </swiper-item>
+      </block>
+    </swiper>
+    <swiper class="personal-img-wrapper" wx:if="{{pictures.length>1}}" indicator-dots="true" autoplay="true" interval="3000" duration="300">
       <block wx:for="{{pictures}}" wx:key="index">
         <swiper-item>
           <image class="personal-event-img" mode="aspectFill" src="{{item}}" id="{{index}}"/>
@@ -48,7 +55,7 @@
           <text class='place-info-text' style="font-weight: bold;font-size: 30rpx; ">{{event.site_name}}</text>
         </view>
         <view class='place-info-view'>
-          <text wx:if="{{event.role == '1'}}" class='place-info-text'>馆主姓名：{{event.name}}</text>
+          <text wx:if="{{event.role == '1'}}" class='place-info-text'>商家姓名：{{event.name}}</text>
           <text wx:if="{{event.role == '2'}}" class='place-info-text'>发起人：{{event.name}}</text>
           <view class='place-info-text' bindtap="phone_call" data-id="{{event.agent_phone}}">联系方式：<text style='text-decoration: underline;'>{{event.agent_phone}}</text></view>
         </view>                 
@@ -122,6 +129,6 @@
         </view>
         
     </view>
-  </scroll-view>
+  </view>
 
 </view>

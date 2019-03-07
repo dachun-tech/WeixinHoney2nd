@@ -1,13 +1,17 @@
 var dateTimePicker = require('../../../utils/datetimePicker.js');
-var app = getApp();
+const app = getApp();
 
 Page({
     data: {
+        uploadURL: app.globalData.uploadURL,
         province: [],
         member_state: 0,
         role: 1,
-        publicity: 1,
         image_path: ["", "", ""],
+        switch_img: ["../../../image/switch_on@2x.png", "../../../image/switch_off@2x.png"],
+        isCancel: 1,
+        isPhone: 1,
+        isPublic: 1,
         display: ["display:none;", ""],
         select: [1, 0, 0],
         selected: 0,
@@ -21,9 +25,8 @@ Page({
             address4: "",
             limit: "",
             limit_perUser: "",
-            cost: 0,
+            cost: "",
             comment: "",
-            publicity: 1,
             additional: 1,
             showModal1: false,
             showModal2: false,
@@ -63,141 +66,155 @@ Page({
         templates: ["不使用模板", "系统默认模板", "上次编辑内容"],
         flag: 0,
     },
-
-    onLoad: function(params) {
-        this.setData({ textareastr: "", isProcessing: false })
-        var that = this;
-
-        this.setData({ placestr: "请输入活动简介，不超过500字" });
-
-        //get templates
-        if (!wx.getStorageSync("last_template_str")) {
-            wx.setStorageSync("last_template_str", "");
-        }
-        this.data.last_template_str = wx.getStorageSync("last_template_str");
-        this.setData({ last_template_str: this.data.last_template_str });
-        that.setData({ system_templates: app.globalData.template });
-
-        that.setData({
-            textareastr: that.data.last_template_str
-        });
-        that.data.event.comment = that.data.textareastr;
-
-        // 获取完整的年月日 时分秒，以及默认显示的数组
-        var obj = dateTimePicker.dateTimePicker(this.data.startYear, this.data.endYear);
-        var obj1 = dateTimePicker.dateTimePicker(this.data.startYear, this.data.endYear);
-        // 精确到分的处理，将数组的秒去掉
-        var lastArray = obj1.dateTimeArray.pop();
-        var lastTime = obj1.dateTime.pop();
-
-        wx.request({
-            url: app.globalData.mainURL + 'api/getRules',
-            method: 'POST',
-            header: {
-                'content-type': 'application/json'
-            },
-            success: function(res) {
-                console.log(res)
-                app.globalData.rule = res.data.rule
-                console.log(app.globalData.rule)
-            },
-        })
-        console.log(app.globalData.rule)
-        this.setData({
-            dateTime: obj.dateTime,
-            dateTimeArray: obj.dateTimeArray,
-            dateTimeArray1: obj1.dateTimeArray,
-            dateTime1: obj1.dateTime,
-            honey: app.globalData.rule[8].value
-        });
-
-        this.setData({ isshow: 1 })
-        if (app.globalData.detailaddress != undefined)
-            this.setData({ detailaddress: app.globalData.detailaddress })
-        this.data.longitude = app.globalData.longitude
-        this.data.latitude = app.globalData.latitude
-
-        this.setData({
-            role: app.globalData.userInfo.role,
-            eventType: app.globalData.eventType
-        })
-        var _this = this;
-
-        _this.data.event.start_time = "" + _this.data.dateTimeArray1[0][_this.data.dateTime1[0]] + '-' + _this.data.dateTimeArray1[1][_this.data.dateTime1[1]] + '-' + _this.data.dateTimeArray1[2][_this.data.dateTime1[2]] + ' ' + _this.data.dateTimeArray1[3][_this.data.dateTime1[3]] + ':' + _this.data.dateTimeArray1[4][_this.data.dateTime1[4]];
-        _this.data.event.end_time = "" + _this.data.dateTimeArray[0][_this.data.dateTime[0]] + '-' + _this.data.dateTimeArray[1][_this.data.dateTime[1]] + '-' + _this.data.dateTimeArray[2][_this.data.dateTime[2]] + ' ' + _this.data.dateTimeArray[3][_this.data.dateTime[3]] + ':' + _this.data.dateTimeArray[4][_this.data.dateTime[4]];
-
-        wx.hideTabBar({})
-        wx.request({
-            url: app.globalData.mainURL + 'api/getProvinces',
-            success: function(res) {
-                var tempprovince = res.data.result
-                tempprovince.unshift({ id: "0", province: "请选择省" })
-                _this.setData({
-                    province: tempprovince,
-                    member_state: app.globalData.userInfo.isVIP
-                })
-            }
-        })
-        wx.request({
-            url: app.globalData.mainURL + 'api/getUserState',
-            data: {
-                'nickname': app.globalData.userInfo.nickname
-            },
-            method: 'POST',
-            header: {
-                'content-type': 'application/json'
-            },
-            success: function(res) {
-                if (res.data.status) {
-                    that.setData({
-                        role: res.data.result[0].role
-                    })
-                    if (that.data.role == "1") {
-                        wx.request({
-                            url: app.globalData.mainURL + 'api/getUserDetail',
-                            data: {
-                                user_id: app.globalData.userInfo.user_id
-                            },
-                            method: 'POST',
-                            header: {
-                                'content-type': 'application/json'
-                            },
-                            success: function(res) {
-                                that.setData({
-                                    province_name: res.data.result[0].province,
-                                    city_name: res.data.result[0].city,
-                                    area_name: res.data.result[0].area,
-                                    province_id: res.data.result[0].province_id,
-                                    city_id: res.data.result[0].city_id,
-                                    area_id: res.data.result[0].area_id,
-                                    select_position_text: res.data.result[0].province + res.data.result[0].city + res.data.result[0].area,
-                                    detail_address: res.data.result[0].detail_address,
-                                    longitude: res.data.result[0].longitude,
-                                    latitude: res.data.result[0].latitude,
-                                })
-
-                                _this.data.event.address4 = res.data.result[0].detail_address
-                            }
-                        })
-                    }
-                }
-            }
-        })
-
-    },
-    onReady: function() {
-        wx.hideTabBar({
-            fail: function() {
-                setTimeout(function() { // Do a delay retries as a guarantee.
-                    wx.hideTabBar()
-                }, 500)
-            }
-        });
+    onLoad: function(options) {
+        app.globalData.ischooseimage = 0;
     },
     onShow: function() {
+        var that = this;
+        console.log(app.globalData.ischooseimage);
+        if (app.globalData.ischooseimage == 0) {
+
+            that.data.isProcessing = false;
+
+            wx.showLoading({
+                title: '加载中',
+            })
+
+            //get templates
+            if (!wx.getStorageSync("last_template_str")) {
+                wx.setStorageSync("last_template_str", "");
+            }
+            this.data.last_template_str = wx.getStorageSync("last_template_str");
+
+            that.setData({
+                textareastr: "",
+                placestr: "请输入活动简介，不超过500字",
+                textareastr: that.data.last_template_str,
+                last_template_str: this.data.last_template_str,
+                system_templates: app.globalData.template
+            });
+            that.data.event.comment = that.data.textareastr;
+
+            // 获取完整的年月日 时分秒，以及默认显示的数组
+            var obj = dateTimePicker.dateTimePicker(this.data.startYear, this.data.endYear);
+            var obj1 = dateTimePicker.dateTimePicker(this.data.startYear, this.data.endYear);
+            // 精确到分的处理，将数组的秒去掉
+            var lastArray = obj1.dateTimeArray.pop();
+            var lastTime = obj1.dateTime.pop();
+
+            if (app.globalData.rule == '') {
+                wx.request({
+                    url: app.globalData.mainURL + 'api/getRules',
+                    method: 'POST',
+                    header: {
+                        'content-type': 'application/json'
+                    },
+                    success: function(res) {
+                        app.globalData.rule = res.data.rule
+                        console.log(app.globalData.rule)
+                    },
+                });
+            }
+
+            if (app.globalData.detailaddress != undefined)
+                this.setData({ detailaddress: app.globalData.detailaddress })
+
+            this.data.longitude = app.globalData.longitude
+            this.data.latitude = app.globalData.latitude
+
+            this.setData({
+                dateTime: obj.dateTime,
+                dateTimeArray: obj.dateTimeArray,
+                dateTimeArray1: obj1.dateTimeArray,
+                dateTime1: obj1.dateTime,
+                honey: app.globalData.rule[8].value,
+                role: app.globalData.userInfo.role,
+                eventType: app.globalData.eventType
+            })
+
+
+
+            var _this = this;
+
+            _this.data.event.start_time = "" + _this.data.dateTimeArray1[0][_this.data.dateTime1[0]] + '-' + _this.data.dateTimeArray1[1][_this.data.dateTime1[1]] + '-' + _this.data.dateTimeArray1[2][_this.data.dateTime1[2]] + ' ' + _this.data.dateTimeArray1[3][_this.data.dateTime1[3]] + ':' + _this.data.dateTimeArray1[4][_this.data.dateTime1[4]];
+            _this.data.event.end_time = "" + _this.data.dateTimeArray[0][_this.data.dateTime[0]] + '-' + _this.data.dateTimeArray[1][_this.data.dateTime[1]] + '-' + _this.data.dateTimeArray[2][_this.data.dateTime[2]] + ' ' + _this.data.dateTimeArray[3][_this.data.dateTime[3]] + ':' + _this.data.dateTimeArray[4][_this.data.dateTime[4]];
+
+            wx.request({
+                url: app.globalData.mainURL + 'api/getProvinces',
+                success: function(res) {
+                    var tempprovince = res.data.result
+                    tempprovince.unshift({ id: "0", province: "请选择省" });
+                    _this.data.province = tempprovince;
+                    _this.data.member_state = app.globalData.userInfo.isVIP;
+                }
+            })
+
+            wx.request({
+                url: app.globalData.mainURL + 'api/getUserState',
+                data: {
+                    'nickname': app.globalData.userInfo.nickname
+                },
+                method: 'POST',
+                header: {
+                    'content-type': 'application/json'
+                },
+                success: function(res) {
+                    if (res.data.status) {
+                        that.setData({
+                            role: res.data.result[0].role
+                        })
+                        if (that.data.role == "1") {
+                            wx.request({
+                                url: app.globalData.mainURL + 'api/getUserDetail',
+                                data: {
+                                    user_id: app.globalData.userInfo.user_id
+                                },
+                                method: 'POST',
+                                header: {
+                                    'content-type': 'application/json'
+                                },
+                                success: function(res) {
+                                    that.setData({
+                                        province_name: res.data.result[0].province,
+                                        city_name: res.data.result[0].city,
+                                        area_name: res.data.result[0].area,
+                                        province_id: res.data.result[0].province_id,
+                                        city_id: res.data.result[0].city_id,
+                                        area_id: res.data.result[0].area_id,
+                                        select_position_text: res.data.result[0].province + res.data.result[0].city + res.data.result[0].area,
+                                        detail_address: res.data.result[0].detail_address,
+                                        longitude: res.data.result[0].longitude,
+                                        latitude: res.data.result[0].latitude,
+                                    })
+
+                                    _this.data.event.address4 = res.data.result[0].detail_address
+                                },
+                                complete: function() {}
+                            })
+                        }
+                    }
+                }
+            })
+        }
+
+        console.log(this.data.latitude + ',' + this.data.longitude);
+
+        app.globalData.ischooseimage = 0;
+        this.onPrepare();
+    },
+    onReady: function() {
+        // wx.hideTabBar({
+        //     fail: function() {
+        //         setTimeout(function() { // Do a delay retries as a guarantee.
+        //             wx.hideTabBar()
+        //         }, 500)
+        //     }
+        // });
+    },
+    onPrepare: function() {
         app.globalData.iscreatepage = 1
         var that = this
-        that.data.is_cross = 0
+        that.data.is_cross = 0;
         wx.request({
             url: app.globalData.mainURL + 'api/getUserState',
             method: 'post',
@@ -205,7 +222,6 @@ Page({
                 'nickname': app.globalData.userInfo.nickname
             },
             success: function(res) {
-
                 var user_name = wx.getStorageSync('createEventUser');
                 var user_phone = wx.getStorageSync('createEventPhone');
                 if (user_name == '')
@@ -218,10 +234,8 @@ Page({
                     val_username: user_name,
                     val_phone: user_phone,
                 })
-
-
                 app.globalData.userInfo.state = res.data.result[0].state
-                if (app.globalData.userInfo.state == 0) {
+                if (app.globalData.userInfo.state == 0 || app.globalData.userInfo.role == 0) {
                     wx.showModal({
                         title: '提示',
                         content: '请先进行身份认证',
@@ -234,9 +248,7 @@ Page({
                             } else if (res.cancel) {
                                 wx.switchTab({
                                     url: '../../index/index',
-                                    success: function() {
-                                        wx.showTabBar({})
-                                    }
+                                    success: function() {}
                                 })
                             }
                         },
@@ -244,9 +256,7 @@ Page({
                             if (that.data.is_cross == 0)
                                 wx.switchTab({
                                     url: '../../index/index',
-                                    success: function() {
-                                        wx.showTabBar({})
-                                    }
+                                    success: function() {}
                                 })
                         }
                     })
@@ -265,11 +275,7 @@ Page({
                             } else if (res.cancel) {
                                 wx.switchTab({
                                     url: '../../index/index',
-                                    success: function() {
-                                        wx.showTabBar({
-
-                                        })
-                                    }
+                                    success: function() {}
                                 })
                             }
                         },
@@ -277,11 +283,7 @@ Page({
                             if (that.data.is_cross == 0)
                                 wx.switchTab({
                                     url: '../../index/index',
-                                    success: function() {
-                                        wx.showTabBar({
-
-                                        })
-                                    }
+                                    success: function() {}
                                 })
                         }
                     })
@@ -295,11 +297,7 @@ Page({
                         complete: function() {
                             wx.switchTab({
                                 url: '../../index/index',
-                                success: function() {
-                                    wx.showTabBar({
-
-                                    })
-                                }
+                                success: function() {}
                             })
                         }
                     })
@@ -309,22 +307,18 @@ Page({
                 if (have_stadium == 0 && 1 * app.globalData.userInfo.role == 1) {
                     wx.showModal({
                         title: '提示',
-                        content: '请填写场馆资料',
+                        content: '请填写商家资料',
                         success: function(res) {
                             if (res.confirm) {
                                 wx.redirectTo({
                                     url: '../../profile/register_stadium/register_stadium',
-                                    success: function() {
-                                        wx.showTabBar({})
-                                    }
+                                    success: function() {}
                                 })
                                 that.data.is_cross = 1
                             } else if (res.cancel) {
                                 wx.switchTab({
                                     url: '../../index/index',
-                                    success: function() {
-                                        wx.showTabBar({})
-                                    }
+                                    success: function() {}
                                 })
                             }
                         },
@@ -332,20 +326,19 @@ Page({
                             if (that.data.is_cross == 0)
                                 wx.switchTab({
                                     url: '../../index/index',
-                                    success: function() {
-                                        wx.showTabBar({
-
-                                        })
-                                    }
+                                    success: function() {}
                                 })
                         }
                     })
                 }
+            },
+            complete: function() {
+                wx.hideLoading({});
             }
         })
     },
     navigateBack: function() {
-        console.log("OKBACK")
+        // console.log("OKBACK")
     },
     showitem: function() {
         this.setData({
@@ -383,20 +376,24 @@ Page({
     },
     On_blur_detailaddress: function(e) {
         this.data.event.address4 = e.detail.value;
+        this.setData({ event: this.data.event });
     },
     on_blur_limit: function(e) {
         this.data.event.limit = e.detail.value;
+        this.setData({ event: this.data.event });
     },
     on_blur_limit_perUser: function(e) {
         this.data.event.limit_perUser = e.detail.value;
+        this.setData({ event: this.data.event });
     },
     on_blur_cost: function(e) {
         this.data.event.cost = e.detail.value;
+        this.setData({ event: this.data.event });
     },
     on_blur_comment: function(e) {
         this.data.event.comment = e.detail.value;
-        this.data.flag == 1;
         this.setData({
+            event: this.data.event,
             textareastr: e.detail.value,
             flag: 1
         })
@@ -404,13 +401,13 @@ Page({
     on_blur_scroll: function() {
         var that = this;
         // if (that.data.flag == 1) {
-        that.data.flag = 0;
         that.setData({
-                flag: 0
-            })
-            // }
+            flag: 0,
+            focus_comment: false
+        });
+        // }
     },
-    scrollDown: function() {
+    scroll2Down: function() {
         var that = this;
         if (that.data.flag == 0) {
             that.data.flag = 1;
@@ -428,24 +425,27 @@ Page({
     },
     on_event_name: function(e) {
         this.data.event.name = e.detail.value;
+        this.setData({ event: this.data.event });
     },
     on_agent_name: function(e) {
         this.data.event.agent_name = e.detail.value;
         wx.setStorageSync('createEventUser', e.detail.value);
         this.setData({
-            val_username: e.detail.value
+            val_username: e.detail.value,
+            event: this.data.event
         })
     },
     on_agent_phone: function(e) {
         this.data.event.agent_phone = e.detail.value;
         wx.setStorageSync('createEventPhone', e.detail.value);
         this.setData({
-            val_phone: e.detail.value
+            val_phone: e.detail.value,
+            event: this.data.event
         })
     },
 
     On_click_map: function(e) {
-        var that = this
+        var that = this;
         app.globalData.ischooseimage = 1
         wx.chooseLocation({
             success: function(res) {
@@ -473,6 +473,7 @@ Page({
                         //get province infomation
                         var province_index = that.data.province.findIndex(item => item.province == province_name)
 
+                        that.data.event.address4 = got_address;
                         that.setData({
                             detail_address: got_address,
                             select_position_text: province_name + city_name + area_name,
@@ -480,13 +481,13 @@ Page({
                             province_name: province_name,
                             city_name: city_name,
                             area_name: area_name,
-                            flag: 0
-                        })
-                        that.data.event.address4 = got_address;
-                        that.setData({
-                                event: that.data.event
-                            })
-                            //get city infomation
+                            flag: 0,
+                            event: that.data.event,
+                            latitude: that.data.latitude,
+                            longitude: that.data.longitude
+                        });
+                        console.log('--------' + that.data.longitude + ',' + that.data.latitude);
+                        //get city infomation
                         wx.request({
                             url: app.globalData.mainURL + "api/getCities",
                             method: 'POST',
@@ -529,16 +530,16 @@ Page({
                 })
             },
             complete: function(res) {
-                console.log(res)
+                // console.log(res)
             }
         })
     },
-    changeDate(e) {
-        this.setData({ date: e.detail.value });
-    },
-    changeTime(e) {
-        this.setData({ time: e.detail.value });
-    },
+    // changeDate(e) {
+    //     this.setData({ date: e.detail.value });
+    // },
+    // changeTime(e) {
+    //     this.setData({ time: e.detail.value });
+    // },
     changeDateTime(e) {
         var _this = this
         _this.setData({
@@ -635,12 +636,26 @@ Page({
         });
     },
     radioChange: function(e) {
-        var _this = this
-        _this.data.event.publicity = e.detail.value
-        _this.setData({
-            event: _this.data.event,
-            publicity: e.detail.value
-        })
+        var that = this
+        var type = e.currentTarget.dataset.type;
+        switch (type) {
+            case "isCancel":
+                that.data.isCancel = 1 - that.data.isCancel;
+                break;
+            case "isPhone":
+                that.data.isPhone = 1 - that.data.isPhone;
+                break;
+            case "isPublic":
+                that.data.isPublic = 1 - that.data.isPublic;
+                break;
+        }
+
+        that.setData({
+            isCancel: that.data.isCancel,
+            isPhone: that.data.isPhone,
+            isPublic: that.data.isPublic,
+            event: that.data.event
+        });
     },
     radioChange1: function(e) {
         var _this = this
@@ -652,14 +667,13 @@ Page({
     on_cancel: function() {
         wx.switchTab({
             url: '../../index/index',
-            success: function() {
-                wx.showTabBar({})
-            }
+            success: function() {}
         })
     },
     on_submit: function() {
+
+        this.data.isProcessing = true;
         this.setData({
-            isProcessing: true,
             flag: 0
         })
 
@@ -881,8 +895,6 @@ Page({
         if (_this.data.event.comment == '') {
             _this.setData({
                 isProcessing: false,
-            })
-            _this.setData({
                 focus_comment: true,
                 flag: 1
             })
@@ -1008,7 +1020,9 @@ Page({
                 'limit': _this.data.event.limit,
                 'cost': _this.data.event.cost,
                 'comment': _this.data.event.comment,
-                'publicity': _this.data.event.publicity,
+                'publicity': _this.data.isPublic,
+                'isCancel': _this.data.isCancel,
+                'isPhone': _this.data.isPhone,
                 'additional': _this.data.event.additional,
                 'member_state': app.globalData.userInfo.isVIP * 1,
                 'image_str': image_str,
@@ -1020,7 +1034,7 @@ Page({
                 'content-type': 'application/json'
             },
             success: function(res) {
-                if (app.globalData.userInfo.role == 2 && _this.data.event.publicity == 1 && _this.data.event.additional == 1) {
+                if (app.globalData.userInfo.role == 2 && _this.data.isPublic == 1 && _this.data.event.additional == 1) {
                     var honey = wx.getStorageSync('honey_info')
                         //honey.total_honey -= _this.data.honey * 1
                     app.globalData.honey_info = honey
@@ -1032,11 +1046,9 @@ Page({
                     time: 3000,
                     success: function() {
                         setTimeout(function() {
-                            wx.switchTab({
-                                url: '../../activity/activity',
-                                success: function() {
-                                    wx.showTabBar({})
-                                }
+                            wx.redirectTo({
+                                url: '../../index/detail_event/detail_event?id=' + res.data.result,
+                                success: function() {}
                             })
                         }, 1000);
                     }
@@ -1116,37 +1128,42 @@ Page({
             flag: 0
         });
     },
-    preventTouchMove: function() {
-        console.log("Ok")
-    },
-
     //upload image functions
     on_click_image: function(e) {
         var that = this;
         var id = e.target.id;
-        if (id >= that.data.selected)
+        if (id >= 3) return;
+        if (id >= that.data.selected) {
+            app.globalData.ischooseimage = 1;
             wx.chooseImage({
-                count: 1,
+                count: 3,
                 success: function(res) {
+
                     var image = that.data.image_path;
                     // if (res.tempFiles[0].size > 1048) {
-                    if (res.tempFiles[0].size > 10485760) {
-                        wx.showToast({
-                            title: '图片太大，无法上传！',
-                            icon: 'none',
-                            duration: 3000
-                        });
-                        return;
-                        that.data.overimagecount++;
+                    for (var i = 0; i < res.tempFiles.length; i++) {
+                        if (res.tempFiles[i].size > 10485760) {
+                            wx.showToast({
+                                title: '图片太大，无法上传！',
+                                icon: 'none',
+                                duration: 3000
+                            });
+                            return;
+                            that.data.overimagecount++;
+                        }
                     }
-                    image[that.data.selected] = res.tempFilePaths[0];
-                    that.setData({ image_path: image, selected: that.data.selected + 1 })
-                    var select_buf = that.data.select;
-                    select_buf[that.data.selected] = 1;
-                    that.data.isimage++
-                        that.setData({ select: select_buf })
+                    for (var i = 0; i < res.tempFiles.length; i++) {
+                        image[that.data.selected] = res.tempFilePaths[i];
+                        that.data.selected++;
+                        if (that.data.selected > 2) break;
+                        that.data.select[that.data.selected] = 1;
+                        that.data.isimage++;
+                    }
+                    that.setData({ image_path: image, selected: that.data.selected, select: that.data.select });
+                    console.log(id + ',' + that.data.selected);
                 },
-            })
+            });
+        }
     },
     on_click_delete: function(event) {
         var that = this;
@@ -1169,12 +1186,14 @@ Page({
             image[2] = '';
             select_buf[2] = 1;
         }
-        that.data.isimage--
-            that.setData({
-                image_path: image,
-                select: select_buf,
-                selected: that.data.selected - 1
-            })
+        that.data.isimage--;
+        that.data.selected--;
+        that.setData({
+            image_path: image,
+            select: select_buf,
+            selected: that.data.selected
+        })
+        console.log(id + ',' + that.data.selected)
     },
 
     bindtemplatechange: function(e) {

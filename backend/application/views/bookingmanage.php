@@ -137,6 +137,20 @@
                                         <a href="<?php echo base_url() . 'bookingDetail/' . $record->id; ?>">
                                             查看
                                         </a>
+                                        <?php
+                                        if (
+                                            ($record->state == 0 && $record->isCancel == 1)
+                                        ) {
+                                            echo '<a href="javascript:;" onclick="cancel_booking(\'' . $record->id . '\','
+                                                . '\'' . $record->user_id . '\','
+                                                . '\'' . ((isset($record->open_id))?$record->open_id:"") . '\','
+                                                . '\'' . $record->out_trade_no . '\','
+                                                . '\'' . $record->pay_online . '\','
+                                                . ')">删除</a>';
+                                        } else {
+                                            echo '<a href="javascript:;" onclick="cancel_booking()" style="color: #888;">删除</a>';
+                                        }
+                                        ?>
                                     </td>
                                 </tr>
                                 <?php
@@ -168,5 +182,55 @@
         console.log("here");
         $("#toTime").val("");
     }
+
+    function cancel_booking(id, user_id, open_id, trade_no, fee, book_type) {
+        if(!id) {
+            alert(' 该订单无法删除');
+            return;
+        }
+        var refund_no = '1500220062' + Date.now()
+        if (confirm('是否取消此用户的订单?')) {
+            var url = baseURL + 'api/datamanage/cancelBooking';
+            if (parseFloat(fee) > 0) {
+                $.ajax({
+                    type: 'post',
+                    url: baseURL + 'api/refund',
+                    contentType: 'application/json',
+                    dataType: 'application/json',
+                    data: JSON.stringify({
+                        id: open_id,
+                        user_id: user_id,
+                        fee: fee,
+                        out_trade_no: trade_no,
+                        out_refund_no: refund_no
+                    }),
+                    complete: function (res) {
+                        $.ajax({
+                            type: 'post',
+                            url: url,
+                            contentType: 'application/json',
+                            dataType: 'application/json',
+                            data: JSON.stringify({booking_id: id, out_refund_no: refund_no}),
+                            complete: function (res) {
+                                location.reload();
+                            }
+                        });
+                    }
+                });
+            } else {
+                $.ajax({
+                    type: 'post',
+                    url: url,
+                    contentType: 'application/json',
+                    dataType: 'application/json',
+                    data: JSON.stringify({booking_id: id, out_refund_no: refund_no}),
+                    complete: function (res) {
+                        location.reload();
+                    }
+                });
+            }
+        }
+    }
+
 </script>
 

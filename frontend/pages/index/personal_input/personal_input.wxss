@@ -154,7 +154,7 @@
     padding-left: 12rpx;
 }
 
-.bnt-cost {
+.btn-cost {
     position: fixed;
     bottom: 0rpx;
     width: 100%;

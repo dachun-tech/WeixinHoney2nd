@@ -5,6 +5,7 @@ const app = getApp()
 
 Page({
     data: {
+        uploadURL: app.globalData.uploadURL,
         event: {
             start_time: '',
             end_time: '',
@@ -17,24 +18,14 @@ Page({
         },
         delta: 0,
 
-        start_date: "2018-08-31",
-        remain_day: 37,
-        end_date: "08-01",
+        start_date: "",
+        end_date: "",
+        remain_day: "",
+        final_date: "",
         img_url: '',
         show_state: false,
 
-        condition_array: ["姓名",
-            "电话",
-            "球队",
-            "俱乐部",
-            "性别",
-            "身份证号",
-            "所在城市",
-            "所在大学院系",
-            "职业",
-            "微信号",
-            "邮箱"
-        ],
+        condition_array: ["姓名", "电话", "球队", "俱乐部", "性别", "身份证号", "所在城市", "所在大学院系", "职业", "微信号", "邮箱", "上传照片"],
         condition_str: "",
         event_comment: '',
         train_type: ["赛事", "培训"],
@@ -51,6 +42,7 @@ Page({
         is_registered: false,
         register_amount: 0,
         btn_text: '立即报名',
+        is_disabled: true,
         rating: 0,
         rating_amount: 0,
         fav_img_list: ['../../../image/good_n@2x.png', '../../../image/good_s@2x.png'],
@@ -64,6 +56,9 @@ Page({
     },
     onLoad: function(option) {
         var that = this;
+        ///////// temporary added ///////
+        // option.id = 1340;
+        /////////////////////////////////
         that.data.options = option;
     },
     getUserModalHide: function() {
@@ -112,42 +107,63 @@ Page({
                                 _this.onPrepare();
                                 app.globalData.isFirstLaunch = false;
                             }
-                            // wx.authorize({
-                            //     scope: 'scope.werun',
-                            //     fail: function() {
-                            //        // that.globalData.initDisabled = true;
-                            //     },
-                            //     complete: function() {
-
-                            //     }
-                            // })
                         }
                     });
                 }
             }
         });
     },
+    onUnload: function() {
+        this.onHide();
+    },
+    onHide: function() {
+        clearInterval(this.data.tmrID);
+        clearTimeout(this.data.tmr_id);
+    },
     onPrepare: function() {
         var that = this;
-        app.onInitialize();
-        if (app.globalData.userInfo.user_id == 0) {
-            clearTimeout(that.data.tmrID);
-            that.data.tmrID = setTimeout(function() {
-                that.onPrepare();
-            }, 1000);
-        } else {
-            that.onInitStart();
-        }
-    },
-    onInitStart: function() {
-        var option = this.data.options;
         wx.showLoading({
             title: '加载中',
         })
+        var option = that.data.options;
+
+        var _this = app;
+        wx.login({
+            success: function(res) {
+                _this.globalData.user_code = res.code;
+                wx.request({
+                    url: _this.globalData.mainURL + "api/getopenid",
+                    data: {
+                        code: _this.globalData.user_code
+                    },
+                    method: 'POST', // OPTIONS, GET, HEAD, POST, PUT, DELETE, TRACE, CONNECT    
+                    header: {
+                        'content-type': 'application/json'
+                    }, // 设置请求的 header    
+                    success: function(res) {
+                        var obj = {};
+                        _this.globalData.token = res.data.token;
+                        obj.openid = res.data.openid;
+                        obj.expires_in = Date.now() + res.data.expires_in;
+                        _this.globalData.open_id_info = obj;
+                        wx.setStorageSync('openid', res.data.openid); //存储openid 
+                        wx.setStorageSync('session_key', res.data.session_key)
+
+                        if (app.globalData.userInfo.user_id == 0)
+                            app.onInitialize(function() {
+                                that.onInitStart(option);
+                            })
+                        else
+                            that.onInitStart(option);
+
+                        // console.log('User step is ', wx.getStorageSync('user_step'));
+                    }
+                });
+            }
+        })
+    },
+    onInitStart: function(option) {
         this.data.isProcessing = true;
-        setTimeout(function() {
-            wx.hideLoading()
-        }, 2000)
         this.setData({
             userInfo: app.globalData.userInfo,
             eventType: app.globalData.eventType,
@@ -227,7 +243,8 @@ Page({
 
                 that.setData({
                     rating: 1 * res.data.favor[0],
-                    feedbacks: res.data.feedbacks
+                    feedbacks: res.data.feedbacks,
+                    myId: app.globalData.userInfo.user_id
                 })
 
 
@@ -245,12 +262,41 @@ Page({
                 time = event_buf.end_time.split(':');
                 event_buf.end_time = time[0] + ':' + time[1];
 
+                clearInterval(that.data.tmrID);
+                that.data.tmrID = setInterval(function() {
+                    var now = Date.now();
+                    var tempdate = Date.parse(event_buf.final_time.replace(/-/g, '/'))
+                    var tempdiff = (tempdate - now);
+                    if (tempdiff < 0) tempdiff = 0;
+                    var remain_day = Math.floor(tempdiff / 86400000);
+                    tempdiff = tempdiff - remain_day * 86400000;
+                    var remain_hr = Math.floor(tempdiff / 3600000);
+                    tempdiff = tempdiff - remain_hr * 3600000;
+                    var remain_min = Math.floor(tempdiff / 60000);
+                    var remain_sec = Math.floor((tempdiff - remain_min * 60000) / 1000);
+                    remain_day = remain_day + '天 ' + that.makeNDigit(remain_hr) + ':' + that.makeNDigit(remain_min) + ':' + that.makeNDigit(remain_sec);
+                    that.setData({
+                        remain_day: remain_day,
+                    })
+                }, 1000);
                 var now = Date.now();
-                var tempdate = Date.parse(event_buf.end_time.replace(/-/g, '/'))
-                var remain_day = Math.floor((tempdate - now) / 86400000);
-                var start_date = event_buf.start_time.split(' ')[0];
-                var day_array = event_buf.end_time.split(' ')[0].split('-')
-                var end_date = day_array[1] + '-' + day_array[2];
+                var tempdate = Date.parse(event_buf.final_time.replace(/-/g, '/'))
+                var tempdiff = (tempdate - now);
+                var remain_day = Math.floor(tempdiff / 86400000);
+                tempdiff = tempdiff - remain_day * 86400000;
+                var remain_hr = Math.floor(tempdiff / 3600000);
+                tempdiff = tempdiff - remain_hr * 3600000;
+                var remain_min = Math.floor(tempdiff / 60000);
+                var remain_sec = Math.floor((tempdiff - remain_min * 60000) / 1000);
+                remain_day = remain_day + '天 ' + remain_hr + ':' + remain_min + ':' + remain_sec;
+                that.setData({
+                    remain_day: remain_day,
+                })
+
+                var start_date = event_buf.start_time.split(':')[0] + ':' + event_buf.start_time.split(':')[1];
+                var end_date = event_buf.end_time.split(':')[0] + ':' + event_buf.end_time.split(':')[1];
+                var day_array = event_buf.final_time.split(' ')[0].split('-')
+                var final_date = day_array[1] + '-' + day_array[2];
 
                 var event_comment = event_buf.comment
                 WxParse.wxParse('event_comment', 'html', event_comment, that)
@@ -285,9 +331,9 @@ Page({
                     id: that.data.id,
                     pictures: images,
                     comment: '',
-                    remain_day: remain_day,
                     start_date: start_date,
                     end_date: end_date,
+                    final_date: final_date,
                     condition_str: condition_str
                 });
                 wx.setNavigationBarTitle({
@@ -297,7 +343,11 @@ Page({
                 //get booking
                 var books = res.data.booking;
                 var registered_num = 0;
-                that.setData({ favourite_num: 1 * res.data.result[0].favor_state })
+                that.setData({
+                    favourite_num: 1 * res.data.result[0].favor_state,
+                    is_disabled: false,
+                    btn_text: '立即报名',
+                })
                 for (var index = 0; index < books.length; index++) {
                     console.log(books[index].nickname)
                     if (books[index].user_id == app.globalData.userInfo.user_id && books[index].state == '0') {
@@ -332,10 +382,13 @@ Page({
                 })
 
                 console.log(that.data.event);
-                console.log(that.data.booking);
-                console.log(that.data.feedbacks);
+                // console.log(that.data.booking);
+                // console.log(that.data.feedbacks);
                 that.show_canvas();
                 that.data.isProcessing = false;
+            },
+            complete: function() {
+                wx.hideLoading({});
             }
         })
     },
@@ -362,100 +415,158 @@ Page({
                         type: 'image',
                         success: (resp) => {
                             var qr_filePath = resp.tempFilePath;
+                            image_url = that.data.uploadURL + 'global/picture04@2x.png';
+                            if (that.data.is_train == 0)
+                                image_url = that.data.uploadURL + 'global/picture03@2x.png';
 
-                            const ctx = wx.createCanvasContext('shareImg')
+                            wx.downloadFile({
+                                url: image_url,
+                                type: 'image',
+                                success: (resp) => {
+                                    var img_filePath = resp.tempFilePath;
 
-                            ctx.globalAlpha = 0.4
-                            ctx.setFillStyle('#000')
-                            ctx.fillRect(0, 0, 600, 200)
+                                    const ctx = wx.createCanvasContext('shareImg')
 
-                            ctx.globalAlpha = 1.0
-                            ctx.setFillStyle('#ffffff')
-                            ctx.setFontSize(25)
-                            ctx.fillText('我发现了一个很棒的活动，快来和我一起报名,', 50, 90)
-                            ctx.fillText('一起运动吧~', 50, 132)
+                                    var ww = 750;
+                                    var hh = 985;
+                                    ctx.drawImage(img_filePath, 0, 0, ww, 685);
+
+                                    ctx.globalAlpha = 0.6;
+                                    ctx.setFillStyle('#000');
+                                    ctx.fillRect(0, 540, ww, 685 - 540);
+
+                                    ctx.globalAlpha = 1.0
+                                    ctx.setFillStyle('#ffffff')
+                                    ctx.fillRect(0, 685, ww, hh - 685);
+
+                                    ctx.setStrokeStyle('#ffffff')
+                                    ctx.beginPath()
+                                    ctx.moveTo(375, 560)
+                                    ctx.lineTo(375, 665)
+                                    ctx.stroke()
+
+                                    ctx.setTextAlign('center')
+                                    ctx.font = 'normal 24px PingFangSC-Regular';
+                                    ctx.fillText('比赛日期', 190, 582)
+                                        // ctx.fillText(that.data.train_type[that.data.is_train] + '日期', 150, 625)
+
+                                    ctx.setTextAlign('left')
+                                    ctx.fillText(that.data.start_date + ' 到', 75, 625)
+                                    ctx.fillText(that.data.end_date, 75, 660)
+
+                                    ctx.setTextAlign('center')
+                                    var end_date = that.data.event.final_time.split(' ')[0];
+                                    end_date = end_date.split('-')[1] + '-' + end_date.split('-')[2];
+                                    ctx.fillText('截止日(' + end_date + ')', 560, 593)
+                                    var remain_day = that.data.remain_day.split(' ')[0]
+                                    remain_day = parseInt(remain_day.substr(0, remain_day.length - 1)) + 1;
+                                    ctx.fillText(remain_day + '天(报满即止)', 560, 640)
+
+                                    ctx.setFillStyle('#000')
+                                    ctx.font = 'bold 34px PingFangSC-Regular';
+                                    ctx.setTextAlign('left')
+                                    ctx.fillText(that.data.event.eventName, 30, 743)
+
+                                    ctx.font = 'normal 22px PingFangSC-Regular';
+
+                                    ctx.drawImage('../../../image/my_bee_m@2x.png', 30, 770, 32, 36)
+                                    ctx.fillText('报名费' + that.data.event.cost + '元/人', 75, 795)
+
+                                    ctx.drawImage('../../../image/icon_place@2x.png', 32, 825, 27, 42)
+
+                                    var detail_addr = that.data.event.detail_address;
+                                    // detail_addr = '啊收到了开发骄傲斯洛伐开发骄傲斯洛伐克'
+                                    if (detail_addr.length > 19) {
+                                        that.setData({
+                                            delta: 0
+                                        })
+                                    } else {
+                                        that.setData({
+                                            delta: 35
+                                        })
+                                    }
+                                    var delta_value = that.data.delta;
+                                    if (detail_addr.length > 19) {
+                                        ctx.fillText('' + detail_addr.substr(0, 19), 75, 850)
+                                        ctx.fillText(detail_addr.substr(19), 75, 892)
+                                    } else {
+                                        ctx.fillText('' + detail_addr, 75, 850)
+                                    }
+
+                                    ctx.drawImage('../../../image/iphone@2x.png', 32, 922 - delta_value, 30, 30)
+                                    ctx.fillText(that.data.event.agent_phone, 75, 945 - delta_value)
+
+                                    ctx.setFillStyle('#000')
+                                    ctx.font = 'bold 23px PingFangSC-Regular';
 
 
-                            var delta_value = 0;
-                            var detail_addr = that.data.event.detail_address;
-                            if (detail_addr.length > 20) {
-                                ctx.setFillStyle('#f5f5f5')
-                                    //ctx.setFillStyle('#ffffff')
-                                ctx.fillRect(0, 200, 600, 465 - delta_value)
-                                ctx.setFillStyle('#000')
-                                ctx.fillText(detail_addr.substr(0, 20), 70, 372)
-                                ctx.fillText(detail_addr.substr(20), 70, 420)
+                                    ctx.fillText('长按扫码来参加', 557, 940)
+                                        //add qr-code image
+                                    ctx.drawImage(qr_filePath, 550, 725, 175, 175)
+                                    ctx.draw();
 
-                            } else {
-                                delta_value = 48;
-                                ctx.setFillStyle('#f5f5f5')
-                                    //ctx.setFillStyle('#ffffff')
-                                ctx.fillRect(0, 200, 600, 465 - delta_value)
-                                ctx.setFillStyle('#000')
-                                ctx.fillText(detail_addr, 70, 372)
-                            }
-                            that.setData({
-                                delta: delta_value
+
+                                    ////////// temporary added ////////////
+
+                                    // setTimeout(function() {
+                                    //     that.downlaod_img();
+                                    // }, 500);
+                                    ///////////////////////////////////////
+
+                                }
                             })
-
-                            ctx.setFillStyle('#000')
-                            ctx.setFontSize(32)
-                            ctx.fillText(that.data.event.eventName, 30, 260)
-
-                            ctx.setFontSize(25)
-                            ctx.drawImage('../../../image/my_bee_m@2x.png', 30, 292, 32, 36)
-                            ctx.fillText('报名费' + that.data.event.cost + '元/人', 70, 318)
-
-                            ctx.drawImage('../../../image/icon_place@2x.png', 31, 345, 27, 42)
-
-                            ctx.drawImage('../../../image/iphone@2x.png', 30, 455 - delta_value, 30, 30)
-                            ctx.fillText(that.data.event.agent_phone, 70, 480 - delta_value)
-                            ctx.beginPath()
-                            ctx.moveTo(20, 525 - delta_value)
-                            ctx.lineTo(580, 525 - delta_value)
-                            ctx.stroke()
-                            ctx.beginPath()
-                            ctx.moveTo(300, 545 - delta_value)
-                            ctx.lineTo(300, 645 - delta_value)
-                            ctx.stroke()
-
-                            ctx.setFontSize(26)
-                            ctx.setTextAlign('center')
-                            ctx.fillText(that.data.start_date, 150, 575 - delta_value)
-                            ctx.setFontSize(24)
-                            ctx.setTextAlign('center')
-                            ctx.fillText(that.data.train_type[that.data.is_train] + '日期', 150, 625 - delta_value)
-
-                            ctx.setFillStyle('#e6b53c')
-                            ctx.setFontSize(28)
-                            ctx.setTextAlign('center')
-                            ctx.fillText(that.data.remain_day + '天(报满即止)', 450, 575 - delta_value)
-                            ctx.setFontSize(24)
-                            ctx.setTextAlign('center')
-                            ctx.fillText('截止日(' + that.data.end_date + ')', 450, 625 - delta_value)
-
-
-
-                            ctx.setFillStyle('#ffffff')
-                                // ctx.setFillStyle('#f3f3f3')
-                            ctx.fillRect(0, 665 - delta_value, 600, 235)
-
-                            //add varcode image for pages/index/detail_new_event/detail_new_event
-
-                            ctx.drawImage('../../../image/logo@2x.png', 395, 700 - delta_value, 110, 110)
-                            ctx.setTextAlign('left')
-                            ctx.setFillStyle('#000')
-                            ctx.setFontSize(22)
-                            ctx.fillText('长按扫码来参加', 370, 850 - delta_value)
-                            ctx.drawImage(qr_filePath, 70, 700 - delta_value, 160, 160)
-                            ctx.draw()
-
-
-
                         }
                     })
 
                 }
+            }
+        })
+    },
+
+
+    downlaod_img: function() {
+        //download image
+        var that = this
+        wx.showLoading({
+            title: '加载中...'
+        });
+        //convert canvas to image file
+        wx.canvasToTempFilePath({
+            x: 0,
+            y: 0,
+            width: 750,
+            height: 985, // - that.data.delta,
+            destWidth: 750,
+            destHeight: 985, // - that.data.delta,
+            canvasId: 'shareImg',
+            success: function(res) {
+                that.setData({
+                    img_url: res.tempFilePath,
+                    show_state: true
+                })
+
+                ////////////// temporary added //////////////
+                // return;
+                /////////////////////////////////////////////
+
+                // save imgage to album
+                wx.saveImageToPhotosAlbum({
+                    filePath: that.data.img_url,
+                    success(res) {
+                        wx.showToast({
+                            title: '已保存至相册，记得分享哦',
+                            icon: 'none',
+                            duration: 2000
+                        })
+                    }
+                })
+
+            },
+            fail: function(res) {
+                console.log(res)
+            },
+            complete: function() {
+                wx.hideLoading({});
             }
         })
     },
@@ -540,20 +651,25 @@ Page({
             console.log("deselected");
             that.setData({
                 selected_index: -1,
+                parent_user: -1,
+                focus: false
             })
         }, 500);
     },
 
-
-
-
     select_feedback: function(event) {
         var that = this;
         clearTimeout(that.data.tmr_id);
+        var parent_user = event.currentTarget.dataset.parent;
+
         that.setData({
             focus: true,
-            selected_index: event.currentTarget.id
+            selected_index: event.currentTarget.dataset.id,
+            parent_user: parent_user
         });
+        setTimeout(function() {
+            that.setData({ focus: true });
+        }, 100);
         console.log('selected item');
         console.log(that.data.selected_index);
     },
@@ -561,6 +677,9 @@ Page({
     add_feedback: function() {
         var that = this;
         console.log('clicked feedback button');
+        that.setData({
+            focus: false
+        })
         clearTimeout(that.data.tmr_id);
         if (that.data.comment == '') {
             return;
@@ -570,9 +689,6 @@ Page({
             wx.showLoading({
                 title: '发表中',
             })
-            setTimeout(function() {
-                wx.hideLoading()
-            }, 500)
             wx.request({
                 url: app.globalData.mainURL + "api/addFeedback",
                 method: "POST",
@@ -582,14 +698,19 @@ Page({
                 data: {
                     event_id: that.data.event.id,
                     user_id: app.globalData.userInfo.user_id,
+                    parent_user: 0,
                     comment: that.data.comment
                 },
                 success: function(res) {
                     that.setData({
                         selected_index: -1,
+                        parent_user: -1,
                         comment: ''
                     })
                     that.refresh();
+                },
+                complete: function() {
+                    wx.hideLoading({});
                 }
             });
         } else {
@@ -599,9 +720,6 @@ Page({
             wx.showLoading({
                 title: '发表中',
             })
-            setTimeout(function() {
-                wx.hideLoading()
-            }, 500)
             wx.request({
                 url: app.globalData.mainURL + "api/datamanage/addChildFeedback",
                 method: "POST",
@@ -611,17 +729,82 @@ Page({
                 data: {
                     event_id: that.data.event.id,
                     user_id: app.globalData.userInfo.user_id,
+                    parent_user: that.data.parent_user,
                     comment: that.data.comment,
                     parent_no: parent.no
                 },
                 success: function(res) {
                     that.setData({
-                        selected_index: -1
+                        selected_index: -1,
+                        parent_user: -1
                     })
                     that.refresh();
+                },
+                complete: function() {
+                    wx.hideLoading({});
                 }
             });
         }
+
+    },
+
+    delete_feedback: function(e) {
+        var that = this;
+        var id = e.currentTarget.dataset.id;
+        var type = e.currentTarget.dataset.type;
+        var msg = "";
+        switch (type) {
+            case "main":
+                msg = "删除留言后, 留言下所有的回复都会被删除";
+                break;
+            case "child":
+                msg = "确定删除这条回复吗";
+                break;
+        }
+        wx.showModal({
+            title: '提示',
+            content: msg,
+            confirmText: '删除',
+            cancelText: '取消',
+            success: function(res) {
+                if (res.confirm) {
+                    wx.request({
+                        url: app.globalData.mainURL + "api/datamanage/deleteFeedback",
+                        method: "POST",
+                        header: {
+                            "content-type": "application/json"
+                        },
+                        data: {
+                            no: id
+                        },
+                        success: function(res) {
+                            that.refresh();
+                        }
+                    });
+                }
+            }
+        })
+
+    },
+
+    go2UserDetail: function(e) {
+        var userId = e.currentTarget.dataset.id;
+        if (userId != app.globalData.userInfo.user_id) {
+            wx.navigateTo({
+                url: '../../profile/profile_friend?id=' + userId + '&type=0'
+            })
+        }
+    },
+
+    onclick_viewUserInfo: function(event) {
+        //go to userinfo view screen.
+        var that = this;
+        var index = event.currentTarget.id;
+        var user_id = that.data.booking[index].user_id;
+        console.log(user_id);
+        wx.navigateTo({
+            url: "../../profile/profile_friend?id=" + user_id + '&type=0'
+        })
 
     },
 
@@ -658,67 +841,11 @@ Page({
 
 
     },
-    onclick_viewUserInfo: function(event) {
-        //go to userinfo view screen.
-        var that = this;
-        var index = event.currentTarget.id;
-        var user_id = that.data.booking[index].user_id;
-        console.log(user_id);
-        wx.navigateTo({
-            url: "../../profile/profile_friend?id=" + user_id + '&type=0'
-        })
-
-    },
     onclick_goHome: function() {
         wx.switchTab({
             url: '../index',
             success: function() {
                 wx.showTabBar({})
-            }
-        })
-    },
-
-
-
-    downlaod_img: function() {
-        //download image
-        var that = this
-        wx.showLoading({
-            title: '加载中...'
-        })
-        setTimeout(function() {
-                wx.hideLoading()
-            }, 500)
-            //convert canvas to image file
-        wx.canvasToTempFilePath({
-            x: 0,
-            y: 0,
-            width: 600,
-            height: 900 - that.data.delta,
-            destWidth: 600,
-            destHeight: 900 - that.data.delta,
-            canvasId: 'shareImg',
-            success: function(res) {
-                that.setData({
-                    img_url: res.tempFilePath,
-                    show_state: true
-                })
-
-                // save imgage to album
-                wx.saveImageToPhotosAlbum({
-                    filePath: that.data.img_url,
-                    success(res) {
-                        wx.showToast({
-                            title: '已保存至相册，记得分享哦',
-                            icon: 'none',
-                            duration: 2000
-                        })
-                    }
-                })
-
-            },
-            fail: function(res) {
-                console.log(res)
             }
         })
     },
@@ -739,6 +866,17 @@ Page({
         })
     },
 
+    makeNDigit: function(num, len) {
+        num = num.toString();
+        if (!len) len = 2;
+        var ret = ''
+        for (var i = 0; i < len; i++) {
+            ret += '0';
+        }
+        ret += num;
+        ret = ret.substr(-len);
+        return ret;
+    },
     onShareAppMessage: function(res) {
         console.log("SHARED")
         if (res.from === 'button') {
@@ -764,6 +902,12 @@ Page({
         if (that.data.event.is_train == '1') {
             title = "这个培训不错哦，快来参加" + app.globalData.eventType[sport] + "培训班吧";
         }
+
+
+        var eventDate = new Date(that.data.event.start_time.replace(/-/g, '/'));
+        var weekStr = ['星期日', '星期一', '星期二', '星期三', '星期四', '星期五', '星期六', '星期日'];
+        title = ''; //(eventDate.getMonth() + 1) + '月' + (eventDate.getDate()) + '日' + weekStr[eventDate.getDay()] + ', ';
+        title += that.data.event.name + ', 已报名: ' + that.data.register_amount + '人';
 
         return {
             title: title,

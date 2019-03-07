@@ -48,6 +48,15 @@ Page({
         originalPrice: 0,
         tmrID: 0,
         isFirstInit: true,
+        stStr: {
+            disabled: 0,
+            booked: 1,
+            enabled: 2,
+            cancelled: 3,
+            activated: 4,
+            mine: 0,
+            nouser: -1
+        }
     },
     onLoad: function(option) {
         var that = this;
@@ -102,14 +111,6 @@ Page({
                                 _this.onPrepare();
                                 app.globalData.isFirstLaunch = false;
                             }
-                            // wx.authorize({
-                            //     scope: 'scope.werun',
-                            //     fail: function() {
-                            //         that.globalData.initDisabled = true;
-                            //     },
-                            //     complete: function() {
-                            //     }
-                            // })
                         }
                     });
                 }
@@ -118,17 +119,18 @@ Page({
     },
     onPrepare: function() {
         var that = this;
-        app.onInitialize();
-        if (app.globalData.userInfo.user_id == 0) {
-            clearTimeout(that.data.tmrID);
-            that.data.tmrID = setTimeout(function() {
-                that.onPrepare();
-            }, 1000);
-        } else {
-            that.onInitStart();
-        }
+        wx.showLoading({
+            title: '加载中',
+        })
+        var option = that.data.options;
+        if (app.globalData.userInfo.user_id == 0)
+            app.onInitialize(function() {
+                that.onInitStart(option);
+            })
+        else
+            that.onInitStart(option);
     },
-    onInitStart: function() {
+    onInitStart: function(options) {
         var options = this.data.options;
         this.setData({
             eventType: app.globalData.eventType,
@@ -154,6 +156,9 @@ Page({
                         that.data.site = res.data;
                         that.makeList();
                     }
+                },
+                complete: function() {
+                    wx.hideLoading({});
                 }
             })
             // set swiper image
@@ -167,6 +172,7 @@ Page({
         var cur = that.data.curDate;
         that.data.refDate = that.data.curDate.toDateString() + ' ';
         var weekStr = that.data.weekStr;
+        var ST = that.data.stStr;
         that.data.dateList = [];
 
         for (var index = 0; index < 7; index++) {
@@ -195,6 +201,7 @@ Page({
         that.data.cancel_time = site.cancel_time;
         var room = data.site_room;
         var booking = data.site_booking;
+        var boss_room = data.boss_room;
 
         var start1_time = new Date(that.data.refDate + ' ' + site.start1);
         var end1_time = new Date(that.data.refDate + site.end1);
@@ -241,51 +248,114 @@ Page({
             for (var i = 0; i < room.length; i++) {
                 var cost = room[i].cost;
 
-                var status = 0; // 0 - disabled, 1- booked, 2- enabled
+                var status = ST.disabled; // 0 - disabled, 1- booked, 2- enabled
                 var curstart = new Date(that.data.refDate + that.data.timeList[kk]);
                 var curend = new Date(that.data.refDate + that.data.timeList[kk + 1]);
 
+                // if current time is in service period then change status to booked
                 if (curstart >= start1_time && curend <= end1_time) {
-                    status = 1;
+                    status = ST.booked;
+                    room[i].user_id = ST.nouser;
                 }
                 if (curstart >= start2_time && curend <= end2_time) {
-                    status = 1;
+                    status = ST.booked;
+                    room[i].user_id = ST.nouser;
                 }
-                for (var mm = 0; mm < service_time.length; mm++) {
-                    if (status == 0) continue;
-                    if (curstart.getDay() == (parseInt(service_time[mm]) % 7)) {
-                        status = 2;
-                        break;
-                    }
-                }
-                if (status == 1) {
-                    status = 0;
-                }
-                for (var jj = 0; jj < booking.length; jj++) {
-                    var bookRecord = JSON.parse(booking[jj].book_info);
-                    var isBreak = false;
-                    if (booking[jj].state == 3) continue;
-                    for (var mm = 0; mm < bookRecord.length; mm++) {
-                        var item = bookRecord[mm];
-                        if (status == 0) continue;
-                        if (item.room_id != room[i].id) continue;
-                        if (item.state == 3) continue;
-                        if (curstart >= (new Date(item.start_time.replace(/-/g, '/'))) &&
-                            curend <= (new Date(item.end_time.replace(/-/g, '/')))) {
-                            status = 4;
-                            cost = -cost;
-                            room[i].user_id = item.user_id;
-                            room[i].book_id = booking[jj].id;
-                            isBreak = true;
+
+                // if current time is service time, then change status to enabled
+                if (status != ST.disabled) {
+                    for (var mm = 0; mm < service_time.length; mm++) {
+                        if (curstart.getDay() == (parseInt(service_time[mm]) % 7)) {
+                            status = ST.enabled;
                             break;
                         }
                     }
-                    if (isBreak) break;
+                }
+                // if current status is booked, then change status to disabled
+                if (status == ST.booked) status = ST.disabled;
+                if (status != ST.disabled) {
+
+                    for (var jj = 0; jj < boss_room.length; jj++) {
+                        var bookRecord = JSON.parse(boss_room[jj].room_info);
+                        if (curstart < (new Date(boss_room[jj].active_date.replace(/-/g, '/') + ' 00:00:00')) ||
+                            boss_room[jj].info_type != 0) continue;
+                        var isBreak = false;
+                        for (var mm = 0; mm < bookRecord.length; mm++) {
+                            var item = bookRecord[mm];
+                            if (item.room_id != room[i].id) continue; // if current room is not matched then continue
+
+                            // if service time is active time, then change status to active
+                            if (curstart >= (new Date(boss_room[jj].active_date.replace(/-/g, '/') + ' ' + item.start_time)) &&
+                                curend <= (new Date(boss_room[jj].active_date.replace(/-/g, '/') + ' ' + item.end_time))) {
+                                status = ST.activated;
+                                cost = item.cost;
+                                room[i].user_id = ST.mine;
+                                room[i].book_id = boss_room[jj].id;
+                                isBreak = true;
+                                break;
+                            }
+                        }
+                        if (isBreak) break;
+                    }
+
+                    for (var jj = 0; jj < boss_room.length; jj++) {
+                        var bookRecord = JSON.parse(boss_room[jj].room_info);
+                        var priceStart = new Date(curstart.toLocaleString());
+                        priceStart.setDate(priceStart.getDate() + 7);
+                        if (priceStart < (new Date(boss_room[jj].active_date.replace(/-/g, '/') + ' 00:00:00')) ||
+                            priceStart.getDay() != (new Date(boss_room[jj].active_date.replace(/-/g, '/') + ' 00:00:00')).getDay() ||
+                            boss_room[jj].info_type == 0) continue;
+                        var isBreak = false;
+                        for (var mm = 0; mm < bookRecord.length; mm++) {
+                            var item = bookRecord[mm];
+                            if (item.room_id != room[i].id) continue; // if current room is not matched then continue
+
+                            // if service time is active time, then change status to active
+                            if (curstart >= (new Date(that.data.refDate + ' ' + item.start_time)) &&
+                                curend <= (new Date(that.data.refDate + ' ' + item.end_time))) {
+                                if (curstart >= (new Date(boss_room[jj].active_date.replace(/-/g, '/') + ' 00:00:00'))) {
+                                    cost = item.cost;
+                                    isBreak = true;
+                                    break;
+                                }
+                            }
+                        }
+                        if (isBreak) break;
+                    }
+
+                    for (var jj = 0; jj < booking.length; jj++) {
+                        var bookRecord = JSON.parse(booking[jj].book_info);
+                        var isBreak = false;
+                        if (booking[jj].state == ST.cancelled) continue; // if order is cancelled then continue
+                        for (var mm = 0; mm < bookRecord.length; mm++) {
+                            var item = bookRecord[mm];
+                            if (item.room_id != room[i].id) continue; // if current room is not matched then continue
+                            if (item.state == ST.cancelled) continue; // if cell status is canceled then continue
+
+                            // if service time is active time, then change status to active
+                            if (curstart >= (new Date(item.start_time.replace(/-/g, '/'))) &&
+                                curend <= (new Date(item.end_time.replace(/-/g, '/')))) {
+                                status = ST.activated;
+                                cost = -cost;
+                                room[i].user_id = item.user_id;
+                                room[i].book_id = booking[jj].id;
+                                isBreak = true;
+                                break;
+                            }
+                        }
+                        if (isBreak) break;
+                    }
                 }
 
-                if (curend < new Date()) status = 0;
-                if ((status == 1 || status == 4) && room[i].user_id != app.globalData.userInfo.user_id)
-                    status = 0;
+                // if cell's end time is passed now, then change status to disabled
+                if (curend < new Date()) status = ST.disabled;
+
+                // if already booked by other person or active time, then change status to disabled
+                if ((status == ST.booked || status == ST.activated) && room[i].user_id != app.globalData.userInfo.user_id)
+                    status = ST.disabled;
+
+                var rD = new Date(that.data.refDate);
+                var dateString = rD.getFullYear() + '年' + (rD.getMonth() + 1) + '月' + rD.getDate() + '日';
                 arr.push({
                     cost: cost,
                     status: status,
@@ -293,7 +363,7 @@ Page({
                     book_id: room[i].book_id,
                     user_id: room[i].user_id,
                     room_name: room[i].room_name,
-                    start: that.data.timeList[kk],
+                    start: dateString + ' ' + that.data.timeList[kk],
                     end: that.data.timeList[kk + 1],
                     start_time: curstart.getTime(),
                     end_time: curend.getTime(),
@@ -305,14 +375,13 @@ Page({
 
             that.data.bookList.push(arr);
         }
-
         that.setData({
             dateList: that.data.dateList,
             roomList: that.data.roomList,
             timeList: that.data.timeList,
-            bookList: that.data.bookList,
-            totalPrice: that.data.totalPrice
+            bookList: that.data.bookList
         });
+        that.calculatePrice();
     },
     calculatePrice: function() {
         var that = this;
@@ -321,7 +390,7 @@ Page({
         var totalPrice = 0;
 
         var curTime = new Date();
-
+        var selectedCnt = 0;
         for (let i = 0; i < bookData.length; i++) {
             var element = [];
             element.push(bookData[i]);
@@ -344,11 +413,17 @@ Page({
                         item.state = 1;
                     uploads.push(item);
                     totalPrice += parseFloat(item.cost);
+                    selectedCnt++;
                 }
             }
         }
+        if (selectedCnt == 0) selectedCnt = 1;
+        else if (selectedCnt > 3) selectedCnt = 3;
         that.data.totalPrice = totalPrice;
-        that.setData({ totalPrice: totalPrice.toFixed(2) });
+        that.setData({
+            totalPrice: totalPrice.toFixed(2),
+            bottomHeight: selectedCnt * 64
+        });
     },
     bookRoom: function(event) {
         var that = this;
@@ -358,6 +433,7 @@ Page({
         var start = that.data.timeList[timeid];
         var end = that.data.timeList[timeid + 1];
         var room = that.data.bookList[timeid][roomid];
+        var ST = that.data.stStr;
 
         switch (room.status) {
             case 0: // disabled
@@ -374,7 +450,7 @@ Page({
                 booked_time.setTime(booked_time.getTime() - 3600000 * that.data.cancel_time);
                 if (true || curTime > booked_time) {
                     // wx.showToast({
-                    //     title: '预订取消时间已过去了',
+                    //     title: '订单取消时间已过去了',
                     //     icon: 'none',
                     //     duration: 2000
                     // });
@@ -399,13 +475,13 @@ Page({
                 booked_time.setTime(booked_time.getTime() - 3600000 * that.data.cancel_time);
                 if (false && curTime > booked_time) {
                     wx.showToast({
-                        title: '预订取消时间已过去了',
+                        title: '订单取消时间已过去了',
                         icon: 'none',
                         duration: 2000
                     });
                 } else {
                     wx.showToast({
-                        title: '请取消 在“我的>我的预订”菜单中',
+                        title: '请取消 在“我的>我的订单”菜单中',
                         icon: 'none',
                         duration: 2000
                     });
@@ -416,7 +492,7 @@ Page({
                 var curTime = new Date();
                 if (curTime > booked_time) {
                     wx.showToast({
-                        title: '预订时间已过去了',
+                        title: '订单时间已过去了',
                         icon: 'none',
                         duration: 2000
                     });
@@ -427,8 +503,10 @@ Page({
                 }
                 break;
         }
+
         if (room.status == '0')
             console.log(room);
+
         that.calculatePrice();
         that.setData({
             bookList: that.data.bookList
@@ -475,11 +553,102 @@ Page({
         wx.setStorageSync("book_date", that.data.refDate);
         wx.setStorageSync("book_info", uploads);
         if (that.data.totalPrice > 0) {
-            wx.redirectTo({
-                url: '../../profile/my_booking/booking_user_detail?id=' + that.data.curBossId
-            })
+            that.order_booking();
         }
         return;
+    },
+
+    order_booking: function() {
+        var that = this;
+        that.data.book_date = wx.getStorageSync('book_date');
+        that.data.bookList = wx.getStorageSync('book_info');
+        var share_day = (new Date(that.data.book_date.replace(/-/g, '/') + ' 00:00:00')).getDay();
+        var bookDate = new Date(that.data.book_date.replace(/-/g, '/') + ' 00:00:00');
+        var info1 = "",
+            info2 = "";
+        info1 = that.data.site.site[0].site_name + ',' +
+            bookDate.getFullYear() + '年' +
+            (bookDate.getMonth() + 1) + '月' +
+            bookDate.getDate() + '日';
+        for (var i = 0; i < that.data.bookList.length; i++) {
+            var item = that.data.bookList[i];
+            if (i != 0) info2 += ',';
+            info2 += item.room_name + '(' + item.start + ' - ' + item.end + ')';
+        }
+
+        wx.request({
+            url: app.globalData.mainURL + 'api/datamanage/orderRoomBooking',
+            method: 'POST',
+            header: {
+                'content-type': 'application/json'
+            },
+            data: {
+                user_id: app.globalData.userInfo.user_id,
+                book_date: that.data.book_date,
+                share_day: share_day,
+                boss_id: that.data.curBossId,
+                book_info: that.data.bookList,
+                pay_type: 0,
+                role: app.globalData.userInfo.role,
+                out_trade_no: '',
+                phone: that.data.phone,
+                name: that.data.name,
+
+                wallet: 0,
+                pay_cost: that.data.totalPrice,
+                pay_online: 0,
+                pay_honey: 0,
+
+            },
+            success: function(res) {
+                // wx.showModal({
+                //     content:JSON.stringify(res.data)             
+                // })
+                // return;
+                var booking_id = res.data.booking_id;
+                wx.setStorageSync('book_date', that.data.book_date);
+
+                wx.redirectTo({
+                    url: '../../profile/my_booking/booking_user_detail?id=' + that.data.curBossId + '&book=' + booking_id
+                })
+                that.data.isPayProcessing = false;
+                return;
+                if (!app.checkValidPhone(that.data.site.site[0].phone)) {
+                    wx.showToast({
+                        title: '电话号不正确，短信无法发送',
+                        icon: 'none',
+                        duration: 2000
+                    })
+                    that.data.isPayProcessing = false;
+                } else {
+                    wx.request({
+                        url: app.globalData.smsURL,
+                        method: 'POST',
+                        header: {
+                            'content-type': 'application/json'
+                        },
+                        data: {
+                            'phonenumber': that.data.site.site[0].phone,
+                            'random': '-1',
+                            'info1': info1,
+                            'info2': info2,
+                        },
+                        success: function(res) {
+
+                            // wx.redirectTo({
+                            //     url: 'booking_final?bid=' + that.data.curBossId + '&uid=' + app.globalData.userInfo.user_id + '&sday=' + share_day,
+                            //     success: function() {
+                            //         that.data.isfirstbtn = 0
+                            //     }
+                            // })
+                        },
+                        complete: function() {
+                            that.data.isPayProcessing = false;
+                        }
+                    })
+                }
+            }
+        })
     },
     selectDate: function(event) {
         var that = this;
@@ -504,13 +673,13 @@ Page({
 
         var that = this;
         var sport = parseInt(that.data.site.site[0].site_type);
-        var title = "这家" + app.globalData.eventType[sport] + "场馆不错哦, 快来预定吧";
+        var title = "这家" + app.globalData.eventType[sport] + "商家不错哦, 快来预定吧";
         if (sport == 28)
             title = "这家" + app.globalData.eventType[sport] + "不错哦, 快来购买吧"
         else if (sport == 31)
-            title = "这家综合运动场馆不错哦, 快来预定吧"
+            title = "这家综合运动商家不错哦, 快来预定吧"
         else if (sport == 32)
-            title = "这家运动场馆不错哦, 快来预定吧"
+            title = "这家运动商家不错哦, 快来预定吧"
 
         return {
             title: title, // '../detail_gym/detail_gym?id='+ event.currentTarget.id,

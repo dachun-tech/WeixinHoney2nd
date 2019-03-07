@@ -6,6 +6,8 @@ Page({
     data: {
         image_withdrawal_next_src: '../../resources/next@2x.png',
         account_balance: 0,
+        available_balance: 0,
+        remained_balance: 0,
         is_new_user: 1,
         cost: "0.00",
         receiver: "",
@@ -18,6 +20,22 @@ Page({
     },
     onLoad: function() {},
     onShow: function() {
+        this.onPrepare();
+    },
+    onPrepare: function() {
+        var that = this;
+        wx.showLoading({
+            title: '加载中',
+        })
+        var option = that.data.options;
+        if (app.globalData.userInfo.user_id == 0)
+            app.onInitialize(function() {
+                that.onInitStart(option);
+            })
+        else
+            that.onInitStart(option);
+    },
+    onInitStart: function(option) {
         var that = this;
         wx.request({
             url: app.globalData.mainURL + 'api/getBindingInfo',
@@ -36,6 +54,8 @@ Page({
                 that.setData({
                     is_new_user: 0,
                     account_balance: res.data.result[0].amount,
+                    available_balance: res.data.result[0].amount_withdraw,
+                    remained_balance: (res.data.result[0].amount * 1 - res.data.result[0].amount_withdraw * 1).toFixed(2),
                     receiver: res.data.result[0].receiver,
                     credit_no: res.data.result[0].credit_no,
                     id_no: res.data.result[0].id_no
@@ -46,6 +66,9 @@ Page({
                     id_no_hidden: buff,
                     credit_no_hidden: that.data.credit_no.slice(that.data.credit_no.length - 4, that.data.credit_no.length)
                 })
+            },
+            complete: function() {
+                wx.hideLoading({});
             }
         })
     },
@@ -72,7 +95,7 @@ Page({
             invalid = 1
             return;
         }
-        if (this.data.cost > 1 * this.data.account_balance) {
+        if (this.data.cost > 1 * this.data.available_balance) {
             wx.showToast({ title: "余额不足", icon: 'none' })
             invalid = 2
             return;
@@ -134,10 +157,18 @@ Page({
     },
     //bind input data to variable
     on_Input_Cost: function(e) {
-        var price = e.detail.value;
+        var type = e.currentTarget.dataset.type;
+        switch (type) {
+            case 'all':
+                var price = e.currentTarget.dataset.value;
+                break;
+            case 'input':
+                var price = e.detail.value;
+                break;
+        }
         if (price == '') return;
         if (price.substr(price.length - 1) == '.') return;
-        price = parseInt(price * 100) / 100;
+        price = (parseInt(price * 100) / 100);
         this.setData({
             cost: price
         })
@@ -184,7 +215,7 @@ Page({
             err++;
             msgTxt = '每笔提现金额最低2元，最高1000元'
         }
-        if (that.data.cost * 1.0 > that.data.account_balance * 1.0) {
+        if (that.data.cost * 1.0 > that.data.available_balance * 1.0) {
             err++;
             msgTxt = '提现金额大于钱包余额，请重新输入'
         }
@@ -234,7 +265,9 @@ Page({
                         success: function(res) {
                             if (res.data.status == true) {
                                 that.setData({
-                                    account_balance: res.data.result,
+                                    account_balance: res.data.result.amount,
+                                    available_balance: res.data.result.amount_withdraw,
+                                    remained_balance: (res.data.result.amount * 1 - res.data.result.amount_withdraw * 1).toFixed(2),
                                     showModal1: true,
                                     message: '提现申请已经提交，请留意您的微信余额变化'
                                 })

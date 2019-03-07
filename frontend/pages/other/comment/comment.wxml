@@ -1,7 +1,7 @@
 <!--index.wxml-->
 <view>
   <view class="cls_title" wx:if="{{method=='event'}}">
-    <text class="cls_all_comments" style="font-weight: bold;" >全部评论(共{{rating.length}}人)</text>
+    <text class="cls_all_comments" style="font-weight: bold;">全部评论(共{{rating.length}}人)</text>
   </view>
   <view class="site_detail" wx:else>
     <view class="site_name">{{siteInfo.site_name}}</view>

@@ -51,7 +51,7 @@ else $is_train = 0;
             <div>
                 <?php echo form_open_multipart(base_url() . 'eventmanage/addEvent');
                 $item = $eventDetail[0];
-                $limitStr = ['姓名', '电话', '球队', '俱乐部', '性别', '身份证号', '所在城市', '所在大学院系', '职业', '微信号', '邮箱'];
+                $limitStr = ['姓名', '电话', '球队', '俱乐部', '性别', '身份证号', '所在城市', '所在大学院系', '职业', '微信号', '邮箱', '上传图片('.$item->imgprompt.')'];
                 ?>
 
                 <div class="row form-inline">
@@ -93,7 +93,7 @@ else $is_train = 0;
                     </div>
                 </div>
                 <div class="row form-inline">
-                    <label> *<?=($is_train==0?'比赛':$type)?>地点 : </label>
+                    <label> *<?= ($is_train == 0 ? '比赛' : $type) ?>地点 : </label>
                     <div class="input-group margin">
                         <input name="address" type="text" class="form-control" placeholder="请输入"
                                value="<?= $item->detail_address ?>" maxlength="10"
@@ -101,19 +101,23 @@ else $is_train = 0;
                     </div>
                 </div>
                 <div class="row form-inline">
-                    <label> *<?=($is_train==0?'比赛':$type)?>时间 : </label>
+                    <label> *<?= ($is_train == 0 ? '比赛' : $type) ?>时间 : </label>
                     <div class="input-group margin">
                         <input id="fromTime" name="fromTime" class="datepicker-inline form-control" size="16"
-                               placeholder="请选择"
+                               placeholder="请选择" style="display: inline-block; width: 45%;float: none;"
                                type="text" value="<?= $item->start_time; ?>" readonly="">
+                        <div style="display: inline-block;">到</div>
+                        <input id="toTime" name="toTime" class="datepicker-inline form-control" size="16"
+                               placeholder="请选择" style="display: inline-block; width: 45%;float: none;"
+                               type="text" value="<?= $item->end_time ?>" readonly="">
                     </div>
                 </div>
                 <div class="row form-inline">
                     <label> *报名截止时间 : </label>
                     <div class="input-group margin">
-                        <input id="toTime" name="toTime" class="datepicker-inline form-control" size="16"
+                        <input id="endTime" name="toTime" class="datepicker-inline form-control" size="16"
                                placeholder="请选择"
-                               type="text" value="<?= $item->end_time ?>" readonly="">
+                               type="text" value="<?= $item->final_time ?>" readonly="">
                     </div>
                 </div>
                 <div class="row form-inline">
@@ -153,7 +157,7 @@ else $is_train = 0;
                 <div class="row form-inline">
                     <label> *报名限制 : </label>
                     <?php
-                    $limit = $item->condition . ',-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1';
+                    $limit = $item->condition . ',-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1';
                     $limit = explode(',', $limit); ?>
                     <?php
                     $j = 0;
@@ -170,6 +174,11 @@ else $is_train = 0;
                     ?>
                 </div>
 
+                <div class="row form-inline">
+                    <label> 图片提示文字 : </label>
+                    <div class="input-group margin"><?= $item->imgprompt; ?>
+                    </div>
+                </div>
 
                 <div class="row form-inline">
                     <label> *阅览量 : </label>
@@ -216,6 +225,7 @@ else $is_train = 0;
                                 foreach ($condition as $it) {
                                     if ($it != '-1')
                                         echo '<th>' . $opt[$jj] . '</th>';
+
                                     $jj++;
                                 }
                                 ?>
@@ -246,9 +256,11 @@ else $is_train = 0;
                                     foreach ($condition as $cond) {
                                         if ($cond != '-1') {
                                             if ($kk == 4) {
-                                                if($book_info[$kk]>1) $book_info[$kk]--;
+                                                if ($book_info[$kk] > 1) $book_info[$kk]--;
                                                 echo '<td>' . $genderStr[(($book_info[$kk] == '') ? 0 : $book_info[$kk])] . '</td>';
-                                            }else
+                                            } else if ($kk == 11) {
+                                                echo '<td><a href="'.base_url('uploads/'.$book_info[$kk]).'" download="'.$it->name.date('Y-m-d H:i:s').'.png" target="_blank"><img style="height: 50px;" src="'.base_url('uploads/'.$book_info[$kk]).'"/></a></td>';
+                                            } else
                                                 echo '<td>' . $book_info[$kk] . '</td>';
                                         }
                                         $kk++;
@@ -259,9 +271,8 @@ else $is_train = 0;
                                     <td><?php echo ($it->pay_type == 0) ? '线下已支付' : '线上已支付'; ?></td>
                                     <td><?php echo ($it->pay_honey == 0) ? '未使用' : ($it->pay_honey . 'ml'); ?></td>
                                     <td>
-
                                         <?php
-                                        echo '<a href="' . base_url() . 'userDetail/' . (($it->state==2)?$it->cancel_user:$it->user_id) . '">查看用户</a>';
+                                        echo '<a href="' . base_url() . 'userDetail/' . (($it->state == 2) ? $it->cancel_user : $it->user_id) . '">查看用户</a>';
                                         if ($it->state == 0)
                                             echo '<a href="#" onclick="cancel_booking(\'' . $it->id . '\','
                                                 . '\'' . $it->user_id . '\','
@@ -280,7 +291,16 @@ else $is_train = 0;
                             ?>
                             </tbody>
                         </table>
+
+                        <div class="row" style="padding-left: 200px;">
+                            <div class="col-xs-12 col-sm-12 form-inline">
+                                <a class="btn btn-default form-control" href="javascript:;" <?= (count($booking)>0?'':'disabled')?> onclick="<?= (count($booking)>0?'exportTable()':'')?>">
+                                    <span>导出<?= $type ?>列表</span>
+                                </a>
+                            </div>
+                        </div>
                         <div class="clearfix"></div>
+
                     </div>
                 </div>
 

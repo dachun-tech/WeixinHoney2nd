@@ -7,7 +7,7 @@ Page({
     data: {
         hide: 0,
         role: 1,
-        mo_user_info: { user_role: '场馆主', stadium_info: "", ownername: "", phonenumber: "", authnumber: "", address: "", detail_address: "", map: "", register_image: "../../../image/002@3x.png", idcard: "", front_image: "../../../image/sfz@3x.png", back_image: "../../../image/sfb@3x.png", },
+        mo_user_info: { user_role: '商家', stadium_info: "", ownername: "", phonenumber: "", authnumber: "", address: "", detail_address: "", map: "", register_image: "../../../image/002@3x.png", idcard: "", front_image: "../../../image/sfz@3x.png", back_image: "../../../image/sfb@3x.png", },
         mo_person_info: { user_role: '个人', nickname: "", ownername: "", phonenumber: "", authnumber: "" },
         overimagecount: 0,
     },
@@ -71,7 +71,7 @@ Page({
 
         } else {
             this.data.role = 1;
-            this.data.mo_user_info.user_role = "场馆主"
+            this.data.mo_user_info.user_role = "商家"
         }
         this.setData({ role: this.data.role })
         this.setData({ mo_user_info: this.data.mo_user_info })

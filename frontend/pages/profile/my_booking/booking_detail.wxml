@@ -2,7 +2,7 @@
 
 <import src="../../profile/template/get_userinfo.wxml"></import>
 
-<view class='container'>
+<scroll-view scroll-y class='container'>
   <view style='width:100%; padding-bottom:30rpx;background:white;'>
     <view class="booking">
       <view class="booking-detail">        
@@ -21,9 +21,9 @@
         <view class="booking-time">
           <block wx:for="{{booking.book_info}}" wx:key="idx" wx:for-item="room">
             <view class="time_content">
-                <view style="width:140rpx;display:inline-block;text-align:center;">{{room.room_name}}</view>
-                时间 | {{room.start_time}} ~ {{room.end_time}}
-                <view class='booking-fav-text'>￥{{room.pay_cost}}</view>
+                <view style="width:140rpx;word-break: keep-all;">{{room.room_name}}</view>
+                <view style="padding-left: 10rpx;">时间 | {{room.start_time}} ~ {{room.end_time}}</view>
+                <view class='booking-fav-text'>￥{{room.cost}}</view>
             </view>
           </block>
         </view>
@@ -80,12 +80,12 @@
 
   <view class='action' wx:if="{{booking.user_id == user_id}}">    
     <view wx:if="{{booking.state!=2}}" class="before_complete">
-      <view bindtap="go_to_place" class="view_place">查看场馆</view>      
+      <view bindtap="go_to_place" class="view_place">查看商家</view>      
       <button  wx:if="{{booking.state<2}}" class="share_wechat"  open-type="share">
         <image class="img_share" src="../../../image/WeChat@2x.png" />
         <view class="text_share">分享到微信</view>        
       </button>
-      <view wx:if="{{booking.state==0}}" bindtap="onclick_cancel_booking" class="cancel_booking {{cancel_state}}">取消预订</view>      
+      <view wx:if="{{booking.state==0}}" bindtap="onclick_cancel_booking" class="cancel_booking {{cancel_state}}">取消订单</view>      
     </view>
 
     <view wx:if="{{booking.state==2}}" class="after_complete">
@@ -108,7 +108,7 @@
           <text class='introduce-detail'>{{booking.rating_comment}}</text>
         </view>
       </view>
-      <view bindtap="go_to_place" class="view_place_complete">查看场馆</view>
+      <view bindtap="go_to_place" class="view_place_complete">查看商家</view>
       <view class="go_review" bindtap="btn_write_comment" wx:if="{{!booking.point}}">去评价</view>
     </view>
     
@@ -116,12 +116,12 @@
 
   <view class='action' wx:else>    
     <view class="before_complete">
-      <view bindtap="go_to_place" class="view_place">查看场馆</view> 
+      <view bindtap="go_to_place" class="view_place">查看商家</view> 
     </view>   
   </view>
 
   <view style="height:100rpx;background:transparent;"></view>
   
-</view>
+</scroll-view>
 
 <template is="get-user-template" wx:if="{{getUserInfoDisabled == true}}"></template>

@@ -7,13 +7,13 @@
 $(document).ready(function () {
 });
 
-function confirmForbidden(id,action) {
+function confirmForbidden(id, action) {
     $('#userId').html(id);
-    $('#userAction').html("确定要"+action+"?");
+    $('#userAction').html("确定要" + action + "?");
     $('#custom-confirm-delete-view').show();
 }
 
-function changeForbidden(url) { 
+function changeForbidden(url) {
     var userId = $('#userId').text();
     console.log(url);
     $.ajax({
@@ -41,6 +41,7 @@ function confirmState(id, name, phone) {
     $('#phone').html("联系方式：  " + phone);
     $('#custom-generate-auth-view').show();
 }
+
 function changeState(state, url) {
     var userId = $('#userId').text();
     $.ajax({
@@ -61,4 +62,8 @@ function changeState(state, url) {
             // STOP LOADING SPINNER
         }
     });
+}
+
+function addNewBoss() {
+    location.href = baseURL + "usermanage/addNewBossUser";
 }

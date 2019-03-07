@@ -6,10 +6,10 @@
       <view class="booking-detail">        
         <view>
           <text class='booking-name' style="font-weight: bold;">{{booking.site_name}}</text>
-          <text class="booking-role-text">{{booking.room_name}}</text>          
+          <text class="booking-role-text">{{booking.room_name}}</text>
           <text wx:if="{{(booking.state == 0)&&(1.0*booking.paid_price>0.0)}}" class="booking-status">{{bookingState[booking.state]}}</text>
           <text wx:if="{{booking.state > 0}}" class="booking-status">{{bookingState[booking.state]}}</text>
-        </view>    
+        </view>
         <view class="booking-time">时间 | {{book_date}}</view>
         <view class="booking-place">
             <view class="address_content">
@@ -17,14 +17,14 @@
                 <view class="booking-address1">{{booking.detail_address}}</view>
             </view>             
         </view> 
-      </view>          
+      </view>
     </view>
   </view>
 
   <view class="booked-info">
     <view class="book-info-label">已选场次:</view>
     <view class="book-info-content">
-      <block wx:for="{{bookList}}" wx:for-item="item" wx:key="rowid">              
+      <block wx:for="{{bookList}}" wx:for-item="item" wx:key="rowid">
           <view class="book-item" wx:if="{{item.status==1}}">
             <view class="book-title">{{item.room_name}}</view>
             <view class="book-time">{{item.start}}-{{item.end}}</view>
@@ -41,7 +41,8 @@
       <label>昵称: {{user.nickname}}</label>
     </view>
     <view class="personal-phone">
-      <label>电话: {{user.phone}}</label>
+      <label>电话: </label>      
+      <input type="number" bindinput='on_Input_Phonenumber' value="{{user.phone}}" class='real-phone-input' placeholder='请输入您的手机号'></input>
     </view>
   </view>
   <view class="detail-info"style='width: calc(100% - 30rpx); padding-left: 30rpx;'>    
@@ -59,10 +60,12 @@
     </view>
   </view>
    <template is="pay-template" data="{{pay_price, honey_list, honey_id, chk_imgs, wallet, book_type, book_id, select_honey, check_honey, check_wallet, pay_type, honey_price_unit}}" />
+   <view class="time-display">
+    请在<text style="color: red;">{{remained_time}}</text>内完成付款, 否则订单自动取消
+   </view>
+   
 </view>
-<view class="bottom-btn-area">
-  <view class="pay-info">总价:￥{{pay_price}}</view>
-  <view class="btn-pay" bindtap="perform_pay" data-id="{{book_id}}" data-type="{{pay_type}}" data-price="{{pay_price}}" data-bookmode="{{book_type}}">
-    确认支付
-  </view>
-</view>
+<form class="bottom-btn-area"  name="pushMsgForm" report-submit bindsubmit="perform_pay" data-id="{{book_id}}" data-type="{{pay_type}}" data-price="{{pay_price}}" data-bookmode="{{book_type}}">
+  <view class="pay-info">总价:￥{{pay_price}}</view>  
+  <button class="btn-pay" form-type="submit">确认支付</button>
+</form>

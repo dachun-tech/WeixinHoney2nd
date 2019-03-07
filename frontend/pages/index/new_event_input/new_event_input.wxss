@@ -167,7 +167,7 @@
     padding-left: 12rpx;
 }
 
-.bnt-cost {
+.btn-cost {
     position: fixed;
     bottom: 0rpx;
     width: 100%;
@@ -223,4 +223,11 @@
     -moz-border-radius: 10rpx;
     -ms-border-radius: 10rpx;
     -o-border-radius: 10rpx;
+}
+
+.upload-image {
+    margin: 0 120rpx 0 20rpx;
+    width: 200rpx;
+    height: 200rpx;
+    display: inline-block;
 }

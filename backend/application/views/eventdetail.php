@@ -10,6 +10,7 @@
             <div class="row custom-info-row">
                 <?php
                     $imgs =explode(',',$eventDetail[0]->pic);
+                    $isCancelStr = ['可以','不可以'];
                     foreach($imgs as $pic){
                 ?>
                 <img class="col-sm-4" id="avatar" src="<?php echo base_url() . "uploads/" . $pic; ?>"/>
@@ -19,7 +20,7 @@
             if ($eventDetail[0]->role == 1) {
                 ?>
                 <div class="row custom-info-row">
-                    <label class="col-sm-2">发起场馆:</label>
+                    <label class="col-sm-2">发起商家:</label>
                     <label class="col-sm-4" id="phone"><?php echo $eventDetail[0]->site_name; ?></label>
                 </div>
                 <div class="row custom-info-row">
@@ -92,6 +93,10 @@
                 <label class="col-sm-4" id="nickname"><?php echo $eventDetail[0]->comment; ?></label>
             </div>
             <div class="row custom-info-row">
+                <label class="col-sm-2">是否可取消报名:</label>
+                <label class="col-sm-4" id="nickname"><?php echo $isCancelStr[1-$eventDetail[0]->isCancel]; ?></label>
+            </div>
+            <div class="row custom-info-row">
                 <label class="col-sm-2">报名人数:</label>
                 <label class="col-sm-4"
                        id="nickname"> <?php echo (count($booking) > 0) ? intval($eventDetail[0]->current_member) . "人" : "无"; ?></label>
@@ -101,7 +106,7 @@
                     <table class="table table-bordered area-result-view">
                         <thead>
                         <tr style="background-color: lightslategrey;">
-                            <th></th>
+                            <th>头像</th>
                             <th style="width: 100px;">姓名</th>
                             <th style="width: 120px;">联系方式</th>
                             <th style="width: 100px;">报名人数</th>

@@ -1,7 +1,7 @@
 /* pages/other/create_event/create_event.wxss */
 
 .container {
-    background-color: white;
+    background-color: #f0f0f0;
 }
 
 .create-event-container {
@@ -10,23 +10,42 @@
 }
 
 .stadium-images-view {
+    position: relative;
     width: calc(100% - 30rpx);
-    height: auto;
+    height: 280rpx;
     padding-left: 30rpx;
+    background-size: 100% 100%!important;
+}
+
+.stadium-images-bg {
+    position: absolute;
+    width: calc(100% - 30rpx);
+    height: 100%;
+    padding: 0;
+    margin: 0;
+    background: transparent;
 }
 
 .stadium-images-text {
-    padding-top: 23rpx;
+    display: none;
+    position: absolute;
     font-family: PingFangSC-Regular;
     font-size: 30rpx;
-    color: #333;
+    color: white;
     letter-spacing: 0.64rpx;
+    left: 50%;
+    top: 80%;
+    transform: translate(-50%, -50%);
+    -webkit-transform: translate(-50%, -50%);
+    -moz-transform: translate(-50%, -50%);
+    -ms-transform: translate(-50%, -50%);
+    -o-transform: translate(-50%, -50%);
 }
 
 .stadium-images-image {
     width: 180rpx;
     height: 180rpx;
-    margin-top: 31rpx;
+    margin-top: 50rpx;
     border: dashed 5rpx #f4f4f4;
     vertical-align: top;
 }
@@ -35,7 +54,11 @@
     width: 30rpx;
     height: 30rpx;
     margin-right: 15rpx;
-    transform: translate(-25rpx, 15rpx);
+    transform: translate(-15rpx, 30rpx);
+    -webkit-transform: translate(-15rpx, 30rpx);
+    -moz-transform: translate(-15rpx, 30rpx);
+    -ms-transform: translate(-15rpx, 30rpx);
+    -o-transform: translate(-15rpx, 30rpx);
 }
 
 .stadium-images-delete1 {
@@ -43,9 +66,14 @@
     height: 30rpx;
     margin-right: 30rpx;
     transform: translate(-25rpx, 15rpx);
+    -webkit-transform: translate(-25rpx, 15rpx);
+    -moz-transform: translate(-25rpx, 15rpx);
+    -ms-transform: translate(-25rpx, 15rpx);
+    -o-transform: translate(-25rpx, 15rpx);
 }
 
-.event-view {
+.event-view,
+.event-option {
     padding-left: 30rpx;
     line-height: 88rpx;
     font-family: PingFangSC-Regular;
@@ -53,6 +81,44 @@
     color: #333;
     letter-spacing: 0.64rpx;
     border-bottom: solid 3rpx #f4f4f4;
+}
+
+.event-option {
+    position: relative;
+    height: 90rpx;
+}
+
+.event-view>text {
+    vertical-align: middle;
+}
+
+.event-option>text {
+    line-height: 88rpx;
+}
+
+.event-option>view {
+    position: absolute;
+    height: 90rpx;
+    line-height: 86rpx;
+    width: 70%;
+    top: 0;
+    right: 0;
+    text-align: right;
+}
+
+.event-option>view text,
+.event-option>view image {
+    display: inline-block;
+    height: 100%;
+    width: auto;
+    vertical-align: middle;
+    color: #888;
+    margin-right: 20rpx;
+}
+
+.event-option>view image {
+    width: 80rpx;
+    height: 50rpx;
 }
 
 .event-input {
@@ -179,7 +245,7 @@
 }
 
 .btn_submit {
-    width: 100%;
+    width: 90%;
     height: 98rpx;
     line-height: 98rpx;
     background-color: #e6b53c;
@@ -189,6 +255,12 @@
     letter-spacing: 1.54rpx;
     display: inline-block;
     overflow: visible;
+    margin: 5%;
+    border-radius: 0;
+    -webkit-border-radius: 0;
+    -moz-border-radius: 0;
+    -ms-border-radius: 0;
+    -o-border-radius: 0;
 }
 
 .event-add-radiogroup radio {
