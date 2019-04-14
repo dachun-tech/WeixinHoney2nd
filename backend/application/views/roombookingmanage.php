@@ -45,9 +45,9 @@
                                 <select class="form-control" id="searchState" name="searchState">
                                     <option value="10"<?php if ($searchState == 10) echo ' selected'; ?>>订单状态</option>
                                     <option value="0"<?php if ($searchState == 0) echo ' selected'; ?>>已预订</option>
-                                    <option value="0"<?php if ($searchState == 1) echo ' selected'; ?>>进行中</option>
-                                    <option value="1"<?php if ($searchState == 2) echo ' selected'; ?>>已完成</option>
-                                    <option value="2"<?php if ($searchState == 3) echo ' selected'; ?>>已取消</option>
+                                    <option value="1"<?php if ($searchState == 1) echo ' selected'; ?>>进行中</option>
+                                    <option value="2"<?php if ($searchState == 2) echo ' selected'; ?>>已完成</option>
+                                    <option value="3"<?php if ($searchState == 3) echo ' selected'; ?>>已取消</option>
                                 </select>
                             </div>
                         </div>
@@ -109,7 +109,7 @@
                             <th>订单类型</th>
                             <th>预订人</th>
                             <th>手机号</th>
-                            <th>订单信息</th>
+                            <th width="300px">订单信息</th>
                             <th>金额</th>
                             <th>订单状态</th>
                             <th>下单时间</th>
@@ -120,7 +120,7 @@
                         <?php
                         if (true || !empty($creation_name)) {
                             $pay = array('线下支付', '线上支付');
-                            $bookingState = array('已预订', '进行中', '已完成', '已取消');
+                            $bookingState = array('已预订', '进行中', '已完成', '已取消', '已支付', '已过期');
                             foreach ($bookingList as $record) {
                                 $no = "";
                                 for ($index = 0; $index < (10 - strlen($record->id . "")); $index++)
@@ -147,13 +147,18 @@
                                     }
                                     $endTime = (explode(' ', $record->end_time)[1]);
                                 }
+                                if ($record->user_info != null) {
+                                    $bookUser = json_decode($record->user_info);
+                                    $record->name = $bookUser->name;
+                                    $record->phone = $bookUser->phone;
+                                }
                                 ?>
                                 <tr>
                                     <td><?php echo $no; ?></td>
                                     <td><?php echo $bookType[$record->book_type]; ?></td>
                                     <td><?php echo $record->name; ?></td>
                                     <td><?php echo $record->phone; ?></td>
-                                    <td width="40%"><?php echo $record->site_name . ' - ' . $roomName; ?><br>
+                                    <td><?php echo $record->site_name . ' - ' . $roomName; ?><br>
                                         <?php echo $record->start_time . ' - ' . $endTime; ?>
                                     </td>
                                     <td><?php echo '￥' . ($record->pay_cost); ?></td>
@@ -172,7 +177,7 @@
                                                 $isUsed = true;
                                             }
                                         }
-                                        if($record->state == 3) $isUsed = true;
+                                        if ($record->state == 3) $isUsed = true;
                                         if (
                                             ($record->state == 0) ||
                                             ($record->book_type == 1 && $record->state == 5 && $record->condition == '1') ||
@@ -222,7 +227,7 @@
     }
 
     function cancel_booking(id, user_id, open_id, trade_no, fee, book_type) {
-        if(!id) {
+        if (!id) {
             alert(' 该订单无法删除');
             return;
         }

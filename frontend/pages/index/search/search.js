@@ -76,10 +76,10 @@ Page({
         event_type: app.globalData.eventType,
 
     },
-    onLoad: function(option) {
+    onLoad: function (option) {
 
     },
-    onShow: function(option) {
+    onShow: function (option) {
 
         if (!wx.getStorageSync("favorinputtext")) {
             wx.setStorageSync("favorinputtext", [])
@@ -91,7 +91,7 @@ Page({
         var that = this
         wx.getLocation({
             type: 'gcj02',
-            success: function(res) {
+            success: function (res) {
                 var longitude = res.longitude;
                 var latitude = res.latitude;
                 var url = 'https://restapi.amap.com/v3/geocode/regeo?key=8eb63e36d0b6d7d29a392503a4a80f6c&location=' + longitude + ',' + latitude + '&poitype=&radius=&extensions=all&batch=false&roadlevel=0';
@@ -99,7 +99,7 @@ Page({
                 //get activity array
                 wx.request({
                     url: url,
-                    success: function(res) {
+                    success: function (res) {
                         var city = res.data.regeocode.addressComponent.city
                         var province = res.data.regeocode.addressComponent.province
                         wx.request({
@@ -113,7 +113,7 @@ Page({
                                 province: province,
                                 user_id: app.globalData.userInfo.user_id
                             },
-                            success: function(res) {
+                            success: function (res) {
                                 console.log(res);
                                 var event_buf = res.data.result;
                                 that.data.sport_type_array = [];
@@ -148,20 +148,20 @@ Page({
                                         userRole: app.globalData.userRole,
                                         eventState: app.globalData.eventState
                                     });
-
+                                    var currentCity = wx.getStorageSync('currentCity').city;
                                     wx.request({
                                         url: app.globalData.mainURL + 'api/getItemsOnMap',
                                         data: {
                                             latitude: latitude,
                                             longitude: longitude,
                                             user_id: app.globalData.userInfo.user_id,
-                                            current_city: app.globalData.currentCityName
+                                            current_city: currentCity,
                                         },
                                         method: 'POST',
                                         header: {
                                             'content-type': 'application/json'
                                         },
-                                        success: function(res) {
+                                        success: function (res) {
                                             if (!res.data.status) return;
                                             var site_buf = res.data.site;
                                             for (var index = 0; index < site_buf.length; index++) {
@@ -194,13 +194,13 @@ Page({
         })
     },
     //input view actions
-    on_input_text: function(res) {
+    on_input_text: function (res) {
         this.setData({
             inputtext: res.detail.value
         })
     },
 
-    get_filtered_array: function(search_text) {
+    get_filtered_array: function (search_text) {
         var that = this;
         //get site array
         var filter_site = [];
@@ -233,7 +233,7 @@ Page({
         })
 
     },
-    on_click_search: function() {
+    on_click_search: function () {
         var that = this;
         if (that.data.inputtext == "") {
             this.setData({
@@ -268,7 +268,7 @@ Page({
 
 
     //tab bar action
-    selectTab1: function(e) {
+    selectTab1: function (e) {
         this.setData({
             active1: "active",
             active2: "",
@@ -277,7 +277,7 @@ Page({
             show_activity_state: 0,
         });
     },
-    selectTab2: function(e) {
+    selectTab2: function (e) {
         this.setData({
             active1: "",
             active2: "active",
@@ -289,7 +289,7 @@ Page({
 
 
     //sport type search action
-    clicked_sport_type: function(event) {
+    clicked_sport_type: function (event) {
         var that = this;
         this.setData({
             inputtext: that.data.sport_type_array[event.currentTarget.id]
@@ -320,11 +320,11 @@ Page({
 
 
     //history search action
-    on_click_all_delete: function() {
+    on_click_all_delete: function () {
         wx.setStorageSync("favorinputtext", [])
         this.setData({ favorinput: [] })
     },
-    on_click_delete: function(event) {
+    on_click_delete: function (event) {
         var that = this;
         console.log(event.currentTarget.id);
         that.data.favorinput.splice(event.currentTarget.id, 1);
@@ -335,7 +335,7 @@ Page({
         });
     },
 
-    on_click_favor_item: function(event) {
+    on_click_favor_item: function (event) {
         var that = this;
         this.setData({
             inputtext: that.data.favorinput[event.currentTarget.id]
@@ -353,17 +353,15 @@ Page({
 
     },
 
-
     //go to place
-    click_detail_place: function(event) {
+    click_detail_place: function (event) {
         wx.navigateTo({
-            url: '../detail_gym/detail_gym?id=' + event.currentTarget.id,
+            url: '../detail_gym/detail_gym?id=' + event.currentTarget.id + '&no=' + event.currentTarget.dataset.no,
         })
     },
 
-
     //go to action
-    click_detail_event: function(event) {
+    click_detail_event: function (event) {
         wx.navigateTo({
             url: '../detail_event/detail_event?id=' + event.currentTarget.id
         })
@@ -374,16 +372,8 @@ Page({
 
 
 
-
-
-
-
-
-
-
-
 //filter and find array
-Array.prototype.filter = function(fun /* , thisArg*/ ) {
+Array.prototype.filter = function (fun /* , thisArg*/) {
     "use strict";
 
     if (this === void 0 || this === null)
@@ -412,7 +402,7 @@ Array.prototype.filter = function(fun /* , thisArg*/ ) {
 
     return res;
 };
-Array.prototype._find = function(fn) {
+Array.prototype._find = function (fn) {
     if (this === null) throw new TypeError('this is null or not defined');
 
     let that = Object(this),
@@ -426,7 +416,7 @@ Array.prototype._find = function(fn) {
     return undefined;
 }
 
-Array.prototype._filter = function(fn) {
+Array.prototype._filter = function (fn) {
     if (this === null) throw new TypeError('this is null or not defined');
 
     let that = Object(this);

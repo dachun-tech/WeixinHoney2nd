@@ -170,7 +170,7 @@
     </view>
     <view class="goto_part" wx:if="{{event.role==1}}">
       <block>
-        <view bindtap="btn_Clicked_Gym_Info" id="{{event.boss_id}}" class='btn-gym-info'>查看商家</view>
+        <view bindtap="btn_Clicked_Gym_Info" id="{{event.boss_id}}" class='btn-gym-info'>去发活动</view>
         <form name="pushMsgForm" report-submit id="{{event.id}}" bindsubmit="btn_Clicked_Personal_Input">
           <button class='btn-final-participate {{font_size}}' disabled="{{is_disabled}}" form-type="submit">{{btn_text}}</button>
         </form>

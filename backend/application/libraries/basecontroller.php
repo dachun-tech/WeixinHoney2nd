@@ -19,7 +19,7 @@ class basecontroller extends CI_Controller
     {
         parent::__construct();
         $this->load->model('event_model');
-        $this->isLoggedIn();
+        $this->isBossLoggedIn();
     }
     /**
      * Takes mixed data and optionally a status code, then creates the response
@@ -60,6 +60,21 @@ class basecontroller extends CI_Controller
             $this->global['news'] = $result;
             $this->global['eventType'] = $this->event_model->getEventType();
         }
+        return $isLoggedIn;
+    }
+    /**
+     * This function used to check the user is logged in or not
+     */
+    function isBossLoggedIn()
+    {
+        $isLoggedIn = $this->session->userdata('isBossLoggedIn');
+        if (!isset ($isLoggedIn) || $isLoggedIn != TRUE) {
+            return $this->isLoggedIn();
+        } else {
+            $this->global['name'] = $this->session->userdata('site_name');
+            $this->global['eventType'] = $this->event_model->getEventType();
+        }
+        return $isLoggedIn;
     }
 
     /**

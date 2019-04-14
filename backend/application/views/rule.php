@@ -118,7 +118,7 @@
                             </tr>
                             <tr>
                                 <td>15</td>
-                                <td>预定的商家、参加的蜂约、赛事培训开始前（   ）分钟，通过微信活动通知提醒用户</td>
+                                <td>预定的商家、参加的蜂约、活动专区开始前（   ）分钟，通过微信活动通知提醒用户</td>
                                 <td>
                                     <input type="text" name="rule17" value="<?php echo $rule[17]->value;?>"/>&nbsp;&nbsp;min
 

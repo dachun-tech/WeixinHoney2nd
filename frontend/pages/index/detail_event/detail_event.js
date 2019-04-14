@@ -666,8 +666,14 @@ Page({
     },
 
     btn_Clicked_Gym_Info: function(event) {
+        // wx.navigateTo({
+        //     url: '../detail_gym/detail_gym?id=' + event.currentTarget.id,
+        //     success: function(res) {},
+        //     fail: function(res) {},
+        //     complete: function(res) {},
+        // });
         wx.navigateTo({
-            url: '../detail_gym/detail_gym?id=' + event.currentTarget.id,
+            url: '../../other/create_event/create_event',
             success: function(res) {},
             fail: function(res) {},
             complete: function(res) {},

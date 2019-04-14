@@ -181,7 +181,7 @@ class eventmanage extends basecontroller
         $error = 0;
         $type = '赛事';
         if($info['is_train']=='1')
-            $type = '培训';
+            $type = '活动';
         else $info['is_train'] = '0';
 
         $id = $this->input->post('id');

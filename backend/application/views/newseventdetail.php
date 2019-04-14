@@ -34,7 +34,7 @@
 $is_train = $this->session->userdata('event_infos')['is_train'];
 $type = '赛事';
 if ($is_train == 1)
-    $type = '培训';
+    $type = '活动';
 else $is_train = 0;
 ?>
 
@@ -51,7 +51,7 @@ else $is_train = 0;
             <div>
                 <?php echo form_open_multipart(base_url() . 'eventmanage/addEvent');
                 $item = $eventDetail[0];
-                $limitStr = ['姓名', '电话', '球队', '俱乐部', '性别', '身份证号', '所在城市', '所在大学院系', '职业', '微信号', '邮箱', '上传图片('.$item->imgprompt.')'];
+                $limitStr = ['姓名', '电话', '单位', '俱乐部', '性别', '身份证号', '所在城市', '所在大学院系', '职业', '地址', '邮箱', '上传图片(' . $item->imgprompt . ')'];
                 ?>
 
                 <div class="row form-inline">
@@ -213,7 +213,7 @@ else $is_train = 0;
                     </div>
                 </div>
                 <div class="row custom-info-row">
-                    <div class="col-sm-8">
+                    <div class="col-sm-12">
                         <table class="table table-bordered area-result-view">
                             <thead>
                             <tr style="background-color: lightslategrey;">
@@ -223,14 +223,17 @@ else $is_train = 0;
                                 $condition = explode(',', $item->condition);
                                 $jj = 0;
                                 foreach ($condition as $it) {
-                                    if ($it != '-1')
-                                        echo '<th>' . $opt[$jj] . '</th>';
-
+                                    if ($it != '-1') {
+                                        if ($jj == 0)
+                                            echo '<th width="70px">' . $opt[$jj] . '</th>';
+                                        else
+                                            echo '<th>' . $opt[$jj] . '</th>';
+                                    }
                                     $jj++;
                                 }
                                 ?>
                                 <!--                                <th>身份证号</th>-->
-                                <th>支付方式</th>
+                                <th width="100px;">支付方式</th>
                                 <th>使用蜂蜜优惠</th>
                                 <th>操作</th>
                             </tr>
@@ -259,7 +262,7 @@ else $is_train = 0;
                                                 if ($book_info[$kk] > 1) $book_info[$kk]--;
                                                 echo '<td>' . $genderStr[(($book_info[$kk] == '') ? 0 : $book_info[$kk])] . '</td>';
                                             } else if ($kk == 11) {
-                                                echo '<td><a href="'.base_url('uploads/'.$book_info[$kk]).'" download="'.$it->name.date('Y-m-d H:i:s').'.png" target="_blank"><img style="height: 50px;" src="'.base_url('uploads/'.$book_info[$kk]).'"/></a></td>';
+                                                echo '<td><a href="' . base_url('uploads/' . $book_info[$kk]) . '" download="' . $it->name . date('Y-m-d H:i:s') . '.png" target="_blank"><img style="height: 50px;" src="' . base_url('uploads/' . $book_info[$kk]) . '"/></a></td>';
                                             } else
                                                 echo '<td>' . $book_info[$kk] . '</td>';
                                         }
@@ -294,7 +297,9 @@ else $is_train = 0;
 
                         <div class="row" style="padding-left: 200px;">
                             <div class="col-xs-12 col-sm-12 form-inline">
-                                <a class="btn btn-default form-control" href="javascript:;" <?= (count($booking)>0?'':'disabled')?> onclick="<?= (count($booking)>0?'exportTable()':'')?>">
+                                <a class="btn btn-default form-control"
+                                   href="javascript:;" <?= (count($booking) > 0 ? '' : 'disabled') ?>
+                                   onclick="<?= (count($booking) > 0 ? 'exportTable()' : '') ?>">
                                     <span>导出<?= $type ?>列表</span>
                                 </a>
                             </div>

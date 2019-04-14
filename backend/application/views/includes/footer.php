@@ -34,6 +34,7 @@
 
 <script type="text/javascript">
 function exportTable(){
+    $(".table tbody td").append('<span>&nbsp;</span>');
     $(".table").table2excel({
         exclude: ".noExl",
         name: "Excel Document Name",
@@ -43,6 +44,7 @@ function exportTable(){
         exclude_links: true,
         exclude_inputs: true
     });
+    $(".table tbody td span").remove();
 }
     var baseURL = "<?php echo base_url(); ?>";
     var loginID = "<?php echo $name; ?>";

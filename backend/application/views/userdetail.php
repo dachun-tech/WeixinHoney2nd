@@ -19,6 +19,95 @@
             <div class="row custom-info-row">
                 <label class="col-sm-2">昵称:</label>
                 <label class="col-sm-4" id="nickname"><?php echo $userDetail[0]->nickname; ?></label>
+                <?php
+                if ($userDetail[0]->role == 1) {
+                    ?>
+                    <label class="col-sm-4" style="text-align: right;">
+                        <a style="width:auto;padding: 5px 10px;background: white;border:1px solid #ddd;height:30px;line-height:30px;"
+                           href="javascript:$('#updatePassword').modal();"
+                        >账号设置</a>
+                    </label>
+                    <div class="modal" id="updatePassword">
+                        <div class="modal-body" style="width: 400px;height:210px;background:white;left:40%;top:10%;border-radius: 10px;">
+                            <form id="frmUpdatePassword" action="<?= base_url('login/changeBossPassword') ?>" method="post">
+                                <div class="form-group form-inline">
+                                    <label>&nbsp;&nbsp;*账号 &nbsp; : &nbsp; </label>
+                                    <input name="user_id" value="<?=$userDetail[0]->no ?>" hidden style="display: none;">
+                                    <input type="number" class="form-control" name="account" maxlength="11"
+                                           value="<?php echo $userDetail[0]->account != null ? $userDetail[0]->account : $userDetail[0]->phone; ?>"
+                                           required>
+                                </div>
+                                <div class="form-group form-inline">
+                                    <label>&nbsp;&nbsp;*密码 &nbsp; : &nbsp; </label>
+                                    <input type="password" class="form-control" name="password" value="" required>
+                                </div>
+                                <div class="form-group form-inline">
+                                    <label for="inputPassword2">*确认密码 &nbsp; : &nbsp; </label>
+                                    <input type="password" class="form-control" name="cpassword" value="" required>
+                                </div>
+                                <!-- /.box-body -->
+
+                                <div class="form-group form-inline" style="text-align: center">
+                                    <input type="submit" class="btn btn-primary" value="确定"/>
+                                    <a class="btn btn-default"
+                                       href="javascript:$('#updatePassword').modal('hide');">取消</a>
+                                </div>
+                            </form>
+                        </div>
+                        <script>
+                            $('#frmUpdatePassword').submit(function (e) {
+                                e.preventDefault();
+                                var fdata = new FormData(this);
+                                var that = $(this);
+                                $.ajax({
+                                    url: baseURL + "login/changeBossPassword",
+                                    type: "POST",
+                                    data: fdata,
+                                    contentType: false,
+                                    cache: false,
+                                    processData: false,
+                                    async: true,
+                                    xhr: function () {
+                                        //upload Progress
+                                        var xhr = $.ajaxSettings.xhr();
+                                        if (xhr.upload) {
+                                            xhr.upload.addEventListener('progress', function (event) {
+                                                var percent = 0;
+                                                var position = event.loaded || event.position;
+                                                var total = event.total;
+                                                if (event.lengthComputable) {
+                                                    percent = Math.ceil(position / total * 100);
+                                                }
+                                                $("#progress_percent").text(percent + '%');
+
+                                            }, true);
+                                        }
+                                        return xhr;
+                                    },
+                                    mimeType: "multipart/form-data"
+                                }).done(function (res) { //
+                                    console.log(res);
+                                    var ret;
+                                    try {
+                                        ret = JSON.parse(res);
+                                    } catch (e) {
+                                        alert('操作失败 : ' + JSON.stringify(e));
+                                        console.log(e);
+                                        return;
+                                    }
+                                    if (ret.status) {
+                                        alert(ret.data);
+                                        $('#updatePassword').modal('hide');
+                                    }
+                                    else//failed
+                                    {
+                                        alert('操作失败 : ' + ret.data);
+                                    }
+                                });
+                            })
+                        </script>
+                    </div>
+                <?php } ?>
             </div>
             <?php
             if ($userDetail[0]->role == 0) {
@@ -75,33 +164,33 @@
             <div class="row custom-info-row">
                 <label class="col-sm-2">名片被分享次数:</label>
                 <label class="col-sm-3"><?php echo $userDetail[0]->shared_count; ?></label>
-                <?php if($userDetail[0]->role == '1') {?>
-                <label class="col-sm-2">钱包余额:</label>
-                <label class="col-sm-4"><?php echo($walletInfo[0]->wallet); ?>元</label>
+                <?php if ($userDetail[0]->role == '1') { ?>
+                    <label class="col-sm-2">钱包余额:</label>
+                    <label class="col-sm-4"><?php echo($walletInfo[0]->wallet); ?>元</label>
                 <?php } ?>
             </div>
             <div class="row custom-info-row">
                 <label class="col-sm-2">是不会员:</label>
                 <label class="col-sm-3"><?php echo ($isMember[0]->state == null) ? '否' : '是'; ?></label>
-                <?php if($userDetail[0]->role == '1') {?>
-                <label class="col-sm-2">可提现:</label>
-                <label class="col-sm-4"><?php echo($walletInfo[0]->withdraw); ?>元</label>
+                <?php if ($userDetail[0]->role == '1') { ?>
+                    <label class="col-sm-2">可提现:</label>
+                    <label class="col-sm-4"><?php echo($walletInfo[0]->withdraw); ?>元</label>
                 <?php } ?>
             </div>
             <div id="tip" class="row custom-info-row">
                 <label class="col-sm-2">禁用状态:</label>
                 <label class="col-sm-3"><?php echo $userDetail[0]->forbidden ? '已禁用' : '未禁用'; ?></label>
-                <?php if($userDetail[0]->role == '1') {?>
-                <label class="col-sm-2">不可提现:</label>
-                <label class="col-sm-4"><?php echo $walletInfo[0]->wallet - $walletInfo[0]->withdraw; ?>元</label>
+                <?php if ($userDetail[0]->role == '1') { ?>
+                    <label class="col-sm-2">不可提现:</label>
+                    <label class="col-sm-4"><?php echo $walletInfo[0]->wallet - $walletInfo[0]->withdraw; ?>元</label>
                 <?php } ?>
             </div>
             <div class="row custom-info-row">
                 <label class="col-sm-2">现有蜂蜜量:</label>
                 <label class="col-sm-3"><?php echo $userDetail[0]->honey . "ml"; ?></label>
-                <?php if($userDetail[0]->role == '1') {?>
-                <label class="col-sm-2">已提现:</label>
-                <label class="col-sm-4"><?php echo $walletInfo[0]->total_withdraw; ?>元</label>
+                <?php if ($userDetail[0]->role == '1') { ?>
+                    <label class="col-sm-2">已提现:</label>
+                    <label class="col-sm-4"><?php echo $walletInfo[0]->total_withdraw; ?>元</label>
                 <?php } ?>
             </div>
             <div class="row custom-info-row">
@@ -251,14 +340,14 @@
     var highlight = [];
     for (var i = 0; i < signItems.length; i++) {
         var item = signItems[i];
-        var sign_month = item.sign_month.replace(/-/g,'/').substr(0,7);
+        var sign_month = item.sign_month.replace(/-/g, '/').substr(0, 7);
         var sign_info = JSON.parse(item.sign_info);
-        for(var j=0; j< sign_info.length; j++){
+        for (var j = 0; j < sign_info.length; j++) {
             var dateInfo = sign_info[j];
-            if(dateInfo == 0) continue;
+            if (dateInfo == 0) continue;
             highlight.push({
-                start: new Date(sign_month+'/'+(j+1)+' 00:00:00'),
-                end: new Date(sign_month+'/'+(j+1)+' 23:00:00'),
+                start: new Date(sign_month + '/' + (j + 1) + ' 00:00:00'),
+                end: new Date(sign_month + '/' + (j + 1) + ' 23:00:00'),
                 backgroundColor: '#008fbf',
                 color: '#fff'
             })

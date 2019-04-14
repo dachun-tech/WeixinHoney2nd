@@ -8,8 +8,7 @@
     <!-- Bootstrap 3.3.4 -->
     <link href="<?php echo base_url(); ?>assets/bootstrap/css/bootstrap.min.css" rel="stylesheet" type="text/css"/>
     <!-- FontAwesome 4.3.0 -->
-    <link href="<?php echo base_url(); ?>assets/font-awesome/css/font-awesome.min.css" rel="stylesheet"
-          type="text/css"/>
+    <link href="<?php echo base_url(); ?>assets/font-awesome/css/font-awesome.min.css" rel="stylesheet" type="text/css"/>
     <link rel="stylesheet" href="<?php echo base_url(); ?>assets/plugins/iCheck/all.css">
     <link rel="stylesheet" href="<?php echo base_url(); ?>assets/plugins/colorpicker/bootstrap-colorpicker.min.css">
     <link rel="stylesheet" href="<?php echo base_url(); ?>assets/plugins/timepicker/bootstrap-timepicker.min.css">
@@ -111,7 +110,7 @@
                     style="<?php echo(($menu_acc != '') ? ($menu_acc->p_20 == '1' ? '' : 'display:none;') : 'display:none'); ?>">
                     <a href="<?php echo base_url(); ?>eventmanage">
                         <i class="fa fa-dashboard"></i>
-                        <span>活动管理</span>
+                        <span>蜂约管理</span>
                     </a>
                 </li>
                 <li class="treeview"
@@ -125,14 +124,14 @@
                     style="<?php echo(($menu_acc != '') ? ($menu_acc->p_20 == '1' ? '' : 'display:none;') : 'display:none'); ?>">
                     <a href="<?php echo base_url(); ?>newseventmanage">
                         <i class="fa fa-dashboard"></i>
-                        <span>赛事管理</span>
+                        <span>活动专区管理</span>
                     </a>
                 </li>
                 <li class="treeview"
                     style="<?php echo(($menu_acc != '') ? ($menu_acc->p_30 == '1' ? '' : 'display:none;') : 'display:none'); ?>">
                     <a href="<?php echo base_url(); ?>bookingmanage">
                         <i class="fa fa-book"></i>
-                        <span>蜂约管理</span>
+                        <span>蜂约订单管理</span>
                     </a>
                 </li>
                 <li class="treeview"

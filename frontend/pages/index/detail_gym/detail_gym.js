@@ -298,7 +298,8 @@ Page({
             path: '/pages/index/detail_gym/detail_gym?id=' + that.data.site.boss_id +
                 '&user_id=' + app.globalData.userInfo.user_id +
                 '&nickname=' + app.globalData.userInfo.nickname +
-                '&atype=1',
+                '&no=' + that.data.site.no +
+                '&type=1',
             success: function(res) {},
             fail: function(res) {}
         }

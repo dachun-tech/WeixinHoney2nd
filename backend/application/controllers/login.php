@@ -24,7 +24,7 @@ class login extends CI_Controller
      */
     public function index()
     {
-        $this->isLoggedIn();
+        $this->isBossLoggedIn();
     }
 
     /**
@@ -37,12 +37,33 @@ class login extends CI_Controller
         if (!isset($isLoggedIn) || $isLoggedIn != TRUE) {
             $this->load->view('login');
         } else {
+            $this->session->userdata('role');
             if ($roleId == '1')
                 redirect('/usermanage');
             else
                 redirect('/usermanage');
         }
+        return $isLoggedIn;
     }
+
+    /**
+     * This function used to check the user is logged in or not
+     */
+    function isBossLoggedIn()
+    {
+        $isLoggedIn = $this->session->userdata('isBossLoggedIn');
+        $roleId = $this->session->userdata('role');
+        if (!isset($isLoggedIn) || $isLoggedIn != TRUE) {
+            return $this->isLoggedIn();
+        } else {
+            if ($roleId == '1')
+                redirect('/bossmanage');
+            else
+                redirect('/bossmanage');
+        }
+        return $isLoggedIn;
+    }
+
     /**
      * This function used to logged in user
      */
@@ -58,13 +79,26 @@ class login extends CI_Controller
         } else {
             $account = $this->input->post('account');
             $password = $this->input->post('password');
+            $result = $this->login_model->loginBoss($account, $password);
+            if (count($result) > 0) {
+                $sessionArray = array(
+                    'boss_id' => $result[0]->no,
+                    'role' => $result[0]->role,
+                    'site_name' => $result[0]->site_name,
+                    'isBossLoggedIn' => TRUE
+                );
 
+                $this->session->set_userdata($sessionArray);
+                redirect('/bossmanage');
+                return;
+            }
             $result = $this->login_model->loginMe($account, $password);
 
             if (count($result) > 0) {
                 foreach ($result as $res) {
                     $permission = $this->admin_model->getRoleById($res->roleId);
-                    $sessionArray = array('userId' => $res->userId,
+                    $sessionArray = array(
+                        'userId' => $res->userId,
                         'role' => $res->roleId,
                         'roleText' => $res->role,
                         'name' => $res->name,
@@ -74,7 +108,7 @@ class login extends CI_Controller
                     );
 
                     $this->session->set_userdata($sessionArray);
-                    $this->session->set_userdata('search_infos',array());
+                    $this->session->set_userdata('search_infos', array());
                     if ($res->roleId == '1')
                         redirect('/usermanage');
                     else
@@ -212,7 +246,33 @@ class login extends CI_Controller
         }
     }
 
+    // This function used to create new password
+    function changeBossPassword()
+    {
+        $ret = array(
+            'data' => '操作失败',
+            'status' => false
+        );
+        $user_id = $this->input->post("user_id");
+        $account = $this->input->post("account");
+        $password = $this->input->post("password");
+        $cpassword = $this->input->post("cpassword");
 
+        if (strlen($account.'') != 11) {
+            $ret['data'] = '电话号码无效!';
+        } else if ($password == '' || $password != $cpassword) {
+
+            $ret['data'] = '密码无效!';
+        } else {
+            $info = array();
+            $info['account'] = $account;
+            $info['password'] = md5($password);
+            $this->login_model->changeBossPassword($info, $user_id);
+            $ret['data'] = '保存成功';
+            $ret['status'] = true;
+        }
+        echo json_encode($ret);
+    }
 }
 
 /* End of file login.php */

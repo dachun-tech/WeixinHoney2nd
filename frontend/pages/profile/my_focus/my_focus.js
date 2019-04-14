@@ -29,9 +29,9 @@ Page({
             success: function(res) {
                 var fav_buf = res.data.result;
                 if (fav_buf != null) {
-                    that.setData({
-                        favourite: fav_buf
-                    })
+                    that.setData({ favourite: fav_buf });
+                } else {
+                    that.setData({ favourite: [] });
                 }
             }
         })

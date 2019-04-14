@@ -124,9 +124,10 @@
       <template is="stadium-template" data="{{item, eventType, userRole, eventState, image_favs, uploadURL}}"/>
     </view>
   </view>
-  <view wx:if="{{site.boss_id=='0' || pageType=='1'}}" style="height: 120rpx;"></view>
-   <button wx:if="{{pageType=='1'}}" bindtap="go_home" class="btn_submit">去首页</button>
-
+  <view wx:if="{{true || site.boss_id=='0' || pageType=='1'}}" style="height: {{site.boss_id=='0'?'230':'180'}}rpx;text-align:center;">
+   <button wx:if="{{true || pageType=='1'}}" bindtap="go_home" class="btn_submit">去首页</button>
+   <button class="share_wechat_view" open-type="share" class="btn_submit">分享到微信</button>
+  </view>
    <view wx:if="{{site.boss_id=='0' && !isAuthorized}}" class="btn_submit gym-claim" bindtap="go_claim">我是商家主人, 立即去认证, 增加收入哦</view>
    <view wx:elif="{{site.boss_id=='0'}}" class="btn_submit gym-claim" style="background: #aaa;">我是商家主人, 立即去认证, 增加收入哦</view>
 </view>

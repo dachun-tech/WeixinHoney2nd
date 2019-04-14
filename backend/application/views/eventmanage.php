@@ -1,11 +1,11 @@
 <?php
-$type = '活动';
+$type = '蜂约';
 if ($pageType == 'news') {
-    $type = '赛事培训';
+    $type = '活动专区';
     if ($is_train == 0)
         $type = '赛事';
     else if($is_train == 1)
-        $type = '培训';
+        $type = '活动';
 }
 ?>
 <div class="content-wrapper">
@@ -13,7 +13,7 @@ if ($pageType == 'news') {
     <section class="content-header">
         <?php
         if ($pageType != 'news') {
-            echo '<h1>活动列表</h1>';
+            echo '<h1>蜂约列表</h1>';
         } else {
             ?>
             <h1 style="width: auto; display: inline-block;" class="margin">
@@ -24,7 +24,7 @@ if ($pageType == 'news') {
             <h1 style="width: auto; display: inline-block;" class="margin">
                 <input type="checkbox" itemid="1"
                     <?php if (isset($is_train) && ($is_train == '1' || $is_train == '2')) echo 'checked="checked"'; ?>>
-                培训列表
+                活动列表
             </h1>
             <?php
         }
@@ -191,12 +191,12 @@ if ($pageType == 'news') {
                         } else {
                             ?>
                             <tr style="background-color: lightslategrey;">
-                                <th style="width: 200px;">活动名称</th>
+                                <th style="width: 200px;">蜂约名称</th>
                                 <th>活动类型</th>
                                 <th>发起人</th>
                                 <th>联系方式</th>
                                 <th>角色类型</th>
-                                <th width="">活动状态</th>
+                                <th width="">蜂约状态</th>
                                 <th>新增时间</th>
                                 <th width="">操作</th>
                             </tr>
@@ -211,7 +211,7 @@ if ($pageType == 'news') {
                             $eventRole = array('', '商家', '个人');
                             $eventState = array('进行中', '已完成', '已取消');
                             $usedState = array('报名中', '已截止');
-                            $newsState = array('进行中', '已结束');
+                            $newsState = array('进行中', '已结束', '已取消');
                             foreach ($eventList as $record) {
                                 $i++;
                                 if ($pageType == 'news') {
@@ -233,7 +233,7 @@ if ($pageType == 'news') {
                                             <a href="<?php echo base_url() . 'newseventDetail/' . $record->id; ?>">
                                                 <?=$type?>详情
                                             </a>
-                                            <a onclick="confirmDelete('<?php echo $record->id; ?>')">
+                                            <a href="javascript:;" <?= ($record->state==2)?'style="color:grey"':('onclick="confirmDelete('. $record->id.')"')?>>
                                                 删除 &nbsp;
                                             </a>
                                         </td>
@@ -250,9 +250,9 @@ if ($pageType == 'news') {
                                         <td><?php echo $record->reg_time; ?></td>
                                         <td class="text-center">
                                             <a href="<?php echo base_url() . 'eventDetail/' . $record->id; ?>">
-                                                活动详情 &nbsp;
+                                                蜂约详情 &nbsp;
                                             </a>
-                                            <a onclick="confirmDelete('<?php echo $record->id; ?>')">
+                                            <a href="javascript:;" <?= ($record->state==2)?'style="color:grey"':('onclick="confirmDelete('. $record->id.')"')?>>
                                                 删除 &nbsp;
                                             </a>
                                         </td>

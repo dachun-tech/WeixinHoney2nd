@@ -371,6 +371,11 @@ class datamanage extends CI_Controller
         $book = json_decode(file_get_contents("php://input"));
         $bookingId = $book->{'booking_id'};
         $result = $this->roombooking_model->getRoomBookingById($bookingId);
+        if ($result[0]->user_info != null) {
+            $userInfo = json_decode($result[0]->user_info);
+            $result[0]->nickname = $userInfo->name;
+            $result[0]->user_phone = $userInfo->phone;
+        }
         $roomData = $this->room_model->getRoomsByBossId();
         if (count($result) > 0) {
             echo json_encode(array('status' => true, 'result' => $result, 'rooms' => $roomData), 200);
@@ -822,7 +827,7 @@ class datamanage extends CI_Controller
                 'submit_time' => $submit_time,
                 'is_read' => 0
             ));
-        } else if(false){
+        } else if (false) {
             $this->alarm_weixin_model->deleteItem(array(
                 'user_id' => $user_id,
                 'type' => '商品兑换开始',
@@ -874,14 +879,25 @@ class datamanage extends CI_Controller
         $info['pay_online'] = $book->{"pay_online"};
         $info['description'] = $book->{"description"};
 
+
+        $info['submit_time'] = date("Y-m-d H:i:s");
+        $result = $this->db->query("select organizer_id, name, owner, is_train, start_time, end_time, final_time from event where id=" . $info['event_id'])->result();
+
+        if (count($result) == 0) {
+            echo json_encode(array('status' => false), 200);
+            return;
+        }
+
+        if ($result[0]->owner == 0 && $result[0]->final_time < date("Y-m-d H:i:s")) {
+            echo json_encode(array('status' => false), 200);
+            return;
+        }
+
         if ($info['pay_type'] == 1) { // if online payment
             $info['out_trade_no'] = $book->{'out_trade_no'};
             $this->binding_model->addBooking($info['event_id'], $info['reg_num'], $info['user_id'], $book->{"wallet"});
             $this->user_model->removeHoney($info['user_id'], $info['pay_honey']);
         }
-
-        $info['submit_time'] = date("Y-m-d H:i:s");
-        $result = $this->db->query("select organizer_id, name, owner, is_train, start_time from event where id=" . $info['event_id'])->result();
 
         $start_total = date_create($result[0]->start_time);
         $rules = $this->rule_model->getRule();
@@ -978,7 +994,7 @@ class datamanage extends CI_Controller
         $rules = $this->rule_model->getRule();
         date_modify($start_total, '-' . $rules[17]->value . ' mins');
         $submit_time = date_format($start_total, 'Y-m-d H:i:s');
-        if(false) {
+        if (false) {
             $this->alarm_weixin_model->addItem(array(
                 'user_id' => $bookedList->user_id,
                 'type' => '预定',
@@ -2192,7 +2208,26 @@ class datamanage extends CI_Controller
         $book = json_decode(file_get_contents("php://input"));
         $user_id = $book->{'user_id'};
         $roomInfo = $book->{'roomInfo'};
-        $result = $this->room_model->updateRoom($user_id, $roomInfo);
+
+        $roomData = $this->boss_model->getSiteRoomDataForUpdate($user_id);
+        $isChanged = false;
+        foreach ($roomData as $oldRoom) {
+            $isExist = false;
+            foreach ($roomInfo as $item) {
+                if ($oldRoom->room_name == $item->name &&
+                    $oldRoom->cost == $item->cost) {
+                    $isExist = true;
+                    break;
+                }
+            }
+            if (!$isExist) {
+                $isChanged = true;
+                break;
+            }
+        }
+        $result = false;
+        if ($isChanged) $result = $this->room_model->updateRoom($user_id, $roomInfo);
+
         if ($result == true) {
             echo json_encode(array('status' => true), 200);
         } else {

@@ -292,7 +292,7 @@
 $is_train = $this->session->userdata('event_infos')['is_train'];
 $type = '赛事';
 if ($is_train == 1)
-    $type = '培训';
+    $type = '活动';
 else $is_train = 0;
 ?>
 
@@ -508,7 +508,7 @@ else $is_train = 0;
                          style="color: red;"><?php if (isset($error_type)) echo $error_payMode; ?></div>
                 </div>
                 <?php
-                $limit = ['姓名', '电话', '球队', '俱乐部', '性别', '身份证号', '所在城市', '所在大学院系', '职业', '微信号', '邮箱', '上传图片'];
+                $limit = ['姓名', '电话', '单位', '俱乐部', '性别', '身份证号', '所在城市', '所在大学院系', '职业', '地址', '邮箱', '上传图片'];
                 ?>
                 <div class="row form-inline">
                     <label> *报名限制 : </label>

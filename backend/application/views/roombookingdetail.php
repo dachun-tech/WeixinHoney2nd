@@ -12,13 +12,20 @@
                 <label class="col-sm-4" id="nickname">
                     <?php
                     $no = "";
-                    $statusStr = ['已预订', '进行中', '已完成', '已取消'];
+                    $statusStr = ['已预订', '进行中', '已完成', '已取消', '已支付', '已过期'];
                     for ($index = 0; $index < (10 - strlen($bookingDetail[0]->id . "")); $index++)
                         $no = $no . "0";
                     $no = $no . $bookingDetail[0]->id;
                     echo $no;
 
                     $item = $bookingDetail[0];
+
+                    if ($item->user_info != null) {
+                        $bookUser = json_decode($item->user_info);
+                        $item->name = $bookUser->name;
+                        $item->phone = $bookUser->phone;
+                    }
+
                     ?></label>
             </div>
             <div class="row custom-info-row">

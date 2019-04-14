@@ -129,6 +129,32 @@ class boss_model extends CI_Model
      * @param number $bossId : This is boss id
      * @return array $result :  information of the site
      */
+    function getSiteRoomDataForUpdate($bossId)
+    {
+        if ($bossId == 0) return array();
+        $this->db->select("*");
+        $this->db->from('room');
+        $this->db->where('boss_id', $bossId);
+        $this->db->order_by('submit_time', 'desc');
+        $query = $this->db->get();
+        $result = $query->row();
+
+        $this->db->select("*");
+        $this->db->from('room');
+        $this->db->where('boss_id', $bossId);
+        if (count($result) > 0)
+            $this->db->where('submit_time', $result->submit_time);
+
+        $query = $this->db->get();
+
+        return $query->result();
+    }
+
+    /**
+     * This function is used to get the detailed information of site
+     * @param number $bossId : This is boss id
+     * @return array $result :  information of the site
+     */
     function getSiteRoomData($bossId)
     {
         if ($bossId == 0) return array();
@@ -171,6 +197,19 @@ class boss_model extends CI_Model
         $this->db->from('room_updated');
         $this->db->where('boss_id', $bossId);
         $this->db->where('active_date >= ', date("Y-m-d"));
+        $this->db->order_by('active_date', 'asc');
+        $query = $this->db->get();
+
+        return $query->result();
+    }
+
+    function getBossBackendRoomData($bossId)
+    {
+        if ($bossId == 0) return array();
+        $this->db->select("*");
+        $this->db->from('room_updated');
+        $this->db->where('boss_id', $bossId);
+//        $this->db->where('active_date >= ', date("Y-m-d"));
         $this->db->order_by('active_date', 'asc');
         $query = $this->db->get();
 
@@ -225,14 +264,14 @@ class boss_model extends CI_Model
                 }
                 $targetRoomInfo = $dbRoomInfo;
             }
-            if(count($targetRoomInfo)>0) {
+            if (count($targetRoomInfo) > 0) {
                 $item->room_info = json_encode($targetRoomInfo);
                 $this->db->set($item);
                 $this->db->where('boss_id', $item->boss_id);
                 $this->db->where('info_type', $item->info_type);
                 $this->db->where('active_date', $item->active_date);
                 $this->db->update('room_updated');
-            }else{
+            } else {
                 $this->db->where('boss_id', $item->boss_id);
                 $this->db->where('info_type', $item->info_type);
                 $this->db->where('active_date', $item->active_date);
@@ -470,6 +509,19 @@ class boss_model extends CI_Model
         $info['picture'] = $picture;
         $info['order'] = $id;
         $this->db->insert('site_picture', $info);
+        $result = $this->db->affected_rows();
+        return ($result > 0) ? true : false;
+    }
+
+    function replaceSitePicture($bossId, $picture, $id = 0)
+    {
+        $info['picture'] = $picture;
+        $this->db->where('boss_id', $bossId);
+        $this->db->where('order', $id);
+        if ($picture != '')
+            $this->db->update('site_picture', $info);
+        else
+            $this->db->delete('site_picture');
         $result = $this->db->affected_rows();
         return ($result > 0) ? true : false;
     }

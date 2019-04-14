@@ -33,11 +33,11 @@
     <view class="list">
         <view id="my_activity" bindtap='whichpress' class="list_item">
             <image class="img_item" src="../../image/my_flag@2x.png" />
-            <view>我的活动</view>
+            <view>我的蜂约</view>
         </view>
         <view id="my_event" class="list_item" bindtap='whichpress'>
             <image class="img_item" src="../../image/my_sspx@2x.png" />
-            <view>我的赛事培训</view>
+            <view>我的活动专区</view>
         </view>
         <view id="my_booking" class="list_item" bindtap='whichpress'>
             <image class="img_item" src="../../image/my_yd@2x.png" />

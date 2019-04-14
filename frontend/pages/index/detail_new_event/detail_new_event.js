@@ -25,10 +25,10 @@ Page({
         img_url: '',
         show_state: false,
 
-        condition_array: ["姓名", "电话", "球队", "俱乐部", "性别", "身份证号", "所在城市", "所在大学院系", "职业", "微信号", "邮箱", "上传照片"],
+        condition_array: ["姓名", "电话", "单位", "俱乐部", "性别", "身份证号", "所在城市", "所在大学院系", "职业", "地址", "邮箱", "上传照片"],
         condition_str: "",
         event_comment: '',
-        train_type: ["赛事", "培训"],
+        train_type: ["赛事", "活动"],
         pictures: [],
         id: '',
         focus: false,
@@ -54,14 +54,14 @@ Page({
         isFirstInit: true,
         isProcessing: false,
     },
-    onLoad: function(option) {
+    onLoad: function (option) {
         var that = this;
         ///////// temporary added ///////
         // option.id = 1340;
         /////////////////////////////////
         that.data.options = option;
     },
-    getUserModalHide: function() {
+    getUserModalHide: function () {
         this.setData({
             getUserInfoDisabled: false
         })
@@ -71,12 +71,12 @@ Page({
 
         // }, 100);
     },
-    onShow: function(option) {
+    onShow: function (option) {
         var that = app;
         var _this = this;
         that.globalData.initDisabled = false;
         wx.getSetting({
-            success: function(res) {
+            success: function (res) {
                 var perm = res;
 
                 that.globalData.getUserInfoDisabled = !perm.authSetting['scope.userInfo'];
@@ -96,10 +96,10 @@ Page({
                 } else {
                     wx.authorize({
                         scope: 'scope.userLocation',
-                        fail: function() {
+                        fail: function () {
                             that.globalData.initDisabled = true;
                         },
-                        complete: function() {
+                        complete: function () {
                             if (that.globalData.initDisabled)
                                 that.go2Setting();
                             else {
@@ -113,14 +113,14 @@ Page({
             }
         });
     },
-    onUnload: function() {
+    onUnload: function () {
         this.onHide();
     },
-    onHide: function() {
+    onHide: function () {
         clearInterval(this.data.tmrID);
         clearTimeout(this.data.tmr_id);
     },
-    onPrepare: function() {
+    onPrepare: function () {
         var that = this;
         wx.showLoading({
             title: '加载中',
@@ -129,7 +129,7 @@ Page({
 
         var _this = app;
         wx.login({
-            success: function(res) {
+            success: function (res) {
                 _this.globalData.user_code = res.code;
                 wx.request({
                     url: _this.globalData.mainURL + "api/getopenid",
@@ -140,7 +140,7 @@ Page({
                     header: {
                         'content-type': 'application/json'
                     }, // 设置请求的 header    
-                    success: function(res) {
+                    success: function (res) {
                         var obj = {};
                         _this.globalData.token = res.data.token;
                         obj.openid = res.data.openid;
@@ -150,7 +150,7 @@ Page({
                         wx.setStorageSync('session_key', res.data.session_key)
 
                         if (app.globalData.userInfo.user_id == 0)
-                            app.onInitialize(function() {
+                            app.onInitialize(function () {
                                 that.onInitStart(option);
                             })
                         else
@@ -162,7 +162,7 @@ Page({
             }
         })
     },
-    onInitStart: function(option) {
+    onInitStart: function (option) {
         this.data.isProcessing = true;
         this.setData({
             userInfo: app.globalData.userInfo,
@@ -176,21 +176,21 @@ Page({
         })
 
         wx.request({
-                url: app.globalData.mainURL + 'api/datamanage/addReadCount',
-                method: 'POST',
-                header: {
-                    'content-type': 'application/json'
-                },
-                data: {
-                    'event_id': that.data.id,
-                },
-                success: function(res) {
-                    that.refresh(1);
-                }
-            })
-            //code for liseter paticipate
+            url: app.globalData.mainURL + 'api/datamanage/addReadCount',
+            method: 'POST',
+            header: {
+                'content-type': 'application/json'
+            },
+            data: {
+                'event_id': that.data.id,
+            },
+            success: function (res) {
+                that.refresh(1);
+            }
+        })
+        //code for liseter paticipate
     },
-    refresh: function(sort_flag) {
+    refresh: function (sort_flag) {
         if (sort_flag == undefined) sort_flag = 0;
         var that = this;
         wx.request({
@@ -203,7 +203,7 @@ Page({
                 'event_id': that.data.id,
                 'user_id': app.globalData.userInfo.user_id
             },
-            success: function(res) {
+            success: function (res) {
 
                 //get sorted feedback array
                 for (let index = 0; index < res.data.feedbacks.length; index++) {
@@ -262,12 +262,17 @@ Page({
                 time = event_buf.end_time.split(':');
                 event_buf.end_time = time[0] + ':' + time[1];
 
+                var isBookingExpired = false;
                 clearInterval(that.data.tmrID);
-                that.data.tmrID = setInterval(function() {
+                that.data.tmrID = setInterval(function () {
                     var now = Date.now();
                     var tempdate = Date.parse(event_buf.final_time.replace(/-/g, '/'))
                     var tempdiff = (tempdate - now);
-                    if (tempdiff < 0) tempdiff = 0;
+                    if (tempdiff < 0) {
+                        tempdiff = 0;
+                        isBookingExpired = true;
+                        clearInterval(that.data.tmrID);
+                    }
                     var remain_day = Math.floor(tempdiff / 86400000);
                     tempdiff = tempdiff - remain_day * 86400000;
                     var remain_hr = Math.floor(tempdiff / 3600000);
@@ -282,6 +287,10 @@ Page({
                 var now = Date.now();
                 var tempdate = Date.parse(event_buf.final_time.replace(/-/g, '/'))
                 var tempdiff = (tempdate - now);
+                if (tempdiff < 0) {
+                    tempdiff = 0;
+                    isBookingExpired = true;
+                }
                 var remain_day = Math.floor(tempdiff / 86400000);
                 tempdiff = tempdiff - remain_day * 86400000;
                 var remain_hr = Math.floor(tempdiff / 3600000);
@@ -348,6 +357,7 @@ Page({
                     is_disabled: false,
                     btn_text: '立即报名',
                 })
+
                 for (var index = 0; index < books.length; index++) {
                     console.log(books[index].nickname)
                     if (books[index].user_id == app.globalData.userInfo.user_id && books[index].state == '0') {
@@ -369,6 +379,13 @@ Page({
                         registered_num += 1 * books[index].reg_num;
                     }
                 }
+                if (isBookingExpired) {
+                    that.setData({
+                        is_registered: true,
+                        is_disabled: true,
+                        btn_text: '已截止',
+                    })
+                }
                 that.setData({
                     register_amount: registered_num,
                 })
@@ -387,12 +404,12 @@ Page({
                 that.show_canvas();
                 that.data.isProcessing = false;
             },
-            complete: function() {
+            complete: function () {
                 wx.hideLoading({});
             }
         })
     },
-    show_canvas: function(options) {
+    show_canvas: function (options) {
         var that = this;
 
         console.log('pages/index/detail_new_event/detail_new_event?id=' + that.data.id);
@@ -405,7 +422,7 @@ Page({
             },
             method: 'POST',
             header: { 'content-type': 'application/json' },
-            success: function(res) {
+            success: function (res) {
                 console.log(res.data);
 
                 if (res.data.status) {
@@ -447,8 +464,12 @@ Page({
 
                                     ctx.setTextAlign('center')
                                     ctx.font = 'normal 24px PingFangSC-Regular';
-                                    ctx.fillText('比赛日期', 190, 582)
-                                        // ctx.fillText(that.data.train_type[that.data.is_train] + '日期', 150, 625)
+                                    if (that.data.is_train)
+                                        ctx.fillText('活动日期', 190, 582)
+                                    else
+                                        ctx.fillText('比赛日期', 190, 582)
+
+                                    // ctx.fillText(that.data.train_type[that.data.is_train] + '日期', 150, 625)
 
                                     ctx.setTextAlign('left')
                                     ctx.fillText(that.data.start_date + ' 到', 75, 625)
@@ -501,7 +522,7 @@ Page({
 
 
                                     ctx.fillText('长按扫码来参加', 557, 940)
-                                        //add qr-code image
+                                    //add qr-code image
                                     ctx.drawImage(qr_filePath, 550, 725, 175, 175)
                                     ctx.draw();
 
@@ -524,7 +545,7 @@ Page({
     },
 
 
-    downlaod_img: function() {
+    downlaod_img: function () {
         //download image
         var that = this
         wx.showLoading({
@@ -539,7 +560,7 @@ Page({
             destWidth: 750,
             destHeight: 985, // - that.data.delta,
             canvasId: 'shareImg',
-            success: function(res) {
+            success: function (res) {
                 that.setData({
                     img_url: res.tempFilePath,
                     show_state: true
@@ -562,16 +583,16 @@ Page({
                 })
 
             },
-            fail: function(res) {
+            fail: function (res) {
                 console.log(res)
             },
-            complete: function() {
+            complete: function () {
                 wx.hideLoading({});
             }
         })
     },
 
-    compare_favorite: function(a, b) {
+    compare_favorite: function (a, b) {
         if (a.fav_state > b.fav_state)
             return -1;
         if (a.fav_state < b.fav_state)
@@ -579,7 +600,7 @@ Page({
         return 0;
     },
 
-    compare_orgState: function(a, b) {
+    compare_orgState: function (a, b) {
         var that = this;
         if (a.user_id == that.data.event.organizer_id)
             return -1;
@@ -588,43 +609,43 @@ Page({
         return 0;
     },
 
-    phone_call: function() {
+    phone_call: function () {
         app.phoneCall(this.data.event.agent_phone)
     },
-    set_preview: function() {
+    set_preview: function () {
         var that = this
         wx.previewImage({
             urls: [that.data.event.pic],
-            complete: function() {
+            complete: function () {
                 return
             }
         })
     },
 
-    btn_Clicked_Personal_Input: function(event) {
+    btn_Clicked_Personal_Input: function (event) {
         var that = this;
         if (that.data.isProcessing) return;
         wx.redirectTo({
             url: '../new_event_input/new_event_input?id=' + event.currentTarget.id,
-            success: function(res) {},
-            fail: function(res) {},
-            complete: function(res) {},
+            success: function (res) { },
+            fail: function (res) { },
+            complete: function (res) { },
         })
     },
 
-    btn_Clicked_Favor: function() {
+    btn_Clicked_Favor: function () {
         var event_buff = this.data.favourite_num
         var rating = this.data.rating
         if (event_buff == 0) {
             event_buff = 1
             this.setData({ favourite_num: event_buff })
             this.data.rating++
-                this.setData({ rating: this.data.rating })
+            this.setData({ rating: this.data.rating })
         } else {
             event_buff = 0
             this.setData({ favourite_num: event_buff })
             this.data.rating--
-                this.setData({ rating: this.data.rating })
+            this.setData({ rating: this.data.rating })
         }
         var that = this;
         wx.request({
@@ -637,17 +658,17 @@ Page({
                 'user_id': app.globalData.userInfo.user_id,
                 'event_id': that.data.event.id
             },
-            success: function(res) {
+            success: function (res) {
 
             }
         })
     },
-    On_input_comment: function(event) {
+    On_input_comment: function (event) {
         this.data.comment = event.detail.value;
     },
-    unselect_comment: function() {
+    unselect_comment: function () {
         var that = this;
-        that.data.tmr_id = setTimeout(function() {
+        that.data.tmr_id = setTimeout(function () {
             console.log("deselected");
             that.setData({
                 selected_index: -1,
@@ -657,7 +678,7 @@ Page({
         }, 500);
     },
 
-    select_feedback: function(event) {
+    select_feedback: function (event) {
         var that = this;
         clearTimeout(that.data.tmr_id);
         var parent_user = event.currentTarget.dataset.parent;
@@ -667,14 +688,14 @@ Page({
             selected_index: event.currentTarget.dataset.id,
             parent_user: parent_user
         });
-        setTimeout(function() {
+        setTimeout(function () {
             that.setData({ focus: true });
         }, 100);
         console.log('selected item');
         console.log(that.data.selected_index);
     },
 
-    add_feedback: function() {
+    add_feedback: function () {
         var that = this;
         console.log('clicked feedback button');
         that.setData({
@@ -701,7 +722,7 @@ Page({
                     parent_user: 0,
                     comment: that.data.comment
                 },
-                success: function(res) {
+                success: function (res) {
                     that.setData({
                         selected_index: -1,
                         parent_user: -1,
@@ -709,7 +730,7 @@ Page({
                     })
                     that.refresh();
                 },
-                complete: function() {
+                complete: function () {
                     wx.hideLoading({});
                 }
             });
@@ -733,14 +754,14 @@ Page({
                     comment: that.data.comment,
                     parent_no: parent.no
                 },
-                success: function(res) {
+                success: function (res) {
                     that.setData({
                         selected_index: -1,
                         parent_user: -1
                     })
                     that.refresh();
                 },
-                complete: function() {
+                complete: function () {
                     wx.hideLoading({});
                 }
             });
@@ -748,7 +769,7 @@ Page({
 
     },
 
-    delete_feedback: function(e) {
+    delete_feedback: function (e) {
         var that = this;
         var id = e.currentTarget.dataset.id;
         var type = e.currentTarget.dataset.type;
@@ -766,7 +787,7 @@ Page({
             content: msg,
             confirmText: '删除',
             cancelText: '取消',
-            success: function(res) {
+            success: function (res) {
                 if (res.confirm) {
                     wx.request({
                         url: app.globalData.mainURL + "api/datamanage/deleteFeedback",
@@ -777,7 +798,7 @@ Page({
                         data: {
                             no: id
                         },
-                        success: function(res) {
+                        success: function (res) {
                             that.refresh();
                         }
                     });
@@ -787,7 +808,7 @@ Page({
 
     },
 
-    go2UserDetail: function(e) {
+    go2UserDetail: function (e) {
         var userId = e.currentTarget.dataset.id;
         if (userId != app.globalData.userInfo.user_id) {
             wx.navigateTo({
@@ -796,7 +817,7 @@ Page({
         }
     },
 
-    onclick_viewUserInfo: function(event) {
+    onclick_viewUserInfo: function (event) {
         //go to userinfo view screen.
         var that = this;
         var index = event.currentTarget.id;
@@ -808,7 +829,7 @@ Page({
 
     },
 
-    submit_event_favorite: function(event) {
+    submit_event_favorite: function (event) {
         console.log(event.currentTarget.id);
         var that = this;
         var feedback_id = that.data.feedbacks[event.currentTarget.id].no;
@@ -822,12 +843,12 @@ Page({
                 'user_id': app.globalData.userInfo.user_id,
                 'feedback_id': feedback_id
             },
-            success: function(res) {
+            success: function (res) {
                 that.refresh();
             }
         })
     },
-    goto_mapView: function() {
+    goto_mapView: function () {
         //view event location in map
         var that = this;
         wx.openLocation({
@@ -841,23 +862,23 @@ Page({
 
 
     },
-    onclick_goHome: function() {
+    onclick_goHome: function () {
         wx.switchTab({
             url: '../index',
-            success: function() {
+            success: function () {
                 wx.showTabBar({})
             }
         })
     },
 
-    hide_canvas: function() {
+    hide_canvas: function () {
         var that = this;
         that.setData({
             show_state: false
         })
     },
 
-    show_preview: function(res) {
+    show_preview: function (res) {
         console.log(res)
         var that = this
         wx.previewImage({
@@ -866,7 +887,7 @@ Page({
         })
     },
 
-    makeNDigit: function(num, len) {
+    makeNDigit: function (num, len) {
         num = num.toString();
         if (!len) len = 2;
         var ret = ''
@@ -877,7 +898,7 @@ Page({
         ret = ret.substr(-len);
         return ret;
     },
-    onShareAppMessage: function(res) {
+    onShareAppMessage: function (res) {
         console.log("SHARED")
         if (res.from === 'button') {
             console.log(res.target)
@@ -893,14 +914,14 @@ Page({
                 user_id: app.globalData.userInfo.user_id,
                 event_id: that.data.event.id
             },
-            success: function(res) {}
+            success: function (res) { }
         });
 
         var sport = parseInt(that.data.event.type);
 
         var title = "鹿死谁手, 一起来参加" + app.globalData.eventType[sport] + "比赛决一雌雄";
         if (that.data.event.is_train == '1') {
-            title = "这个培训不错哦，快来参加" + app.globalData.eventType[sport] + "培训班吧";
+            title = "这个活动不错哦，快来参加" + app.globalData.eventType[sport] + "培训班吧";
         }
 
 
@@ -912,8 +933,8 @@ Page({
         return {
             title: title,
             path: '/pages/index/detail_new_event/detail_new_event?id=' + that.data.event.id,
-            success: function(res) {},
-            fail: function(res) {}
+            success: function (res) { },
+            fail: function (res) { }
         }
     }
 })

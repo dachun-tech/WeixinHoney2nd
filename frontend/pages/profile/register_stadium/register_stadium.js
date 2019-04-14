@@ -77,7 +77,10 @@ Page({
         },
         //variable for select type unit
         type_unit_index: 0,
-        type_units: [{ name: '开始前24小时可退', value: '24' },
+        type_units: [
+            { name: '开始前72小时可退', value: '72' },
+            { name: '开始前48小时可退', value: '48' },
+            { name: '开始前24小时可退', value: '24' },
             { name: '开始前12小时可退', value: '12' },
             { name: '开始前6小时可退', value: '6' },
             { name: '开始前都可退', value: '0' },

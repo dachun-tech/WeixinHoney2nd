@@ -6,12 +6,19 @@
   <view class="tab">
     <view class="tab-bar">
       <view id="tab-btn1" class="tab-item tab-item1 {{active1}}" bindtap='selectTab'>蜂约</view>
-      <view id="tab-btn2" class="tab-item tab-item2 {{active2}}" bindtap='selectTab'>赛事培训</view>
+      <view id="tab-btn2" class="tab-item tab-item2 {{active2}}" bindtap='selectTab'>活动专区</view>
     </view>
     <!-- <image class='tab-detail-open' bindtap="On_click_modal_open" src='../../image/filter@2x.png'></image> -->
   </view>
   <!-- original event list -->
   <scroll-view class="activities" wx:if="{{active1 == 'active'}}" scroll-y>
+    <swiper class="swiper_box" indicator-dots="true" autoplay="true" interval="3000" duration="300">
+      <block wx:for="{{actBanners}}" wx:key="index">
+        <swiper-item>
+          <image class="slide-image" mode="aspectFill" src="{{uploadUrl + item}}" id="{{index}}" data-url="{{uploadUrl + item}}" bindtap="show_preview" />
+        </swiper-item>
+      </block>
+    </swiper>
     <view wx:for="{{filter_events}}" wx:item="item" wx:key="index">
       <view>
         <template is="act-template" data="{{item, userRole, eventType, eventState,image_favs, uploadUrl}}"></template>
@@ -114,6 +121,13 @@
 
   <!-- added new type of event list -->
   <scroll-view scroll-y class="activities" wx:if="{{active2 == 'active'}}">
+    <swiper class="swiper_box" indicator-dots="true" autoplay="true" interval="3000" duration="300">
+      <block wx:for="{{pxBanners}}" wx:key="index">
+        <swiper-item>
+          <image class="slide-image" mode="aspectFill" src="{{uploadUrl + item}}" id="{{index}}" data-url="{{uploadUrl + item}}" bindtap="show_preview" />
+        </swiper-item>
+      </block>
+    </swiper>
     <view wx:for="{{filter_new_events}}" wx:item="item" wx:key="index">
       <view>
         <template is="event-template" data="{{item, userRole, eventType, eventState,image_favs,uploadUrl}}"></template>
@@ -131,7 +145,7 @@
       </view>
       <view class='index_table_search_item_view_new' style='left: 33%;width: 2rpx;height: 50%;top: 30%;background: #cccccc;'></view>
       <view bindtap="on_click_timemenu_new" class='index_table_search_item_view_new' style='left:33.5%;width:33%'>
-        <view class="filter_order_new" style='color:{{color_array[select_new_time_menu_state]}}'>时间</view>
+        <view class="filter_order_new" style='color:{{color_array[select_new_time_menu_state]}}'>活动时间</view>
         <cover-image class="img_up_arrow_new" src="{{menu_btn_array[select_new_time_menu_state]}}" style="left: 432rpx;"></cover-image>
       </view>
       <view class='index_table_search_item_view_new' style='left: 66.5%;width: 2rpx;height: 50%;top: 30%;background: #cccccc;'></view>

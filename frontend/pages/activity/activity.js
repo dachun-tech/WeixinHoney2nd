@@ -5,6 +5,8 @@ const app = getApp()
 Page({
     data: {
         uploadUrl: app.globalData.uploadURL,
+        actBanners: ["global/banner1@2x.png", "global/banner2@2x.png"],
+        pxBanners: ["global/peixunbanner1@2x.png", "global/peixunbanner2@2x.png"],
         active1: "active",
         active2: "",
         sport_kind_text: app.globalData.eventType,
@@ -845,5 +847,15 @@ Page({
             success: function(res) {},
             fail: function(res) {}
         }
-    }
+    },
+    show_preview: function(res) {
+        console.log(res)
+        var that = this;
+        console.log(res);
+        var src = res.currentTarget.dataset.url;
+        wx.previewImage({
+            current: 0,
+            urls: [src],
+        })
+    },
 })
