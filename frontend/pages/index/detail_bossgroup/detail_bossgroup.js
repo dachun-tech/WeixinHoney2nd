@@ -113,6 +113,7 @@ Page({
                     if (!res.data.status) return;
                     var info = res.data.result;
                     info.group_desc = JSON.parse(info.group_desc);
+                    console.log(info.group_desc);
                     that.setData({
                         info: info,
                         val_memcount: 1,
