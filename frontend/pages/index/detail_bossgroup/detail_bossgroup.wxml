@@ -45,7 +45,7 @@
       </text>
     </view>
     <view class="section btn-part">
-      <view class="btn-submit" bindtap="add_booking">提交订单</view>
+      <view class="btn-submit" bindtap="add_booking" style="{{(isBtnDisabled!=0?'background: #b8b8b8;':'')}}">{{btnstrarray[isBtnDisabled]}}</view>
     </view>
   </view>
 </scroll-view>

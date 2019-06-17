@@ -15,7 +15,7 @@
     <swiper class="swiper_box" indicator-dots="true" autoplay="true" interval="3000" duration="300">
       <block wx:for="{{actBanners}}" wx:key="index">
         <swiper-item>
-          <image class="slide-image" mode="aspectFill" src="{{uploadUrl + item}}" id="{{index}}" data-url="{{uploadUrl + item}}" bindtap="show_preview" />
+          <image class="slide-image" mode="aspectFill" src="{{uploadUrl + item}}" id="{{index}}" data-url="{{uploadUrl + item}}"  bindtap="go2Fengyun" />
         </swiper-item>
       </block>
     </swiper>
@@ -124,7 +124,7 @@
     <swiper class="swiper_box" indicator-dots="true" autoplay="true" interval="3000" duration="300">
       <block wx:for="{{pxBanners}}" wx:key="index">
         <swiper-item>
-          <image class="slide-image" mode="aspectFill" src="{{uploadUrl + item}}" id="{{index}}" data-url="{{uploadUrl + item}}" bindtap="show_preview" />
+          <image class="slide-image" mode="aspectFill" src="{{uploadUrl + item}}" id="{{index}}" data-url="{{uploadUrl + item}}" bindtap="go2Fengyun" />
         </swiper-item>
       </block>
     </swiper>

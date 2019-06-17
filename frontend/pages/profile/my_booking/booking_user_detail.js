@@ -393,84 +393,87 @@ Page({
             })
             return;
         }
+        if (!app.checkValidPhone(this.data.site_info.site[0].phone)) {
+            wx.showToast({
+                title: '商家电话号不正确，短信无法发送',
+                icon: 'none',
+                duration: 2000
+            })
+        }
 
         that.data.formId = event.detail.formId;
 
         if (that.data.isPayProcessing) return;
         that.data.isPayProcessing = true;
 
+        var out_trade_no = app.globalData.mch_id + Date.now() + (10000 + Math.floor(Math.random() * 90000))
+        that.data.share_day = (new Date(that.data.book_date.replace(/-/g, '/') + ' 00:00:00')).getDay();
+
         if (that.data.pay_type == 1 && that.data.pay_price != 0) {
             console.log(that.data.pay_price)
             var ordercode = that.data.pay_price;
-            var out_trade_no = app.globalData.mch_id + Date.now() + (10000 + Math.floor(Math.random() * 90000))
-            console.log(ordercode)
-            wx.login({
-                success: function(res) {
-                    if (res.code) {
-                        wx.request({
-                            url: app.globalData.mainURL + 'api/pay',
-                            data: {
-                                id: wx.getStorageSync('openid'), //要去换取openid的登录凭证
-                                fee: ordercode,
-                                user_id: app.globalData.userInfo.user_id,
-                                out_trade_no: out_trade_no
-                            },
-                            method: 'POST',
-                            header: {
-                                'content-type': 'application/json'
-                            },
+            that.data.out_trade_no = out_trade_no;
+            that.add_booking(function() {
+                wx.request({
+                    url: app.globalData.mainURL + 'api/pay',
+                    data: {
+                        id: wx.getStorageSync('openid'), //要去换取openid的登录凭证
+                        fee: ordercode,
+                        user_id: app.globalData.userInfo.user_id,
+                        out_trade_no: out_trade_no
+                    },
+                    method: 'POST',
+                    header: {
+                        'content-type': 'application/json'
+                    },
+                    success: function(res) {
+                        wx.requestPayment({
+                            timeStamp: res.data.timeStamp,
+                            nonceStr: res.data.nonceStr,
+                            package: res.data.package,
+                            signType: 'MD5',
+                            paySign: res.data.paySign,
                             success: function(res) {
-                                wx.requestPayment({
-                                    timeStamp: res.data.timeStamp,
-                                    nonceStr: res.data.nonceStr,
-                                    package: res.data.package,
-                                    signType: 'MD5',
-                                    paySign: res.data.paySign,
-                                    success: function(res) {
-                                        if (res.errMsg.length <= 20) {
-                                            clearInterval(that.data._tmr);
-                                            that.data.out_trade_no = out_trade_no;
-                                            that.add_booking();
-                                        }
-                                    },
-                                    fail: function(res) {
-                                        // fail
-                                        that.data.isPayProcessing = false;
-                                    },
-                                    complete: function(res) {
-                                        that.data.isfirstbtn = 0
-                                    }
-                                })
+                                if (res.errMsg.length <= 20) {
+                                    clearInterval(that.data._tmr);
+                                    var userId = app.globalData.userInfo.user_id + '';
+                                    app.globalData.userInfo.user_id = 0;
+                                    wx.redirectTo({
+                                        url: 'booking_final?bid=' + that.data.curBossId + '&uid=' + userId + '&sday=' + that.data.share_day,
+                                        success: function() {}
+                                    });
+                                }
+                            },
+                            complete: function(res) {
+                                that.data.isPayProcessing = false;
+                                that.data.isfirstbtn = 0
                             }
                         })
-                    } else {
-                        // no weixin returned code
                     }
-                }
+                })
+
             });
         } else {
             // offline payment
             that.data.out_trade_no = '';
-            that.add_booking();
-        }
+            that.add_booking(function() {
+                that.data.isfirstbtn = 0;
+                that.data.isPayProcessing = false;
 
+                clearInterval(that.data._tmr);
+                var userId = app.globalData.userInfo.user_id + '';
+                app.globalData.userInfo.user_id = 0;
+                wx.redirectTo({
+                    url: 'booking_final?bid=' + that.data.curBossId + '&uid=' + userId + '&sday=' + that.data.share_day,
+                    success: function() {}
+                });
+            });
+        }
     },
 
-    add_booking: function() {
+    add_booking: function(callback) {
         var that = this;
-        var share_day = (new Date(that.data.book_date.replace(/-/g, '/') + ' 00:00:00')).getDay();
-        var bookDate = new Date(that.data.book_date.replace(/-/g, '/') + ' 00:00:00');
-        var info1 = "",
-            info2 = "";
-        info1 = that.data.site_info.site[0].site_name + ',' +
-            bookDate.getFullYear() + '年' +
-            (bookDate.getMonth() + 1) + '月' +
-            bookDate.getDate() + '日';
-        for (var i = 0; i < that.data.bookList.length; i++) {
-            var item = that.data.bookList[i];
-            if (i != 0) info2 += ',';
-            info2 += item.room_name + '(' + item.start + ' - ' + item.end + ')';
-        }
+        var share_day = that.data.share_day;
         var data = {
             touser: wx.getStorageSync('openid'),
             template_id: app.globalData.templateIds.order_start,
@@ -482,14 +485,14 @@ Page({
                 keyword3: { value: that.data.currentBook.start_time, color: '#000' },
                 keyword4: { value: that.data.currentBook.end_time, color: '#000' },
                 keyword5: { value: that.data.price + '元', color: '#000' },
-                keyword6: { value: info2, color: '#000' },
+                keyword6: { value: 'info2', color: '#000' },
             },
             color: '#ff0000',
             emphasis_keyword: 'keyword1.DATA',
         };
 
         wx.request({
-            url: app.globalData.mainURL + 'api/datamanage/addRoomBooking',
+            url: app.globalData.mainURL + 'api/datamanage/addRoomBookingPrepare',
             method: 'POST',
             header: {
                 'content-type': 'application/json'
@@ -514,48 +517,12 @@ Page({
 
             },
             success: function(res) {
-                // wx.showModal({
-                //     content:JSON.stringify(res.data)             
-                // })
-                // return;
-                if (!app.checkValidPhone(that.data.site_info.site[0].phone)) {
-                    wx.showToast({
-                        title: '电话号不正确，短信无法发送',
-                        icon: 'none',
-                        duration: 2000
-                    })
-                    that.data.isPayProcessing = false;
-                } else {
-                    wx.request({
-                        url: app.globalData.smsURL,
-                        method: 'POST',
-                        header: {
-                            'content-type': 'application/json'
-                        },
-                        data: {
-                            'phonenumber': that.data.site_info.site[0].phone,
-                            'random': '-1',
-                            'info1': info1,
-                            'info2': info2,
-                        },
-                        success: function(res) {
-                            that.data.isPayProcessing = false;
-                            that.data.isfirstbtn = 0
-                            clearInterval(that.data._tmr);
-                            var userId = app.globalData.userInfo.user_id + '';
-                            app.globalData.userInfo.user_id = 0;
-                            wx.redirectTo({
-                                url: 'booking_final?bid=' + that.data.curBossId + '&uid=' + userId + '&sday=' + share_day,
-                                success: function() {}
-                            })
-                        },
-                        complete: function() {
-                            that.data.isPayProcessing = false;
-                        }
-                    })
-                }
+                if (callback) callback();
+            },
+            fail: function() {
+                that.data.isPayProcessing = false;
             }
-        })
+        });
     },
 
 

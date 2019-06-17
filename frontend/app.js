@@ -92,7 +92,19 @@ App({
         var that = this;
     },
     go2Setting: function() {
-        wx.openSetting({});
+        wx.showModal({
+            title: '提示',
+            content: '要正常使用此小程序，您需要允许用户位置获取权限',
+            showCancel: false,
+            confirmText: '去设置',
+            success: function(res) {
+                wx.openSetting({
+                    success: (res) => {
+                        // console.log("openSetting: ", res);
+                    }
+                });
+            },
+        });
     },
     onInitialize: function(callback) {
         clearInterval(this.globalData._tmr);

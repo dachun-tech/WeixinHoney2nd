@@ -334,8 +334,8 @@ Page({
                         // var cityShow = app.globalData.userCityName;
                         // if (cityShow.length > 4) cityShow = cityShow.substr(1, 3) + '...';
                         that.data.circles[0] = {
-                            latitude: parseFloat(cityData.current_latitude),
-                            longitude: parseFloat(cityData.current_longitude),
+                            latitude: parseFloat(cityData.user_latitude),
+                            longitude: parseFloat(cityData.user_longitude),
                             color: "#e6b53c",
                             fillColor: "#e6b53c20",
                             radius: wx.getStorageSync('user_step') / 2,

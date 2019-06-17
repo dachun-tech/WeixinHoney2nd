@@ -14,8 +14,10 @@ Page({
         user_id: 0,
         id: 0,
         pay_type: 1,
-        btnstrarray: ["确认参加", "确认支付"],
+        btnstrarray: ["提交订单", "未开始", "已过期"],
+        isBtnDisabled: 1,
         condStr: ['不可退', '可随时退、过期退'],
+
         isfirstbtn: 0,
         isPayProcessing: false,
     },
@@ -114,7 +116,16 @@ Page({
                     var info = res.data.result;
                     info.group_desc = JSON.parse(info.group_desc);
                     console.log(info.group_desc);
+
+                    var period_start = new Date(info.start.replace(/-/g, '/') + ' 00:00:00');
+                    var period_end = new Date(info.end.replace(/-/g, '/') + ' 23:59:59');
+                    var curDate = new Date();
+                    that.data.isBtnDisabled = 0;
+                    // if (period_start > curDate) that.data.isBtnDisabled = 1;
+                    if (period_end < curDate) that.data.isBtnDisabled = 2;
+
                     that.setData({
+                        isBtnDisabled: that.data.isBtnDisabled,
                         info: info,
                         val_memcount: 1,
                     })
@@ -182,6 +193,7 @@ Page({
 
     add_booking: function() {
         var that = this;
+        if (that.data.isBtnDisabled != 0) return;
 
         wx.request({
             url: app.globalData.mainURL + 'api/datamanage/orderGroupBooking',

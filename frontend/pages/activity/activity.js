@@ -858,4 +858,18 @@ Page({
             urls: [src],
         })
     },
+    go2Fengyun: function() {
+        wx.navigateToMiniProgram({
+            appId: 'wx772b3b3ff5817bdc',
+            path: 'pages/competition/index/index',
+            extraData: {},
+            // envVersion: 'develop',
+            success(res) {},
+            fail(res) {
+                wx.switchTab({
+                    url: "/pages/activity/activity?active2=" + that.data.active2
+                })
+            }
+        })
+    }
 })

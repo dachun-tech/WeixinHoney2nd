@@ -117,6 +117,7 @@ Page({
                     info.id = that.makeNDigit(info.id, 16);
                     info.start_time = info.start_time.split(' ')[0];
                     info.end_time = info.end_time.split(' ')[0];
+
                     that.setData({
                         info: info,
                         val_memcount: info.reg_num,
@@ -441,63 +442,64 @@ Page({
         if (that.data.isPayProcessing) return;
         that.data.isPayProcessing = true;
 
-        var type = that.data.pay_type;
-        var item_id = that.data.book_id;
-        var book_mode = that.data.book_type;
+        that.data.out_trade_no = '';
         if (that.data.pay_type == 1 && that.data.pay_price != 0) {
-            // console.log(that.data.pay_price)
             var ordercode = that.data.pay_price;
             var out_trade_no = app.globalData.mch_id + Date.now() + (10000 + Math.floor(Math.random() * 90000))
-                // console.log(ordercode)
-            wx.login({
-                success: function(res) {
-                    if (res.code) {
-                        wx.request({
-                            url: app.globalData.mainURL + 'api/pay',
-                            data: {
-                                id: wx.getStorageSync('openid'), //要去换取openid的登录凭证
-                                fee: ordercode,
-                                user_id: app.globalData.userInfo.user_id,
-                                out_trade_no: out_trade_no
-                            },
-                            method: 'POST',
-                            header: {
-                                'content-type': 'application/json'
-                            },
+            that.data.out_trade_no = out_trade_no;
+            that.add_booking(function() {
+                wx.request({
+                    url: app.globalData.mainURL + 'api/pay',
+                    data: {
+                        id: wx.getStorageSync('openid'), //要去换取openid的登录凭证
+                        fee: ordercode,
+                        user_id: app.globalData.userInfo.user_id,
+                        out_trade_no: out_trade_no
+                    },
+                    method: 'POST',
+                    header: {
+                        'content-type': 'application/json'
+                    },
+                    success: function(res) {
+                        wx.requestPayment({
+                            timeStamp: res.data.timeStamp,
+                            nonceStr: res.data.nonceStr,
+                            package: res.data.package,
+                            signType: 'MD5',
+                            paySign: res.data.paySign,
                             success: function(res) {
-                                wx.requestPayment({
-                                    timeStamp: res.data.timeStamp,
-                                    nonceStr: res.data.nonceStr,
-                                    package: res.data.package,
-                                    signType: 'MD5',
-                                    paySign: res.data.paySign,
-                                    success: function(res) {
-                                        if (res.errMsg.length <= 20) {
-                                            clearInterval(that.data._tmr);
-                                            that.data.out_trade_no = out_trade_no;
-                                            that.add_booking();
-                                        }
-                                    },
-                                    fail: function(res) {
-                                        // fail
-                                        that.data.isPayProcessing = false;
-                                    },
-                                    complete: function(res) {
-                                        that.data.isfirstbtn = 0
-                                    }
-                                })
+                                if (res.errMsg.length <= 20) {
+                                    clearInterval(that.data._tmr);
+                                    that.data.isPayProcessing = false;
+                                    app.globalData.userInfo.user_id = 0;
+                                    wx.redirectTo({
+                                        url: '../detail_bossgroup/bossgroup_success?id=' + that.data.info.id,
+                                        success: function() {}
+                                    })
+                                }
+                            },
+                            complete: function(res) {
+                                that.data.isPayProcessing = false;
+                                that.data.isfirstbtn = 0;
                             }
                         })
-                    } else {
-                        // no weixin returned code
                     }
-                }
+                })
             });
         } else if (that.data.price != 0) {
             // offline payment
             that.data.out_trade_no = '';
             that.data.pay_price = 0;
-            that.add_booking();
+            that.add_booking(function() {
+                that.data.isfirstbtn = 0;
+                that.data.isPayProcessing = false;
+                clearInterval(that.data._tmr);
+                app.globalData.userInfo.user_id = 0;
+                wx.redirectTo({
+                    url: '../detail_bossgroup/bossgroup_success?id=' + that.data.info.id,
+                    success: function() {}
+                })
+            });
         } else {
             that.data.out_trade_no = '';
             that.data.pay_price = 0;
@@ -505,15 +507,24 @@ Page({
             that.data.pay_online = 0;
             that.data.pay_type = 0;
             that.data.check_honey = 0;
-            that.add_booking();
+            that.add_booking(function() {
+                that.data.isfirstbtn = 0;
+                that.data.isPayProcessing = false;
+                clearInterval(that.data._tmr);
+                app.globalData.userInfo.user_id = 0;
+                wx.redirectTo({
+                    url: '../detail_bossgroup/bossgroup_success?id=' + that.data.info.id,
+                    success: function() {}
+                })
+            });
         }
     },
 
-    add_booking: function() {
+    add_booking: function(callback) {
         var that = this;
         wx.setStorageSync('group_paid', 1);
         wx.request({
-            url: app.globalData.mainURL + 'api/datamanage/addGroupBooking',
+            url: app.globalData.mainURL + 'api/datamanage/addGroupBookingPrepare',
             method: 'POST',
             header: {
                 'content-type': 'application/json'
@@ -533,50 +544,10 @@ Page({
                 pay_honey: ((that.data.check_honey == 1) ? (that.data.honey_id * 1 + 1) * that.data.honey_price_unit : 0),
             },
             success: function(res) {
+                if (callback) callback();
+            },
+            fail: function() {
                 that.data.isPayProcessing = false;
-                that.data.isfirstbtn = 0;
-                clearInterval(that.data._tmr);
-                that.data.isfirstbtn = 0
-                app.globalData.userInfo.user_id = 0;
-                if (!res.data.status) return;
-                if (!app.checkValidPhone(app.globalData.userInfo.phone)) {
-                    wx.showToast({
-                        title: '电话号不正确，短信无法发送',
-                        icon: 'none',
-                        duration: 2000
-                    })
-                    wx.redirectTo({
-                        url: '../detail_bossgroup/bossgroup_success?id=' + that.data.info.id,
-                        success: function() {}
-                    })
-                } else {
-                    var info1 = that.data.info.group_package;
-                    var info2 = that.data.info.start_time.split(' ')[0] + ' ~ ' + that.data.info.end_time.split(' ')[0];
-                    info2 = res.data.s;
-                    wx.request({
-                        url: app.globalData.smsURL,
-                        method: 'POST',
-                        header: {
-                            'content-type': 'application/json'
-                        },
-                        data: {
-                            'phonenumber': app.globalData.userInfo.phone,
-                            'random': '-2',
-                            'info1': info1,
-                            'info2': info2,
-                        },
-                        success: function(res) {
-
-                            wx.redirectTo({
-                                url: '../detail_bossgroup/bossgroup_success?id=' + that.data.info.id,
-                                success: function() {}
-                            })
-                        },
-                        complete: function() {
-                            that.data.isPayProcessing = false;
-                        }
-                    })
-                }
             }
         })
     },
