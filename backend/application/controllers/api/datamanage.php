@@ -981,15 +981,7 @@ class datamanage extends CI_Controller
         $bookedList = $this->db->query($query)->row();
 
         $roomBooking_id = $bookedList->id;
-//        $start_total = date("Y-m-d H:i:s", strtotime('+8 days'));
-//        $end_total = date("Y-m-d H:i:s");
         $bookInfo = json_decode($bookedList->book_info);
-//        foreach ($bookInfo as $new) {
-//            $start_local = $new->start_time;
-//            $end_local = $new->end_time;
-//            if ($start_local < $start_total) $start_total = $start_local;
-//            if ($end_local > $end_total) $end_total = $end_local;
-//        }
         $start_total = date_create($bookedList->start_time);
         $rules = $this->rule_model->getRule();
         date_modify($start_total, '-' . $rules[17]->value . ' mins');
@@ -1014,8 +1006,10 @@ class datamanage extends CI_Controller
             'pay_honey' => $info['pay_honey'],
             'out_trade_no' => $book->{"out_trade_no"},
             'submit_time' => date('Y-m-d H:i:s'),
-            'state' => '0',
+            'state' => '0', // already paid
         ), $roomBooking_id);
+
+        // add user alarm
         $result = $this->db->query("select boss_id, site_name from boss where boss_id=" . $bookedList->boss_id)->row();
         $alarm['user_id'] = $bookedList->user_id;
         $alarm['type'] = 14;
@@ -1036,16 +1030,20 @@ class datamanage extends CI_Controller
         $alarm['alarm_org_id'] = $bookedList->user_id;
         $alarm['submit_time'] = date("Y-m-d H:i:s");
         $alarm1 = $this->alarm_user_model->addAlarm($alarm);
+
+        // add boss alarm
         $alarm['user_id'] = $bookedList->boss_id;
         $alarm['type'] = 16;
         $alarm1 = $this->alarm_user_model->addAlarm($alarm);
 
+        // perform wallet calculation
         if ($info['pay_type'] == 1) { // if online payment
             $info['out_trade_no'] = $book->{'out_trade_no'};
-            $this->binding_model->addRoomBooking($bookedList->boss_id, $info['pay_cost'], $bookedList->user_id, $book->{"wallet"}, $roomBooking_id);
+            $this->binding_model->addRoomBooking($bookedList->boss_id, $info['pay_cost'], $bookedList->user_id, $pay_wallet, $roomBooking_id);
             $this->user_model->removeHoney($bookedList->user_id, $info['pay_honey']);
         }
 
+        // prepare page shareing data
         $share_day = $book->{"share_day"};
         $share_info = $this->db->query('select no from share_data where user_id = ' . $bookedList->user_id
             . ' and boss_id = ' . $bookedList->boss_id . ' and share_day = ' . $share_day)->row();
@@ -1072,6 +1070,184 @@ class datamanage extends CI_Controller
         } else {
             echo json_encode(array('status' => false), 200);
         }
+    }
+
+    /*
+    * this function is used to add booking information of user for a event
+    */
+    public function addRoomBookingPrepare()
+    {
+        $book = json_decode(file_get_contents("php://input"));
+
+        $bookDate = $book->{"book_date"};
+
+        $info['book_id'] = $book->{"book_id"};
+        $info['pay_type'] = $book->{"pay_type"};
+        $info['pay_honey'] = $book->{"pay_honey"};
+        $info['pay_cost'] = $book->{"pay_cost"};
+        $info['pay_online'] = $book->{"pay_online"};
+        $info['user_info'] = $book->{"user_info"};
+
+        // get previous booked list
+        $query = "select * from room_booking where id = '" . $info['book_id'] . "'";
+        $bookedList = $this->db->query($query)->row();
+
+        $roomBooking_id = $bookedList->id;
+        $bookInfo = json_decode($bookedList->book_info);
+        $start_total = date_create($bookedList->start_time);
+        $rules = $this->rule_model->getRule();
+        date_modify($start_total, '-' . $rules[17]->value . ' mins');
+        $submit_time = date_format($start_total, 'Y-m-d H:i:s');
+        if (false) {
+            $this->alarm_weixin_model->addItem(array(
+                'user_id' => $bookedList->user_id,
+                'type' => '预定',
+                'open_id' => $book->{'open_id'},
+                'msg_data' => json_encode($book->{'msg_data'}),
+                'submit_time' => $submit_time,
+                'is_read' => 0
+            ));
+        }
+
+        $pay_wallet = $info['pay_cost'] - $info['pay_honey'] - $info['pay_online'];
+        $this->roombooking_model->updateBookInfo(array(
+            'pay_cost' => $info['pay_cost'],
+            'pay_wallet' => $pay_wallet,
+            'pay_online' => $info['pay_online'],
+            'user_info' => $info['user_info'],
+            'pay_honey' => $info['pay_honey'],
+            'out_trade_no' => $book->{"out_trade_no"},
+            'submit_time' => date('Y-m-d H:i:s'),
+            'state' => '4', // already ordered
+        ), $roomBooking_id);
+        $result = 'success';
+        if ($info['pay_type'] != 1 || $info['pay_online'] == 0) {
+            $bookItem = $this->db->query("select * from room_booking where id = '" . $roomBooking_id . "'")->row();
+            $this->addRoomBookingPerform($bookItem);
+        } else if (true) {
+            echo json_encode(array('status' => true, 'result' => $result), 200);
+        } else {
+            echo json_encode(array('status' => false), 200);
+        }
+    }
+
+    /*
+    * this function is used to add booking information of user for a event
+    */
+    public function addRoomBookingPerform($bookItem = null)
+    {
+        if ($bookItem == null) return false;
+
+        $bookDate = explode(' ', $bookItem->submit_time)[0];
+
+        $info['book_id'] = $bookItem->id;
+        $info['pay_type'] = ($bookItem->pay_online > 0) ? 1 : 0;
+        $info['pay_honey'] = $bookItem->pay_honey;
+        $info['pay_cost'] = $bookItem->pay_cost;
+        $info['pay_online'] = $bookItem->pay_online;
+        $info['user_info'] = $bookItem->user_info;
+
+        // get previous booked list
+        $bookedList = $bookItem;
+
+        $roomBooking_id = $bookedList->id;
+        $bookInfo = json_decode($bookedList->book_info);
+        $start_total = date_create($bookedList->start_time);
+        $rules = $this->rule_model->getRule();
+        date_modify($start_total, '-' . $rules[17]->value . ' mins');
+        $submit_time = date_format($start_total, 'Y-m-d H:i:s');
+        if (false) {
+            $this->alarm_weixin_model->addItem(array(
+                'user_id' => $bookedList->user_id,
+                'type' => '预定',
+//                'open_id' => $book->{'open_id'},
+//                'msg_data' => json_encode($book->{'msg_data'}),
+                'submit_time' => $submit_time,
+                'is_read' => 0
+            ));
+        }
+
+        $pay_wallet = $info['pay_cost'] - $info['pay_honey'] - $info['pay_online'];
+        $this->roombooking_model->updateBookInfo(array(
+            'state' => '0', // already paid
+        ), $roomBooking_id);
+
+        // add user alarm
+        $result = $this->db->query("select boss_id, site_name from boss where boss_id=" . $bookedList->boss_id)->row();
+        $alarm['user_id'] = $bookedList->user_id;
+        $alarm['type'] = 14;
+        $nameList = '';
+        $old_room_id = 0;
+        $j = 0;
+
+        $smsInfo2 = '';
+        foreach ($bookInfo as $item) {
+            if ($old_room_id == $item->room_id) continue;
+            $old_room_id = $item->room_id;
+            if ($j > 0) $nameList .= ',';
+            $roomName = $this->db->query('select * from room where id = ' . $item->room_id)->row()->room_name;
+            if (strpos($nameList, $roomName) >= 0) {
+                $nameList .= $roomName;
+                $j++;
+            }
+            if ($smsInfo2 != '') $smsInfo2 .= ',';
+            $smsInfo2 .= "$item->room_name($item->start-$item->end)";
+        }
+        $alarm['event_type'] = $result->site_name . '商家' . $nameList . '场地';
+        $alarm['alarm_org_id'] = $bookedList->user_id;
+        $alarm['submit_time'] = date("Y-m-d H:i:s");
+        $alarm1 = $this->alarm_user_model->addAlarm($alarm);
+
+        // add boss alarm
+        $alarm['user_id'] = $bookedList->boss_id;
+        $alarm['type'] = 16;
+        $alarm1 = $this->alarm_user_model->addAlarm($alarm);
+
+        // perform wallet calculation
+        if ($info['pay_type'] == 1) { // if online payment
+            $info['out_trade_no'] = $bookItem->out_trade_no;
+
+            $this->binding_model->addRoomBooking($bookedList->boss_id, $info['pay_cost'], $bookedList->user_id, $pay_wallet, $roomBooking_id);
+            $this->user_model->removeHoney($bookedList->user_id, $info['pay_honey']);
+        }
+
+        // prepare page shareing data
+        $share_day = date('w');
+        $share_info = $this->db->query('select no from share_data where user_id = ' . $bookedList->user_id
+            . ' and boss_id = ' . $bookedList->boss_id . ' and share_day = ' . $share_day)->row();
+        if (count($share_info) == 0) {
+            $this->db->insert('share_data', array(
+                'user_id' => $bookedList->user_id,
+                'boss_id' => $bookedList->boss_id,
+                'share_day' => $share_day,
+                'content' => json_encode(array('book_date' => $bookDate, 'book_info' => $bookInfo))
+            ));
+        } else {
+            $this->db->set(array(
+                'user_id' => $bookedList->user_id,
+                'boss_id' => $bookedList->boss_id,
+                'share_day' => $share_day,
+                'content' => json_encode(array('book_date' => $bookDate, 'book_info' => $bookInfo))
+            ));
+            $this->db->where('no', $share_info->no);
+            $this->db->update('share_data');
+        }
+        // send sms
+        $sitePhone = $this->db->query('select phone from user where no=' . $bookedList->boss_id)->row()->phone;
+        $smsInfo1 = $result->site_name . ',' . date('Y年m月d日');
+//        $smsParam = array(
+//            'phonenumber'=>$sitePhone,
+//            'random'=>'-1',
+//            'info1'=>),
+//            'info2'=>$smsInfo2
+//        );
+
+        $url = 'https://www.fengteam.cn/sms/SendTemplateSMS.php';
+        $param = '{"phonenumber":"' . $sitePhone . '","random":"-1","info1":"' . $smsInfo1 . '","info2":"' . $smsInfo2 . '"}';
+        $header = array('Content-Type' => 'application/json');
+        $ret = $this->http_general($url, 'POST', $param, $header);
+
+        return $ret;
     }
 
     /*
@@ -1352,7 +1528,7 @@ class datamanage extends CI_Controller
 
         if ($info['pay_type'] == 1) { // if online payment
             $info['out_trade_no'] = $book->{'out_trade_no'};
-            $this->binding_model->addGroupBooking($bookedList->boss_id, $info['pay_cost'], $bookedList->user_id, $book->{"wallet"}, $roomBooking_id);
+            $this->binding_model->addGroupBooking($bookedList->boss_id, $info['pay_cost'], $bookedList->user_id, $pay_wallet, $roomBooking_id);
             $this->user_model->removeHoney($bookedList->user_id, $info['pay_honey']);
         }
 
@@ -1367,6 +1543,115 @@ class datamanage extends CI_Controller
         } else {
             echo json_encode(array('status' => false), 200);
         }
+    }
+
+    /*
+    * this function is used to add booking information of user for a event
+    */
+    public function addGroupBookingPrepare()
+    {
+        $book = json_decode(file_get_contents("php://input"));
+
+        $info['book_id'] = $book->{"book_id"};
+
+        $info['pay_type'] = 1;
+        $info['pay_honey'] = $book->{"pay_honey"};
+        $info['pay_cost'] = $book->{"pay_cost"};
+        $info['pay_online'] = $book->{"pay_online"};
+        $info['user_info'] = $book->{"user_info"};
+
+        // get previous booked list
+        $query = "select * from room_booking where id = '" . $info['book_id'] . "'";
+        $bookedList = $this->db->query($query)->row();
+        $roomBooking_id = $bookedList->id;
+        $pay_wallet = $info['pay_cost'] - $info['pay_honey'] - $info['pay_online'];
+        $this->roombooking_model->updateBookInfo(array(
+            'pay_cost' => $info['pay_cost'],
+            'pay_wallet' => $pay_wallet,
+            'pay_online' => $info['pay_online'],
+            'pay_honey' => $info['pay_honey'],
+            'user_info' => $info['user_info'],
+            'out_trade_no' => $book->{"out_trade_no"},
+            'submit_time' => date('Y-m-d H:i:s'),
+            'state' => '4',
+        ), $roomBooking_id);
+        $result = 'success';
+        if ($info['pay_type'] != 1 || $info['pay_online'] == 0) {
+            $bookItem = $this->db->query("select * from room_booking where id = '" . $roomBooking_id . "'")->row();
+            $this->addGroupBookingPerform($bookItem);
+        } else if (true) {
+            echo json_encode(array('status' => true, 'result' => $result), 200);
+        } else {
+            echo json_encode(array('status' => false), 200);
+        }
+    }
+
+    /*
+    * this function is used to add booking information of user for a event
+    */
+    public function addGroupBookingPerform($bookItem = null)
+    {
+
+        if ($bookItem == null) return false;
+
+        $info['book_id'] = $bookItem->id;
+        $info['pay_type'] = ($bookItem->pay_online > 0) ? 1 : 0;
+        $info['pay_honey'] = $bookItem->pay_honey;
+        $info['pay_cost'] = $bookItem->pay_cost;
+        $info['pay_online'] = $bookItem->pay_online;
+        $info['user_info'] = $bookItem->user_info;
+
+        // get previous booked list
+        $bookedList = $bookItem;
+
+        $roomBooking_id = $bookedList->id;
+        $pay_wallet = $info['pay_cost'] - $info['pay_honey'] - $info['pay_online'];
+        $this->roombooking_model->updateBookInfo(array(
+            'state' => '0', // already paid
+        ), $roomBooking_id);
+
+        // add user alarm
+        $result = $this->db->query("select boss_id, site_name from boss where boss_id=" . $bookedList->boss_id)->row();
+        $bossBook = $this->db->query("select group_package from bossgroup where no=" . $bookedList->bossgroup_id)->row();
+        $alarm['user_id'] = $bookedList->user_id;
+        $alarm['type'] = 21;
+
+        $alarm['event_type'] = $result->site_name . '商家的' . $bossBook->group_package . '团购(' . $bookedList->reg_num . '个)';
+        $alarm['alarm_org_id'] = $bookedList->user_id;
+        $alarm['submit_time'] = date("Y-m-d H:i:s");
+        $alarm1 = $this->alarm_user_model->addAlarm($alarm);
+
+        // add boss alarm
+        $alarm['user_id'] = $bookedList->boss_id;
+        $alarm['type'] = 22;
+        $alarm['event_type'] = $bossBook->group_package . '团购(' . $bookedList->reg_num . '个)';
+        $alarm1 = $this->alarm_user_model->addAlarm($alarm);
+
+        // perform wallet calculation
+        if ($info['pay_type'] == 1) { // if online payment
+            $info['out_trade_no'] = $bookItem->out_trade_no;
+            $this->binding_model->addGroupBooking($bookedList->boss_id, $info['pay_cost'], $bookedList->user_id, $pay_wallet, $roomBooking_id);
+            $this->user_model->removeHoney($bookedList->user_id, $info['pay_honey']);
+        }
+
+        // send sms
+        $sitePhone = json_decode($bookedList->user_info);
+        $sitePhone = $sitePhone->phone;
+        if ($sitePhone == null) $this->db->query('select phone from user where no=' . $bookedList->user_id)->row()->phone;
+        $smsInfo1 = $bossBook->group_package;
+        $bookInfo = json_decode($bookedList->book_info);
+        $smsInfo2 = '';
+        foreach ($bookInfo as $item) {
+            if ($smsInfo2 != '') $smsInfo2 .= ',';
+            $smsInfo2 .= $roomBooking_id . $item->order_code;
+        }
+
+        $url = 'https://www.fengteam.cn/sms/SendTemplateSMS.php';
+        $param = '{"phonenumber":"' . $sitePhone . '","random":"-2","info1":"' . $smsInfo1 . '","info2":"' . $smsInfo2 . '"}';
+        $header = array('Content-Type' => 'application/json');
+        $ret = $this->http_general($url, 'POST', $param, $header);
+
+        return $ret;
     }
 
     /*
@@ -1680,7 +1965,7 @@ class datamanage extends CI_Controller
         }
         $site = $this->boss_model->getSiteDetail($boss_id, $user_id, $boss_no);
         $roomData = $this->boss_model->getSiteRoomData($boss_id);
-        $bossRoom = $this->boss_model->getBossRoomData($boss_id);
+        $bossRoom = $this->boss_model->getBossRoomData($boss_id, 'week');
         $bookingData = $this->boss_model->getSiteBookData($boss_id, $user_id);
         $picture = $this->boss_model->getSitePictures($boss_id);
         $isFavourite = $this->boss_model->isFavourite($user_id, $boss_id, $boss_no);
@@ -2211,18 +2496,40 @@ class datamanage extends CI_Controller
 
         $roomData = $this->boss_model->getSiteRoomDataForUpdate($user_id);
         $isChanged = false;
-        foreach ($roomData as $oldRoom) {
-            $isExist = false;
-            foreach ($roomInfo as $item) {
-                if ($oldRoom->room_name == $item->name &&
-                    $oldRoom->cost == $item->cost) {
-                    $isExist = true;
+        if (count($roomData) > 0) {
+            foreach ($roomData as $oldRoom) {
+                $isExist = false;
+                if ($roomInfo != null) {
+                    foreach ($roomInfo as $item) {
+                        if ($oldRoom->room_name == $item->name &&
+                            $oldRoom->cost == $item->cost) {
+                            $isExist = true;
+                            break;
+                        }
+                    }
+                }
+                if (!$isExist) {
+                    $isChanged = true;
                     break;
                 }
             }
-            if (!$isExist) {
-                $isChanged = true;
-                break;
+        }
+        if ($roomInfo != null) {
+            foreach ($roomInfo as $item) {
+                $isExist = false;
+                if (count($roomData) > 0) {
+                    foreach ($roomData as $oldRoom) {
+                        if ($oldRoom->room_name == $item->name &&
+                            $oldRoom->cost == $item->cost) {
+                            $isExist = true;
+                            break;
+                        }
+                    }
+                }
+                if (!$isExist) {
+                    $isChanged = true;
+                    break;
+                }
             }
         }
         $result = false;
@@ -2354,6 +2661,13 @@ class datamanage extends CI_Controller
         $openid = $book->{'id'};
         $total_fee = $book->{'fee'};
         $user_id = $book->{'user_id'};
+        $this->db->query("update room_booking set " .
+            " out_trade_no='" . $out_trade_no . "' " .
+            " where user_id = '" . $user_id . "' " .
+            " and pay_cost='" . $total_fee . "' " .
+            " and book_type='0' " .
+            " and state='4' "
+        );
         if (empty($total_fee)) //押金
         {
             $body = "充值押金";
@@ -2364,6 +2678,16 @@ class datamanage extends CI_Controller
         }
         $weixinpay = new WeixinPay($appid, $openid, $mch_id, $key, $out_trade_no, $body, $total_fee, base_url());
         $return = $weixinpay->pay();
+
+        $this->db->query("insert weixin_status set user_id='" . $user_id . "', " .
+            "fee='" . $total_fee . "', " .
+            "out_trade_no='" . $out_trade_no . "', " .
+            "request_code='" . json_encode($return) . "', " .
+            "read_status='0', " .
+            "create_at='" . date('Y-m-d H:i:s') . "', " .
+            "update_at='" . date('Y-m-d H:i:s') . "'"
+        );
+
         echo json_encode($return);
     }
 
@@ -2457,7 +2781,7 @@ class datamanage extends CI_Controller
             return $receipt;
         }
 
-        $post = post_data();    //接受POST数据XML个数
+        $post = $GLOBALS['HTTP_RAW_POST_DATA'];    //接受POST数据XML个数
 
         $post_data = $this->xmlToArray($post);   //微信支付成功，返回回调地址url的数据：XML转数组Array
         $postSign = $post_data['sign'];
@@ -2476,6 +2800,21 @@ class datamanage extends CI_Controller
         //$order_status = M('home_order', 'xxf_witkey_')->where($where)->find();
 
         if ($post_data['return_code'] == 'SUCCESS' && $postSign) {
+            $this->db->query("update weixin_status " .
+                "set return_code='" . json_encode($GLOBALS['HTTP_RAW_POST_DATA']) . "', " .
+                "read_status='1', update_at='" . date('Y-m-d H:i:s') . "', " .
+                "data_type='pay success' " .
+                " where out_trade_no='" . $post_data['out_trade_no'] . "' and read_status='0'"
+            );
+
+            $roomBookingItem = $this->db->query("select * from room_booking where out_trade_no='" . $post_data['out_trade_no'] . "' and state = 4")->row();
+            if ($roomBookingItem != null) {
+                if ($roomBookingItem->bossgroup_id == null)
+                    $this->addRoomBookingPerform($roomBookingItem);
+                else
+                    $this->addGroupBookingPerform($roomBookingItem);
+            }
+
             /*
             * 首先判断，订单是否已经更新为ok，因为微信会总共发送8次回调确认
             * 其次，订单已经为ok的，直接返回SUCCESS
@@ -3184,7 +3523,6 @@ where provinces.provinceid = cities.provinceid and cities.cityid=areas.cityid an
             $return = '';
         }
         return $return;
-
     }
 
 
@@ -3284,9 +3622,7 @@ where provinces.provinceid = cities.provinceid and cities.cityid=areas.cityid an
 
         $url = 'https://api.weixin.qq.com/wxa/getwxacode?access_token=' . $token;
         $param = '{"path":"' . $path . '","width":300,"auto_color":false,"line_color":{"r":"0","g":"0","b":"0"}}';
-        $header = array(
-            'Content-Type' => 'application/json'
-        );
+        $header = array('Content-Type' => 'application/json');
         $result = $this->http($url, 'POST', $param, $header, $user_id);
         if (true)
             echo json_encode(array('status' => true, 'data' => $result), 200);
@@ -3344,6 +3680,44 @@ where provinces.provinceid = cities.provinceid and cities.cityid=areas.cityid an
         }
         curl_close($ci);
         return $saveTo;
+    }
+
+    public function http_general($url, $method = '', $postfields = null, $headers = array(), $debug = false)
+    {
+        $ci = curl_init();
+
+        /* Curl settings */
+        curl_setopt($ci, CURLOPT_CONNECTTIMEOUT, 30);
+        curl_setopt($ci, CURLOPT_TIMEOUT, 30);
+//        curl_setopt($ci, CURLOPT_RETURNTRANSFER, true);
+
+        switch ($method) {
+            case 'POST':
+                curl_setopt($ci, CURLOPT_POST, true);
+                if (!empty($postfields)) {
+                    curl_setopt($ci, CURLOPT_POSTFIELDS, $postfields);
+                    $this->postdata = $postfields;
+                }
+                break;
+        }
+        curl_setopt($ci, CURLOPT_URL, $url);
+        curl_setopt($ci, CURLOPT_HTTPHEADER, $headers);
+        curl_setopt($ci, CURLINFO_HEADER_OUT, true);
+
+        $response = curl_exec($ci);
+
+        if ($debug) {
+            echo "=====post data======\r\n";
+//            var_dump($postfields);
+
+            echo '=====info=====' . "\r\n";
+            print_r(curl_getinfo($ci));
+
+            echo '=====$response=====' . "\r\n";
+            print_r($response);
+        }
+        curl_close($ci);
+        return $response;
     }
 
     public function getQR1()

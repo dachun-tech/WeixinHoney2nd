@@ -180,7 +180,7 @@ class binding_model extends CI_Model
         } else {
             $this->db->set(array(
                 'update_time' => date('Y-m-d H:i:s'),
-                'user_ip'=>$this->get_client_ip()
+                'user_ip' => $this->get_client_ip()
             ));
             $this->db->where("no", $result[0]->no);
             $this->db->update("binding");
@@ -382,7 +382,7 @@ class binding_model extends CI_Model
      * @param number $userId : This is id of user
      * @return array $result : This is information array of payment of user
      */
-    function addRoomBooking($boss_id, $price, $user_id, $amount = 0, $book_id)
+    function addRoomBooking($boss_id, $price, $user_id, $paid_wallet = 0, $book_id)
     {
 
         // get owner's wallet
@@ -393,11 +393,11 @@ class binding_model extends CI_Model
         }
 
         // remove online paid price from sender's wallet
-        $paid_wallet = 0;
-        if ($amount >= 0) {
-            $old_wallet = $this->db->query("select amount_withdraw from binding where user_id=" . $user_id)->row();
-            $paid_wallet = $old_wallet->amount_withdraw - $amount;
-            $this->db->query("update binding set amount = amount - " . $paid_wallet . ", amount_withdraw = amount_withdraw - " . $paid_wallet . " where user_id = " . $user_id);
+        if ($paid_wallet >= 0) {
+//            $old_wallet = $this->db->query("select amount_withdraw from binding where user_id=" . $user_id)->row();
+//            $paid_wallet = $old_wallet->amount_withdraw - $amount;
+            $this->db->query("update binding set amount = amount - " . $paid_wallet .
+                ", amount_withdraw = amount_withdraw - " . $paid_wallet . " where user_id = " . $user_id);
         }
 
         $total = $price; // total price
@@ -409,9 +409,11 @@ class binding_model extends CI_Model
 
         // add payment history item
         $now = date("Y-m-d H:i:s");
-        $this->db->query("insert into payment_history(user_id, paid_user, amount, submit_time, type, room_booking_id) values(" . $boss_id . "," . $user_id . ","
+        $this->db->query("insert into payment_history(user_id, paid_user, amount, submit_time, type, room_booking_id) " .
+            "values(" . $boss_id . "," . $user_id . ","
             . $total . ",'" . $now . "', 10" . "," . $book_id . ")");
-        $this->db->query("insert into payment_history(user_id, paid_user, amount, submit_time, type, room_booking_id) values(" . $user_id . "," . $user_id . ","
+        $this->db->query("insert into payment_history(user_id, paid_user, amount, submit_time, type, room_booking_id) " .
+            "values(" . $user_id . "," . $user_id . ","
             . $paid_wallet . ",'" . $now . "', 9" . "," . $book_id . ")");
         return true;
     }
@@ -436,7 +438,7 @@ class binding_model extends CI_Model
      * @param number $userId : This is id of user
      * @return array $result : This is information array of payment of user
      */
-    function addGroupBooking($boss_id, $price, $user_id, $amount = 0, $book_id)
+    function addGroupBooking($boss_id, $price, $user_id, $paid_wallet = 0, $book_id)
     {
 
         // get owner's wallet
@@ -447,11 +449,9 @@ class binding_model extends CI_Model
         }
 
         // remove online paid price from sender's wallet
-        $paid_wallet = 0;
-        if ($amount >= 0) {
-            $old_wallet = $this->db->query("select amount_withdraw from binding where user_id=" . $user_id)->row();
-            $paid_wallet = $old_wallet->amount_withdraw - $amount;
-            $this->db->query("update binding set amount = amount - " . $paid_wallet . ", amount_withdraw = amount_withdraw - " . $paid_wallet . " where user_id = " . $user_id);
+        if ($paid_wallet > 0) {
+            $this->db->query("update binding set amount = amount - " . $paid_wallet .
+                ", amount_withdraw = amount_withdraw - " . $paid_wallet . " where user_id = " . $user_id);
         }
 
         $total = $price; // total price
@@ -465,7 +465,8 @@ class binding_model extends CI_Model
         $now = date("Y-m-d H:i:s");
         $this->db->query("insert into payment_history(user_id, paid_user, amount, submit_time, type, room_booking_id)" .
             " values( $boss_id, $user_id, $total, '$now', 16, $book_id )");
-        $this->db->query("insert into payment_history(user_id, paid_user, amount, submit_time, type, room_booking_id) values(" . $user_id . "," . $user_id . ","
+        $this->db->query("insert into payment_history(user_id, paid_user, amount, submit_time, type, room_booking_id) values(" .
+            $user_id . "," . $user_id . ","
             . $paid_wallet . ",'" . $now . "', 15" . "," . $book_id . ")");
         return true;
     }

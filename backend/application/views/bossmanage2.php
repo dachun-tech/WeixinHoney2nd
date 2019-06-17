@@ -21,6 +21,9 @@
     <link href="<?php echo base_url(); ?>assets/dist/css/custom.css" rel="stylesheet">
 
     <style>
+        html, body{
+            background: #ecf0f5;
+        }
         .error {
             color: red;
             font-weight: normal;
@@ -48,7 +51,7 @@
 <?php
 $type = '商家';
 ?>
-<body id="main_page_body" class="skin-blue sidebar-mini">
+<body id="main_page_body" class="skin-blue sidebar-mini" style="overflow-x:auto;">
 <div class="content-wrapper" style="min-height: 100%;margin-left:0;">
     <!-- Content Header (Page header) -->
     <section class="content-header">
@@ -64,7 +67,7 @@ $type = '商家';
             <a class="header-item" href="<?= base_url() . 'logout' ?>">退出</a>
         </div>
         <div class="container" style="text-align: center;">
-            <div style="display:inline-block; text-align: left; width: 800px;">
+            <div style="display:inline-block; text-align: left; width: 1000px;">
                 <form class="roomInfoUpdateForm" action="<?= base_url() . 'bossmanage/updateBossRoomInfo'; ?>"
                       method="post"
                       accept-charset="utf-8" enctype="multipart/form-data">
@@ -186,6 +189,7 @@ $type = '商家';
                             }
                         </style>
                         <div class="input-group margin roomDataArea">
+                            <label style="color: #888;width: 100%;text-align: left;">*如果场地名称6文字以上，那么请使用空白文字为换行。</label>
                             <div>
                                 <?php
                                 $jj = -1;
@@ -197,7 +201,8 @@ $type = '商家';
                                         <input name="name<?= $jj ?>" type="text" class="form-control" placeholder="请输入"
                                                value="<?= $item->room_name; ?>" maxlength="10"/>
                                         <label> 单价:</label>
-                                        <input name="cost<?= $jj ?>" type="number" class="form-control" placeholder="请输入"
+                                        <input name="cost<?= $jj ?>" type="number" class="form-control"
+                                               placeholder="请输入"
                                                value="<?= $item->cost; ?>"/>
                                         <label style="width: auto; line-height: 2.5"> 元 </label>
                                         <a class="removeRoomBtn">删除</a>
@@ -211,6 +216,14 @@ $type = '商家';
                                     $('.removeRoomBtn').off('click');
                                     $('.removeRoomBtn').on('click', function (e) {
                                         $(this).parent().remove();
+                                        var cnt = parseInt($('input[name="roomCnt"]').val());
+                                        $('input[name="roomCnt"]').val(cnt - 1);
+                                        var roomItems = $('.room-item');
+                                        for (var i = 0; i < roomItems.length; i++) {
+                                            var item = $(roomItems[i]);
+                                            item.find('input')[0].setAttribute('name', 'name' + i);
+                                            item.find('input')[1].setAttribute('cost', 'name' + i);
+                                        }
                                     });
                                 }
 
@@ -227,7 +240,7 @@ $type = '商家';
                                         '<label style="width: auto; line-height: 2.5"> 元 </label> ' +
                                         '<a class="removeRoomBtn">删除</a>' +
                                         '</div>';
-                                    $('div.roomDataArea > div:first-child').append(content_html);
+                                    $('div.roomDataArea > div:nth-child(2)').append(content_html);
                                     $('input[name="roomCnt"]').val(cnt + 1);
                                     removeBtnRefresh();
                                 });
@@ -269,7 +282,7 @@ $type = '商家';
                 </form>
             </div>
 
-            <div style="display:inline-block; text-align: left; width: 800px;">
+            <div style="display:inline-block; text-align: left; width: 1000px;">
                 <label style="font-size:larger;"> 已售/可售设置 : </label>
                 <form class="bookInfoUpdateForm" action=""
                       method="post" accept-charset="utf-8" enctype="multipart/form-data">
@@ -294,7 +307,7 @@ $type = '商家';
                         }
 
                         table.updateTable {
-                            width: 80%;
+                            width: calc(100% - 60px);
                             text-align: center;
                             float: left;
                         }
@@ -308,6 +321,7 @@ $type = '商家';
                             -moz-user-select: none;
                             -ms-user-select: none;
                             user-select: none;
+                            word-break: keep-all;
                         }
 
                         .timeTable td, .updateTable td {
@@ -321,6 +335,11 @@ $type = '商家';
                             cursor: pointer;
                             height: 30px;
                             line-height: 30px;
+							padding: 0;
+							overflow: hidden;
+							white-space: nowrap;
+							word-break: keep-all;
+							text-overflow: ellipsis;
                         }
 
                         .timeTable td {
@@ -334,6 +353,7 @@ $type = '商家';
                             background: lightgrey;
                             color: black;
                         }
+
                         .updateTable td[data-status="0"][data-userid="-1"] {
                             background: grey;
                             color: black;
@@ -346,7 +366,7 @@ $type = '商家';
                         }
                     </style>
                     <div class="row form-inline">
-                        <div class="input-group margin" style="width: 800px;">
+                        <div class="input-group margin" style="width: 1000px;">
                             <table class="timeTable"></table>
                             <table class="updateTable" data-type="book">
                                 <thead></thead>
@@ -390,7 +410,7 @@ $type = '商家';
                 </form>
             </div>
 
-            <div style="display:inline-block; text-align: left; width: 800px;margin-top:30px;">
+            <div style="display:inline-block; text-align: left; width: 1000px;margin-top:30px;">
                 <label style="font-size:larger;"> 修改价格 : </label>
                 <form class="priceInfoUpdateForm" action=""
                       method="post"
@@ -411,7 +431,7 @@ $type = '商家';
                     </div>
 
                     <div class="row form-inline">
-                        <div class="input-group margin" style="width: 800px;">
+                        <div class="input-group margin" style="width: 1000px;">
                             <table class="timeTable"></table>
                             <table class="updateTable" data-type="price">
                                 <thead></thead>

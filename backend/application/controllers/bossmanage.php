@@ -56,7 +56,7 @@ class bossmanage extends basecontroller
         $boss_no = 0;
 
         $this->global['site'] = $this->boss_model->getSiteDetail($boss_id, $user_id, $boss_no);
-        $this->global['roomData'] = $this->boss_model->getSiteRoomData($boss_id);
+        $this->global['roomData'] = $this->boss_model->getSiteRoomData($boss_id, 'admin');
         $this->global['bossRoom'] = $this->boss_model->getBossBackendRoomData($boss_id);
         $this->global['bookingData'] = $this->boss_model->getSiteBookData($boss_id, $user_id);
         $this->global['userInfo'] = $this->user_model->getUserDetailById($user_id);
@@ -88,7 +88,12 @@ class bossmanage extends basecontroller
         $info['site_type_detail'] = $this->input->post('site_type_detail');
         $info['site_introduction'] = $this->input->post('site_introduction');
         $info['site_service'] = $this->input->post('site_service');
-
+		if(count(explode(',',$info['site_type_detail']))>1) $info['site_type'] = 31;
+		else $info['site_type'] = $info['site_type_detail'];
+		if($info['site_type_detail']=='') {
+			$info['site_type']=null;
+			$info['site_type_detail'] = null;
+		}
         $this->boss_model->addNewBoss($info, $boss_id);
 
         $upload_root = "uploads/";
@@ -113,6 +118,7 @@ class bossmanage extends basecontroller
                     if ($cnt != 1) $imgs .= ',';
                     $data = $this->upload->data();
                     $img = $config['file_name'];
+//			var_dump($img);
                     $this->boss_model->replaceSitePicture($boss_id, $img, $j);
                 } else {///show error message
                     $ret['data'] = $this->upload->display_errors();
@@ -152,26 +158,60 @@ class bossmanage extends basecontroller
                 'cost' => $this->input->post('cost' . $i)
             ];
         }
-
         $roomData = $this->boss_model->getSiteRoomDataForUpdate($boss_id);
         $isChanged = false;
-        foreach ($roomData as $oldRoom) {
-            $isExist = false;
-            foreach ($roomInfo as $item) {
-                if ($oldRoom->room_name == $item->name &&
-                    $oldRoom->cost == $item->cost) {
-                    $isExist = true;
-                    break;
+        $submit_time = '';
+        if (count($roomData) > 0) { // if old data is exist
+            foreach ($roomData as $oldRoom) {
+                $isExist = false;
+                if ($roomInfo != null) {
+                    foreach ($roomInfo as $item) {
+                        if ($oldRoom->room_name == $item->name &&
+                            $oldRoom->cost == $item->cost) {
+                            $isExist = true;
+                            break;
+                        }
+                    }
+                }
+                if (!$isExist) {
+                    $isChanged = true;
                 }
             }
-            if (!$isExist) {
-                $isChanged = true;
-                break;
+            // if old data are all not changed
+            if(!$isChanged) {
+//                $submit_time = $roomData[0]->submit_time;
+            }
+        }
+        $updatedRoom = array();
+        if ($roomInfo != null) {
+            foreach ($roomInfo as $item) {
+                $isExist = false;
+                if (count($roomData) > 0) {
+                    foreach ($roomData as $oldRoom) {
+                        if ($oldRoom->room_name == $item->name &&
+                            $oldRoom->cost == $item->cost) {
+                            $isExist = true;
+                            break;
+                        }
+                    }
+                }
+                if (!$isExist) {
+                    $item->submit_time = $submit_time;
+//                    array_push($updatedRoom,$item);
+                    $isChanged = true;
+                }
             }
         }
         $result = false;
-        if ($isChanged) $result = $this->room_model->updateRoom($boss_id, $roomInfo);
-
+        if ($isChanged) {
+//        if (count($updatedRoom)>0) {
+//            $result = $this->room_model->updateRoom($boss_id, $updatedRoom, $submit_time);
+            $result = $this->room_model->updateRoom($boss_id, $roomInfo, $submit_time);
+        }
+//        var_dump('<br>isChanged: ', $isChanged);
+//        var_dump('<br>roomCount: ',$roomCnt);
+//        var_dump('<br>RoomData: ',$roomData);
+//        var_dump('<br>RoomInfo: ',$roomInfo);
         redirect('/bossmanage/room');
     }
 
@@ -186,14 +226,14 @@ class bossmanage extends basecontroller
             return;
         }
         $user_id = $_POST['boss_id'];;
-        $bossGroup =  $_POST['uploadBossgroupInfo'];
+        $bossGroup = $_POST['uploadBossgroupInfo'];
         $bossGroup = json_decode($bossGroup);
 
-        $result = $this->bossgroup_model->getItems(array('boss_id' => $user_id, 'status'=>'0'));
+        $result = $this->bossgroup_model->getItems(array('boss_id' => $user_id, 'status' => '0'));
         $isUpdate = false;
 
-        if(count($result) != count($bossGroup)) $isUpdate = true;
-        if(!$isUpdate) {
+        if (count($result) != count($bossGroup)) $isUpdate = true;
+        if (!$isUpdate) {
             foreach ($bossGroup as $item) {
                 $old = $this->bossgroup_model->getItems(array('no' => $item->no));
 
@@ -216,14 +256,14 @@ class bossmanage extends basecontroller
             }
         }
         $updateDate = date('Y-m-d H:i:s');
-        if($isUpdate){
+        if ($isUpdate) {
             $this->bossgroup_model->updateItems(array('boss_id' => $user_id), array('status' => '3'));
-            $ii=0;
-            foreach($bossGroup as $item){
+            $ii = 0;
+            foreach ($bossGroup as $item) {
                 $ii++;
                 unset($item->isUpdate);
                 $item->boss_id = $user_id;
-                $item->group_name = '团购'.$ii;
+                $item->group_name = '团购' . $ii;
                 $item->group_desc = json_encode($item->group_desc);
                 $item->update_time = $updateDate;
                 $this->bossgroup_model->addNewItem($item, $item->no);

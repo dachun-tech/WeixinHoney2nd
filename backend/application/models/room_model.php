@@ -9,11 +9,12 @@ class room_model extends CI_Model
      * @param number $eventId : This is id of event
      * @return number $count : This is information of rating found
      */
-    function updateRoom($boss_id, $roomInfo)
+    function updateRoom($boss_id, $roomInfo, $submit_time = '')
     {
         $this->db->trans_start();
 //        $this->deleteRoom($boss_id);
-        $submit_time = date("Y-m-d H:i:s", strtotime('+7 days'));
+        if ($submit_time == '')
+            $submit_time = date("Y-m-d H:i:s", strtotime('+7 days'));
         foreach ($roomInfo as $info) {
             $this->addRoom($boss_id, $info, $submit_time);
         }

@@ -177,9 +177,11 @@ class event_model extends CI_Model
             $query = $this->db->get();
             $result = $query->result();
             if ($result[0]->role == 1) {
-                $query = $this->db->query("SELECT event.*, event.name AS eventName,                    
+                $query = $this->db->query("SELECT 
+					event.*, event.name AS eventName, if(event.agent_name is not null, event.agent_name , user.name ) as name, 
+					if(event.agent_phone is not null, event.agent_phone , user.phone ) as phone, 
                     provinces.province, cities.city,areas.area, event.id as id,
-                    boss.boss_id,boss.site_name, user.name, user.phone, user.role, user.avatar, count(favourite_event.`user_id`)>0 AS favor_state, sum(booking.reg_num) as current_member
+                    boss.boss_id,boss.site_name, user.role, user.avatar, count(favourite_event.`user_id`)>0 AS favor_state, sum(booking.reg_num) as current_member
                 FROM  `user`, boss, `event`
                 LEFT JOIN cities ON cities.id=event.city
                 LEFT JOIN areas ON areas.id=event.area
@@ -188,9 +190,11 @@ class event_model extends CI_Model
                 LEFT JOIN favourite_event ON favourite_event.`event_id`=event.id AND favourite_event.`user_id` = " . $userId . "
                 WHERE event.id = " . $eventId . " AND user.no = event.organizer_id AND boss.boss_id = user.no GROUP BY event.id");
             } else {
-                $query = $this->db->query("SELECT event.*,event.name AS eventName, 
+                $query = $this->db->query("SELECT 
+					event.*,event.name AS eventName, if(event.agent_name is not null, event.agent_name , user.name ) as name, 
+					if(event.agent_phone is not null, event.agent_phone , user.phone ) as phone, 
                     provinces.province, cities.city,areas.area, event.id as id, 
-                    user.name, user.phone, user.role, user.avatar, count(favourite_event.`user_id`)>0 AS favor_state, sum(booking.reg_num) as current_member
+                    user.role, user.avatar, count(favourite_event.`user_id`)>0 AS favor_state, sum(booking.reg_num) as current_member
                 FROM  `user`, `event`
                 LEFT JOIN cities ON cities.id=event.city
                 LEFT JOIN areas ON areas.id=event.area
@@ -207,9 +211,11 @@ class event_model extends CI_Model
             $query = $this->db->get();
             $result = $query->result();
             if ($result[0]->role == 1) {
-                $query = $this->db->query("SELECT event.*,event.name AS eventName, 
+                $query = $this->db->query("SELECT 
+					event.*,event.name AS eventName, if(event.agent_name is not null, event.agent_name , user.name ) as name, 
+					if(event.agent_phone is not null, event.agent_phone , user.phone ) as phone, 
                     provinces.province, cities.city,areas.area, event.id as id,
-                    boss.boss_id,boss.site_name, user.name, user.phone, user.role, sum(booking.reg_num) as current_member, event.person_limit
+                    boss.boss_id,boss.site_name, user.role, sum(booking.reg_num) as current_member, event.person_limit
                 FROM  `user`, boss, `event`
                 LEFT JOIN cities ON cities.id=event.city
                 LEFT JOIN areas ON areas.id=event.area
@@ -217,9 +223,11 @@ class event_model extends CI_Model
                 LEFT JOIN booking ON  booking.event_id = event.id  and booking.state=" . $event_state[0]->state . "
                 WHERE event.id = " . $eventId . " AND user.no = event.organizer_id AND boss.boss_id = user.no GROUP BY event.id");
             } else {
-                $query = $this->db->query("SELECT event.id as id, event.*,event.name AS eventName, 
+                $query = $this->db->query("SELECT event.id as id, 
+					event.*,event.name AS eventName, if(event.agent_name is not null, event.agent_name , user.name ) as name, 
+					if(event.agent_phone is not null, event.agent_phone , user.phone ) as phone, 
                     event.additional,  provinces.province, cities.city,areas.area, 
-                    user.name, user.phone, user.role, sum(booking.reg_num) as current_member
+                    user.role, sum(booking.reg_num) as current_member
                 FROM  `user`, `event`
                 LEFT JOIN cities ON cities.id=event.city
                 LEFT JOIN areas ON areas.id=event.area

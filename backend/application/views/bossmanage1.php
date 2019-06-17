@@ -75,7 +75,10 @@ $type = '商家';
                             if ($j == 32) continue;
                             $isExist = false;
                             foreach ($site_type as $typeItem) {
+								if($typeItem=='' || $typeItem == ' ' || $typeItem==null) continue;
                                 if ($item == $typeItem) $isExist = true;
+								//var_dump($typeItem);
+								//var_dump($item);
                             }
                             ?>
                             <label style="width: 19%; text-align:left;margin-left:0;margin-right:0;padding:0;"
@@ -107,6 +110,7 @@ $type = '商家';
                             }
                             dest.val(site_type_detail);
                         }
+						setSiteType();
                     </script>
                 </div>
 
@@ -131,20 +135,25 @@ $type = '商家';
                     <label> 商家图片 : </label>
                     <input hidden name="item_pics" value=''>
                     <?php
-                    $ii = 0;
-                    if (count($picture) > 0)
-                        foreach ($picture as $item) {
-                            showImg('uploads/' . $item->picture, $ii);
-                            $ii++;
+                    for ($i = 0; $i < 5; $i++) {
+                        $isExist = false;
+                        if (count($picture) > 0) {
+                            foreach ($picture as $item) {
+                                if ($i == $item->order) {
+                                    showImg('uploads/' . $item->picture, $i);
+                                    $isExist = true;
+                                }
+                            }
                         }
-                    for ($i = $ii; $i < 5; $i++) {
-                        $img = 'assets/images/picture.png';
-                        showImg($img, $i);
+                        if(!$isExist) {
+                            $img = 'assets/images/picture.png';
+                            showImg($img, $i);
+                        }
                     }
                     function showImg($img, $i)
                     {
                         echo '<div class="form-group text-center" style="padding: 0px 5px;position:relative;">'
-                            . '<img class="img_preview" src=\'' . base_url() . $img . '\' '
+                            . '<img class="img_preview" src=\'' . base_url() . $img .'\' '
                             . ' alt="user image" class="online" itemid="' . ($i + 1) . '" '
                             . ' style="height: 100px; width:150px;cursor:pointer;"><br>'
                             . '<input name="img' . ($i + 1) . '" type="file" style="display: none" itemid="' . ($i + 1) . '" accept=".png,.jpg,.bmp,.gif"/>'

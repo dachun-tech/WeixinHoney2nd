@@ -155,7 +155,7 @@ class boss_model extends CI_Model
      * @param number $bossId : This is boss id
      * @return array $result :  information of the site
      */
-    function getSiteRoomData($bossId)
+    function getSiteRoomData($bossId, $type = '')
     {
         if ($bossId == 0) return array();
         $this->db->select("*");
@@ -165,7 +165,7 @@ class boss_model extends CI_Model
         $this->db->order_by('submit_time', 'desc');
         $query = $this->db->get();
         $result = $query->row();
-        if (count($result) <= 0) {
+        if (count($result) <= 0 || $type == 'admin') {
             $this->db->select("*");
             $this->db->from('room');
             $this->db->where('boss_id', $bossId);
@@ -173,7 +173,6 @@ class boss_model extends CI_Model
             $query = $this->db->get();
             $result = $query->row();
         }
-
         $this->db->select("*");
         $this->db->from('room');
         $this->db->where('boss_id', $bossId);
@@ -190,13 +189,15 @@ class boss_model extends CI_Model
      * @param number $bossId : This is boss id
      * @return array $result :  information of the site
      */
-    function getBossRoomData($bossId)
+    function getBossRoomData($bossId, $end_date = '')
     {
         if ($bossId == 0) return array();
         $this->db->select("*");
         $this->db->from('room_updated');
         $this->db->where('boss_id', $bossId);
         $this->db->where('active_date >= ', date("Y-m-d"));
+        if ($end_date != '')
+            $this->db->where('active_date <= ', date("Y-m-d H:i:s", strtotime('+7 days')));
         $this->db->order_by('active_date', 'asc');
         $query = $this->db->get();
 
@@ -419,7 +420,9 @@ class boss_model extends CI_Model
      */
     function getSitePictures($bossId)
     {
-        $this->db->select("picture");
+        $this->db->select('order');
+        $this->db->select('concat_ws("?p=",picture, second(now())) as picture');
+//        $this->db->select('picture');
         $this->db->from("site_picture");
         $this->db->where("boss_id", $bossId);
         $this->db->order_by('order');
@@ -515,14 +518,41 @@ class boss_model extends CI_Model
 
     function replaceSitePicture($bossId, $picture, $id = 0)
     {
-        $info['picture'] = $picture;
         $this->db->where('boss_id', $bossId);
         $this->db->where('order', $id);
-        if ($picture != '')
-            $this->db->update('site_picture', $info);
-        else
-            $this->db->delete('site_picture');
-        $result = $this->db->affected_rows();
+        $this->db->from('site_picture');
+        $query = $this->db->get();
+        if (count($query->result()) == 0) {
+            $this->addSitePicture($bossId, $picture, $id);
+        } else {
+            $info['picture'] = $picture;
+            $this->db->where('boss_id', $bossId);
+            $this->db->where('order', $id);
+            if ($picture != '')
+                $this->db->update('site_picture', $info);
+            else
+                $this->db->delete('site_picture');
+
+            $result = $this->db->affected_rows();
+        }
+        $this->db->where('boss_id', $bossId);
+        $this->db->from('site_picture');
+        $query = $this->db->get();
+        $pictures = $query->result();
+        $j = 0;
+        if (count($pictures) > 0) {
+            foreach ($pictures as $item) {
+                if ($item->picture == '') {
+                    $this->db->where('no', $item->no);
+                    $this->db->delete('site_picture');
+                } else {
+//                    $this->db->where('no', $item->no);
+//                    $this->db->update('site_picture', array('order' => $j));
+                }
+                $j++;
+            }
+        }
+
         return ($result > 0) ? true : false;
     }
 

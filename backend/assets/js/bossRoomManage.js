@@ -368,7 +368,9 @@ function renderData() {
     var roomList = that.data.roomList;
     content_html = '';
     for (var i = 0; i < roomList.length; i++) {
-        content_html += '<th>' + roomList[i] + '</th>';
+		var _style = '';
+		if((roomList[i].split(' ')).length<2) _style = 'word-break: break-all;';
+        content_html += '<th style="'+_style+'">' + roomList[i] + '</th>';
     }
     $('.updateTable thead').html(content_html);
 
@@ -381,14 +383,15 @@ function renderData() {
         for (var j = 0; j < rowItem.length; j++) {
             var cellItem = rowItem[j];
             var contentStr = '￥' + cellItem.cost;
-            if (cellItem.status == ST.disabled && cellItem.user_id == ST.mine) contentStr = '线下已售';
+			var _style = '';
+            if (cellItem.status == ST.disabled && cellItem.user_id == ST.mine) { contentStr = '线下已售'; _style='font-size: 10px;'; }
             else if (cellItem.status == ST.disabled && cellItem.user_id == ST.nouser) contentStr = '禁止';
             else if (cellItem.status == ST.disabled) contentStr = '已售';
             else if (cellItem.status == ST.booked) contentStr = '￥' + cellItem.cost;
-            else if (cellItem.status == ST.selected) contentStr = '线下已售';
+            else if (cellItem.status == ST.selected) { contentStr = '线下已售'; _style='font-size: 10px;'; }
             else if (cellItem.status == ST.activated) contentStr = '已售';
             else if (cellItem.status == ST.enabled) contentStr = '￥' + cellItem.cost;
-
+			_style = '';
             content_html += '<td ' +
                 ' data-type="book" ' +
                 ' data-i="' + i + '" ' +
@@ -400,7 +403,7 @@ function renderData() {
                 ' data-start="' + cellItem.start_time + '" ' +
                 ' data-end="' + cellItem.end_time + '" ' +
                 ' onclick="bookRoom(this);"' +
-                '>' + contentStr + '</td>'
+                ' style="'+_style+'">' + contentStr + '</td>'
         }
         content_html += '</tr>';
     }
@@ -430,8 +433,13 @@ function renderData() {
         content_html += '</tr>';
     }
     $('.updateTable[data-type="price"] tbody').html(content_html);
-
+	
     $('.roomInfoNotify').html(that.data.room_info_notify);
+
+	var headHeight1 = parseInt($('.updateTable[data-type="book"]').find('thead th').height());
+	var headHeight2 = parseInt($('.updateTable[data-type="price"]').find('thead th').height());
+	$($('.timeTable')[0]).css('margin-top', headHeight1 - 15);
+	$($('.timeTable')[1]).css('margin-top', headHeight2 - 15);
 }
 
 function bookRoom(elem) {
@@ -590,7 +598,10 @@ function readSelectedDate(content) {
 
 function confirmUpdate(elem) {
     var that = globalData;
-    if(that.data.curDate < (new Date())) {
+	var todayDate = new Date();
+	todayDate = todayDate.getFullYear() + '/' + (todayDate.getMonth()+1) +'/' + todayDate.getDate();
+	todayDate = new Date(todayDate);
+    if(that.data.curDate < todayDate) {
         alert('设置不能更新');
         return;
     }

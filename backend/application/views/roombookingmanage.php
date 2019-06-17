@@ -44,7 +44,7 @@
                             <div class="form-group">
                                 <select class="form-control" id="searchState" name="searchState">
                                     <option value="10"<?php if ($searchState == 10) echo ' selected'; ?>>订单状态</option>
-                                    <option value="0"<?php if ($searchState == 0) echo ' selected'; ?>>已预订</option>
+                                    <option value="4"<?php if ($searchState == 4) echo ' selected'; ?>>已预订</option>
                                     <option value="1"<?php if ($searchState == 1) echo ' selected'; ?>>进行中</option>
                                     <option value="2"<?php if ($searchState == 2) echo ' selected'; ?>>已完成</option>
                                     <option value="3"<?php if ($searchState == 3) echo ' selected'; ?>>已取消</option>
@@ -120,7 +120,7 @@
                         <?php
                         if (true || !empty($creation_name)) {
                             $pay = array('线下支付', '线上支付');
-                            $bookingState = array('已预订', '进行中', '已完成', '已取消', '已支付', '已过期');
+                            $bookingState = array('已支付', '进行中', '已完成', '已取消', '已预定', '已过期');
                             foreach ($bookingList as $record) {
                                 $no = "";
                                 for ($index = 0; $index < (10 - strlen($record->id . "")); $index++)
@@ -163,7 +163,7 @@
                                     </td>
                                     <td><?php echo '￥' . ($record->pay_cost); ?></td>
                                     <td><?php echo $bookingState[$record->state]; ?></td>
-                                    <td><?php echo $record->end_time; ?></td>
+                                    <td><?php echo $record->submit_time; ?></td>
                                     <td class="text-center">
                                         <a href="<?php echo base_url() . 'roombookingDetail/' . $record->id; ?>">
                                             查看 &nbsp;
